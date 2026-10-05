@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Badminton Live-Ticker</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17202a;background:#f4f7f9}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#eef5f8,#f8fafb);min-height:100vh}
+.wrap{max-width:850px;margin:0 auto;padding:12px}
+.card{background:#fff;border-radius:20px;padding:18px;box-shadow:0 8px 28px rgba(0,0,0,.08);margin-bottom:14px}
+h1{font-size:24px;margin:0}
+h2{font-size:19px;margin:0 0 12px}
+.small{font-size:13px;color:#64748b}
+.status{padding:10px 12px;border-radius:12px;background:#f1f5f9;color:#475569;font-size:13px}
+.bad{background:#fef2f2;color:#991b1b}
+.match-head{text-align:center}
+.status-pill{display:inline-block;padding:6px 11px;border-radius:999px;font-size:12px;font-weight:800;margin-bottom:10px;background:#e2e8f0}
+.status-pill.live{background:#fee2e2;color:#b91c1c}
+.status-pill.finished{background:#dcfce7;color:#166534}
+.teams{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}
+.team{font-weight:850;font-size:18px;line-height:1.2}
+.big-score{font-size:38px;font-weight:900;white-space:nowrap}
+.meta{color:#64748b;font-size:13px;margin-top:8px}
+.progress{height:9px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin:14px 0 5px}
+.progress>div{height:100%;background:#0f766e}
+.score-note{text-align:center;font-size:12px;color:#64748b}
+.game{border:1px solid #dbe3ea;border-radius:16px;padding:15px;margin-top:12px;background:#fff}
+.game.active{border:2px solid #f59e0b;background:#fffaf0}
+.game.finished{border-color:#bbf7d0;background:#f7fff9}
+.game-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.position{font-size:17px;font-weight:850}
+.players{font-size:14px;color:#475569;line-height:1.35;margin-top:4px}
+.game-score{font-size:20px;font-weight:900;white-space:nowrap}
+.game-status{font-size:12px;margin-top:7px;color:#64748b}
+.sets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}
+.set{background:#f8fafc;border-radius:12px;padding:10px;text-align:center}
+.set.active{background:#fff7ed;outline:1px solid #fdba74}
+.set-name{font-size:11px;color:#64748b}
+.set-score{font-size:22px;font-weight:850;margin-top:2px}
+.set.empty{color:#94a3b8}
+.update{margin-top:10px;text-align:center;font-size:12px;color:#64748b}
+@media(max-width:520px){
+ .card{padding:14px}
+ .teams{grid-template-columns:1fr auto 1fr}
+ .team{font-size:16px}
+ .big-score{font-size:32px}
+ .sets{gap:5px}
+ .set{padding:8px 5px}
+}
+</style>
+
+<style>
+.home-menu-button{display:block;width:100%;box-sizing:border-box;margin:28px 0 8px;padding:15px 18px;border-radius:14px;background:#e8eef5;color:#1f3348;text-decoration:none;text-align:center;font-weight:700;font-size:16px;border:1px solid #d4dee9;}
+.home-menu-button:active{transform:scale(.99);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="content">
+    <div class="card"><div class="status">Live-Ticker wird geladen …</div></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+"use strict";
+
+const SUPABASE_URL="https://apsarswjmsrmffoyxsgr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+
+const ORDER=["HD1","HD2","DD","HE1","HE2","HE3","DE","GD"];
+const LABELS={
+ HD1:"1. Herrendoppel",HD2:"2. Herrendoppel",DD:"Damendoppel",
+ HE1:"1. Herreneinzel",HE2:"2. Herreneinzel",HE3:"3. Herreneinzel",
+ DE:"Dameneinzel",GD:"Gemischtes Doppel"
+};
+let channel=null;
+let currentId=null;
+
+function esc(v){
+ return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+}
+function dateDE(v){
+ if(!v)return "";
+ try{return new Date(v+"T00:00:00").toLocaleDateString("de-DE");}
+ catch(e){return v}
+}
+function setScore(g,n){
+ const h=g[`set${n}_home`],a=g[`set${n}_away`];
+ if(h==null||a==null)return null;
+ return `${h}:${a}`;
+}
+function setWins(g){
+ let h=0,a=0;
+ for(let n=1;n<=3;n++){
+  const x=g[`set${n}_home`],y=g[`set${n}_away`];
+  if(x==null||y==null)continue;
+  if(Number(x)>Number(y))h++;
+  else if(Number(y)>Number(x))a++;
+ }
+ return {h,a};
+}
+function winner(g){
+ const s=setWins(g);
+ return s.h>=2?"home":s.a>=2?"away":null;
+}
+function isSetActive(g,n){
+ if(g.status==="finished")return false;
+ if(g[`set${n}_home`]!=null&&g[`set${n}_away`]!=null)return false;
+ if(n===1)return true;
+ const prevH=g[`set${n-1}_home`],prevA=g[`set${n-1}_away`];
+ if(prevH==null||prevA==null)return false;
+ return !winner(g);
+}
+function render(m,games){
+ games.sort((a,b)=>ORDER.indexOf(a.position)-ORDER.indexOf(b.position));
+ let home=0,away=0;
+ games.forEach(g=>{const w=winner(g);if(w==="home")home++;if(w==="away")away++});
+ const done=games.filter(g=>g.status==="finished").length;
+ const active=games.find(g=>g.status==="live");
+ const status=m.status==="live"?"live":m.status==="finished"?"finished":"";
+ const statusText=m.status==="live"?"🔴 LIVE":m.status==="finished"?"✅ BEendet":"⏳ Geplant";
+
+ document.getElementById("content").innerHTML=`
+ <div class="card match-head">
+   <div class="status-pill ${status}">${statusText}</div>
+   <div class="teams">
+     <div class="team">${esc(m.home_team)}</div>
+     <div class="big-score">${home} : ${away}</div>
+     <div class="team">${esc(m.away_team)}</div>
+   </div>
+   <div class="meta">${m.match_date?esc(dateDE(m.match_date)):""}${m.match_time?" · "+esc(String(m.match_time).slice(0,5))+" Uhr":""}</div>
+   <div class="progress"><div style="width:${Math.round(done/8*100)}%"></div></div>
+   <div class="score-note">${done} von 8 Spielen beendet${active?" · "+esc(LABELS[active.position]||active.position)+" läuft":""}</div>
+ </div>
+
+ <div class="card">
+   <h2>Spiele</h2>
+   ${games.map(g=>renderGame(g,m)).join("")}
+   <div class="update" id="updated">Automatische Aktualisierung aktiv</div>
+ </div>`;
+}
+function renderGame(g,m){
+ const w=winner(g),sw=setWins(g);
+ const active=g.status==="live"&&!w;
+ const cls=w?"finished":active?"active":"";
+ const state=w?(w==="home"?`Heim gewinnt · ${sw.h}:${sw.a}`:`Gast gewinnt · ${sw.h}:${sw.a}`)
+   :active?"🔴 läuft":"⏳ offen";
+ const sets=[1,2,3].map(n=>{
+  const s=setScore(g,n), activeSet=isSetActive(g,n);
+  return `<div class="set ${s?"":"empty"} ${activeSet?"active":""}">
+    <div class="set-name">Satz ${n}${activeSet?" · LIVE":""}</div>
+    <div class="set-score">${s||"– : –"}</div>
+  </div>`;
+ }).join("");
+ return `<div class="game ${cls}">
+   <div class="game-top">
+    <div><div class="position">${esc(LABELS[g.position]||g.position)}</div>
+    <div class="players">${esc(g.player1||"–")}${g.player2?" / "+esc(g.player2):""}</div></div>
+    <div class="game-score">${sw.h} : ${sw.a}</div>
+   </div>
+   <div class="game-status">${state}</div>
+   <div class="sets">${sets}</div>
+ </div>`;
+}
+async function loadMatch(id){
+ const {data:m,error:me}=await sb.from("matches").select("*").eq("id",id).maybeSingle();
+ if(me||!m){
+   document.getElementById("content").innerHTML=
+     '<div class="card"><div class="status bad">Begegnung konnte nicht geladen werden.</div>'+
+     '<button onclick="load()" style="margin-top:12px;padding:11px 14px;border:0;border-radius:10px;background:#e2e8f0;font-weight:700">← Zurück</button></div>';
+   return;
+ }
+ if(String(m.status||"").toLowerCase()!=="live"){
+   document.getElementById("content").innerHTML=
+     '<div class="card"><h1>🏸 Badminton Live-Ticker</h1>'+
+     '<div class="status" style="margin-top:12px">Diese Begegnung ist aktuell nicht live und wird deshalb hier nicht angezeigt.</div>'+
+     '<button onclick="currentId=null;load()" style="margin-top:12px;padding:11px 14px;border:0;border-radius:10px;background:#e2e8f0;font-weight:700">← Zu den Live-Spielen</button></div>';
+   return;
+ }
+ const {data:games,error:ge}=await sb.from("match_games").select("*").eq("match_id",id);
+ if(ge){
+   document.getElementById("content").innerHTML=
+     '<div class="card"><div class="status bad">Spiele konnten nicht geladen werden.</div>'+
+     '<button onclick="load()" style="margin-top:12px;padding:11px 14px;border:0;border-radius:10px;background:#e2e8f0;font-weight:700">← Zurück</button></div>';
+   return;
+ }
+ render(m,games||[]);
+ document.title=`${m.home_team} – ${m.away_team} · Live`;
+}
+
+async function load(){
+ currentId=currentId||
+           new URLSearchParams(location.search).get("match")||
+           new URLSearchParams(location.search).get("live");
+
+ // Wenn kein Match in der URL steht, zeigen wir eine öffentliche Auswahl.
+ if(!currentId){
+   const {data:list,error}=await sb.from("matches")
+     .select("id,home_team,away_team,match_date,match_time,status")
+     .order("match_date",{ascending:false})
+     .order("match_time",{ascending:false})
+     .limit(30);
+
+   if(error){
+     document.getElementById("content").innerHTML=
+       '<div class="card"><h1>Badminton Live-Ticker</h1>'+
+       '<div class="status bad" style="margin-top:12px">Begegnungen konnten nicht geladen werden.</div></div>';
+     return;
+   }
+
+   const shown=(list||[]).filter(m=>String(m.status||"").toLowerCase()==="live");
+
+   document.getElementById("content").innerHTML=
+    '<div class="card">'+
+      '<h1>🏸 Badminton Live-Ticker</h1>'+
+      '<div class="small" style="margin-top:6px">Bitte Begegnung auswählen.</div>'+
+      '<div id="matchList" style="display:grid;gap:10px;margin-top:14px">'+
+      (shown.length ? shown.map(m=>`
+        <button onclick="openMatch('${esc(m.id)}')"
+          style="text-align:left;background:#fff;border:1px solid #dbe3ea;border-radius:14px;padding:14px">
+          <div style="font-size:17px;font-weight:850">${esc(m.home_team)} – ${esc(m.away_team)}</div>
+          <div class="small" style="margin-top:4px">
+            ${m.match_date?esc(dateDE(m.match_date)):""}
+            ${m.match_time?" · "+esc(String(m.match_time).slice(0,5))+" Uhr":""}
+            · ${m.status==="live"?"🔴 LIVE":m.status==="finished"?"✅ beendet":"⏳ geplant"}
+          </div>
+        </button>`).join("")
+        : '<div class="status">Aktuell läuft keine Begegnung live.</div>')+
+      '</div>'+
+      '<div class="update" style="margin-top:14px">Die Anzeige aktualisiert sich automatisch.</div>'+
+    '</div>';
+   document.title="Badminton Live-Ticker";
+   return;
+ }
+
+ await loadMatch(currentId);
+}
+
+async function openMatch(id){
+ currentId=id;
+ await loadMatch(id);
+ subscribe();
+}
+
+function subscribe(){
+ if(channel)sb.removeChannel(channel);
+ if(!currentId)return;
+
+ channel=sb.channel("public-live-"+currentId)
+   .on("postgres_changes",{event:"*",schema:"public",table:"matches",
+      filter:"id=eq."+currentId},()=>loadMatch(currentId))
+   .on("postgres_changes",{event:"*",schema:"public",table:"match_games",
+      filter:"match_id=eq."+currentId},()=>loadMatch(currentId))
+   .subscribe();
+}
+(async()=>{await load();if(currentId)subscribe()})();
+</script>
+
+<a class="home-menu-button" href="index.html">🏠 Zurück zum Hauptmenü</a>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Badminton – Spielbericht</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17202a;background:#f3f6f8}*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#eef4f8,#f8fafb)}.wrap{max-width:900px;margin:auto;padding:12px}.card{background:#fff;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 7px 25px #00000012}h1{margin:0;font-size:24px}h2{margin:0 0 12px;font-size:19px}.sub,.small{color:#64748b;font-size:13px;line-height:1.45}label{display:block;font-size:13px;font-weight:750;margin:10px 0 5px}input,textarea,select{width:100%;padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;font:inherit}textarea{min-height:90px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{border:0;border-radius:11px;padding:12px 15px;font:inherit;font-weight:800;cursor:pointer}.primary{background:#0f766e;color:#fff}.secondary{background:#e2e8f0}.full{width:100%}.hidden{display:none!important}.status{padding:11px 13px;border-radius:11px;background:#eef2ff;color:#3730a3;font-size:13px;margin-top:10px}.ok{background:#ecfdf5;color:#166534}.bad{background:#fef2f2;color:#991b1b}.warn{background:#fff7ed;color:#9a3412}.match-list{display:grid;gap:10px}.match{border:1px solid #dbe3ea;border-radius:14px;padding:14px;background:#fff;text-align:left;width:100%}.match-title{font-size:17px;font-weight:850}.match-meta{font-size:13px;color:#64748b;margin-top:4px}.report-head{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;text-align:center}.team{font-weight:850;font-size:18px}.big{font-size:30px;font-weight:900}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12px;min-width:760px}th,td{border:1px solid #cbd5e1;padding:7px 6px;text-align:center;vertical-align:middle}th{background:#f1f5f9;font-weight:850}td.name{text-align:left;min-width:155px}.result-row{font-weight:850;background:#f8fafc}.signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.sig-box{border:1px solid #cbd5e1;border-radius:13px;padding:10px}canvas{width:100%;height:170px;border:1px dashed #94a3b8;border-radius:10px;background:#fff;touch-action:none}.sig-actions{display:flex;gap:7px;margin-top:7px}.sig-actions button{flex:1;padding:9px}.toolbar{display:flex;gap:8px;flex-wrap:wrap}.toolbar button{flex:1;min-width:150px}.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#dcfce7;color:#166534;font-size:12px;font-weight:800}@media(max-width:600px){.grid,.signature-grid,.report-head{grid-template-columns:1fr}.big{font-size:26px}.card{padding:14px}}
+</style>
+<style>
+.home-menu-button{display:block;width:100%;box-sizing:border-box;margin:28px 0 8px;padding:15px 18px;border-radius:14px;background:#e8eef5;color:#1f3348;text-decoration:none;text-align:center;font-weight:700;font-size:16px;border:1px solid #d4dee9;}
+.home-menu-button:active{transform:scale(.99);}
+</style>
+</head><body><div class="wrap">
+<div id="loginCard" class="card"><h1>📋 Spielbericht</h1><div class="sub">Geschützter Bereich für Moderator/Admin.</div><label>E-Mail</label><input id="email" type="email" autocomplete="username"><label>Passwort</label><input id="password" type="password" autocomplete="current-password"><button id="loginBtn" class="primary full" style="margin-top:15px">Anmelden</button><div id="loginStatus" class="status hidden"></div></div>
+<div id="app" class="hidden"><div class="card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><h1>📋 Spielbericht</h1><div id="userInfo" class="sub"></div></div><button id="logoutBtn" class="secondary">Abmelden</button></div></div>
+<div id="selectCard" class="card"><h2>Begegnung auswählen</h2><div class="sub">Ergebnisse und Paarungen werden automatisch aus Supabase übernommen.</div><div id="matches" class="match-list"></div><div id="appStatus" class="status hidden"></div></div>
+<div id="reportCard" class="hidden">
+<div class="card"><div id="reportHeader"></div></div>
+<div class="card"><h2>Angaben zum Spielbericht</h2><div class="grid"><div><label>Bezeichnung der Staffel</label><input id="staffel"></div><div><label>Staffel-Nr.</label><input id="staffelNr"></div><div><label>Datum</label><input id="reportDate" type="date"></div><div><label>Uhrzeit Spielbeginn</label><input id="reportTime" type="time"></div><div><label>Ort / Hallenbezeichnung</label><input id="venue"></div><div><label>Spieltag</label><input id="matchday"></div></div></div>
+<div class="card"><h2>Spielergebnisse</h2><div class="sub">Schreibgeschützt aus dem Moderatorbereich.</div><div class="table-wrap"><table id="resultsTable"></table></div></div>
+<div class="card"><h2>Bemerkungen / besondere Vorkommnisse</h2><textarea id="incidents"></textarea><label>Protestvorbehalt gem. SpO</label><select id="protest"><option value="nein">Nein</option><option value="ja">Ja</option></select><label>Protestgrund</label><textarea id="protestReason"></textarea></div>
+<div class="card"><h2>Mannschaftsführer</h2><div class="signature-grid"><div class="sig-box"><h3>Heimmannschaft</h3><input id="captainHome" placeholder="Vor- und Nachname"><label>Unterschrift</label><canvas id="sigHome"></canvas><div class="sig-actions"><button class="secondary" onclick="clearSig('home')">Löschen</button></div></div><div class="sig-box"><h3>Gastmannschaft</h3><input id="captainAway" placeholder="Vor- und Nachname"><label>Unterschrift</label><canvas id="sigAway"></canvas><div class="sig-actions"><button class="secondary" onclick="clearSig('away')">Löschen</button></div></div></div><label style="display:flex;gap:8px;align-items:flex-start"><input id="confirmData" type="checkbox" style="width:auto"> <span>Beide Mannschaftsführer bestätigen die Richtigkeit der Angaben und dass das Spiel unter Beachtung der Spielordnung stattgefunden hat.</span></label><div id="confirmedAt" class="small"></div></div>
+<div class="card"><div class="toolbar"><button class="secondary" onclick="saveReport()">💾 Spielbericht speichern</button><button class="primary" onclick="generatePDF()">📄 PDF erzeugen</button><button class="secondary" onclick="backToMatches()">← Andere Begegnung</button></div><div id="reportStatus" class="status hidden"></div></div>
+</div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script>
+const SUPABASE_URL="https://apsarswjmsrmffoyxsgr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const ORDER=["HD1","HD2","DD","HE1","HE2","HE3","DE","GD"],LABELS={HD1:"1. HD",HD2:"2. HD",DD:"DD",HE1:"1. HE",HE2:"2. HE",HE3:"3. HE",DE:"DE",GD:"GD"};let user,profile,matches=[],selected,games=[];
+const $=id=>document.getElementById(id),esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));function msg(e,t,c=""){e.textContent=t;e.className="status "+c}function dateDE(v){return v?new Date(v+"T00:00:00").toLocaleDateString("de-DE"):""}function wins(g){let h=0,a=0;for(let n=1;n<=3;n++){let x=g["set"+n+"_home"],y=g["set"+n+"_away"];if(x==null||y==null)continue;if(+x>+y)h++;if(+y>+x)a++}return{h,a}}function winner(g){let s=wins(g);return s.h>=2?"home":s.a>=2?"away":null}function total(){let h=0,a=0;games.forEach(g=>{let w=winner(g);if(w=="home")h++;if(w=="away")a++});return{h,a}}
+function initCanvas(id){let c=$(id),x=c.getContext("2d"),down=false,last; c.width=900;c.height=500;function p(e){let r=c.getBoundingClientRect(),q=e.touches?e.touches[0]:e;return{x:(q.clientX-r.left)*c.width/r.width,y:(q.clientY-r.top)*c.height/r.height}}function d(e){e.preventDefault();down=true;last=p(e)}function m(e){if(!down)return;e.preventDefault();let q=p(e);x.beginPath();x.moveTo(last.x,last.y);x.lineTo(q.x,q.y);x.lineWidth=4;x.lineCap="round";x.stroke();last=q}function u(){down=false;last=null}c.onpointerdown=d;c.onpointermove=m;window.addEventListener("pointerup",u);c.ontouchstart=d;c.ontouchmove=m}function clearSig(s){let c=$(s=="home"?"sigHome":"sigAway"),x=c.getContext("2d");x.clearRect(0,0,c.width,c.height)}function sig(s){return $(s=="home"?"sigHome":"sigAway").toDataURL("image/png")}
+async function enter(u){
+  try{
+    user=u;
+    let q=await sb.from("profiles").select("id,display_name,role").eq("id",u.id).single();
+    if(q.error)throw q.error;
+    profile=q.data;
+    if(!profile || !["moderator","admin"].includes(profile.role)){
+      await sb.auth.signOut();
+      throw new Error("Dieser Benutzer hat keine Moderator-Berechtigung.");
+    }
+    $("loginCard").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    $("userInfo").textContent=(profile.display_name||u.email)+" · "+profile.role;
+    await loadMatches();
+  }catch(e){
+    $("app").classList.add("hidden");
+    $("loginCard").classList.remove("hidden");
+    msg($("loginStatus"),e?.message||"Anmeldung fehlgeschlagen.","bad");
+  }
+}
+async function login(){
+  const email=$("email").value.trim(),password=$("password").value;
+  if(!email||!password)return msg($("loginStatus"),"Bitte E-Mail und Passwort eingeben.","bad");
+  $("loginBtn").disabled=true;
+  msg($("loginStatus"),"Anmeldung läuft …");
+  try{
+    const q=await sb.auth.signInWithPassword({email,password});
+    if(q.error){msg($("loginStatus"),"Login fehlgeschlagen: "+q.error.message,"bad");return;}
+    await enter(q.data.user);
+  }catch(e){
+    msg($("loginStatus"),e?.message||"Anmeldung fehlgeschlagen.","bad");
+  }finally{
+    $("loginBtn").disabled=false;
+  }
+}
+async function loadMatches(){let q=await sb.from("matches").select("*").eq("status","finished").order("match_date",{ascending:false}).limit(50);if(q.error)return msg($("appStatus"),q.error.message,"bad");matches=q.data||[];$("matches").innerHTML=matches.map(m=>`<button class="match" onclick="selectMatch(\'${esc(m.id)}\')"><div class="match-title">${esc(m.home_team)} – ${esc(m.away_team)}</div><div class="match-meta">${dateDE(m.match_date)}${m.match_time?" · "+String(m.match_time).slice(0,5)+" Uhr":""} · beendet</div></button>`).join("")||"<div class=small>Keine beendeten Begegnungen.</div>"}
+async function selectMatch(id){selected=matches.find(m=>m.id===id);let q=await sb.from("match_games").select("*").eq("match_id",id);if(q.error)return msg($("appStatus"),q.error.message,"bad");games=(q.data||[]).sort((a,b)=>ORDER.indexOf(a.position)-ORDER.indexOf(b.position));render();await loadSavedReport();}
+function render(){let r=total();$("selectCard").classList.add("hidden");$("reportCard").classList.remove("hidden");$("reportHeader").innerHTML=`<div class=report-head><div class=team>${esc(selected.home_team)}</div><div><div class=big>${r.h} : ${r.a}</div><span class=badge>${r.h>r.a?esc(selected.home_team):r.a>r.h?esc(selected.away_team):"Unentschieden"}</span></div><div class=team>${esc(selected.away_team)}</div></div>`;$("reportDate").value=selected.match_date||"";$("reportTime").value=selected.match_time?String(selected.match_time).slice(0,5):"";let rows=games.map(g=>{let s=wins(g),w=winner(g);return`<tr><td>${LABELS[g.position]||esc(g.position)}</td><td class=name>${esc((g.player1||"–")+(g.player2?" / "+g.player2:""))}</td><td>${g.set1_home!=null?g.set1_home+" : "+g.set1_away:"–"}</td><td>${g.set2_home!=null?g.set2_home+" : "+g.set2_away:"–"}</td><td>${g.set3_home!=null?g.set3_home+" : "+g.set3_away:"–"}</td><td>${s.h} : ${s.a}</td><td>${w=="home"?"1":w=="away"?"0":"–"}</td></tr>`}).join("");$("resultsTable").innerHTML=`<thead><tr><th>Spiel</th><th>Heim / Gast</th><th>1. Satz</th><th>2. Satz</th><th>3. Satz</th><th>Sätze</th><th>Spiel</th></tr></thead><tbody>${rows}</tbody><tfoot><tr class=result-row><td colspan=5>Mannschafts-Spielergebnis</td><td>${r.h} : ${r.a}</td><td>${r.h>r.a?"Heim":r.a>r.h?"Gast":"–"}</td></tr></tfoot>`}
+function payload(){return{match_id:selected.id,staffel:$("staffel").value.trim()||null,staffel_nr:$("staffelNr").value.trim()||null,report_date:$("reportDate").value||null,report_time:$("reportTime").value||null,venue:$("venue").value.trim()||null,matchday:$("matchday").value.trim()||null,incidents:$("incidents").value.trim()||null,protest:$("protest").value||"nein",protest_reason:$("protestReason").value.trim()||null,captain_home:$("captainHome").value.trim()||null,captain_away:$("captainAway").value.trim()||null,signature_home:sig("home"),signature_away:sig("away"),confirmed:true,confirmed_at:new Date().toISOString(),updated_by:user.id}}
+async function loadSavedReport(){
+  const {data,error}=await sb.from("match_reports").select("*").eq("match_id",selected.id).maybeSingle();
+  if(error){msg($("reportStatus"),"Gespeicherter Spielbericht konnte nicht geladen werden: "+error.message,"bad");return;}
+  if(!data)return;
+  $("staffel").value=data.staffel||"";$("staffelNr").value=data.staffel_nr||"";$("reportDate").value=data.report_date||selected.match_date||"";$("reportTime").value=data.report_time?String(data.report_time).slice(0,5):(selected.match_time?String(selected.match_time).slice(0,5):"");$("venue").value=data.venue||selected.venue||"";$("matchday").value=data.matchday||"";$("incidents").value=data.incidents||"";$("protest").value=data.protest||"nein";$("protestReason").value=data.protest_reason||"";$("captainHome").value=data.captain_home||"";$("captainAway").value=data.captain_away||"";$("confirmData").checked=!!data.confirmed;$("confirmedAt").textContent=data.confirmed_at?"Bestätigt am: "+new Date(data.confirmed_at).toLocaleString("de-DE"):"";
+  setTimeout(()=>{loadSig("home",data.signature_home);loadSig("away",data.signature_away)},50);
+  if(data.pdf_path)msg($("reportStatus"),"Spielbericht gespeichert. PDF ist im Spielplan verfügbar.","ok");
+}
+function loadSig(side,data){if(!data)return;const img=new Image();img.onload=()=>{const c=$(side==="home"?"sigHome":"sigAway"),x=c.getContext("2d");x.clearRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height)};img.src=data}
+async function saveReport(){
+  if(selected.status!=="finished")return msg($("reportStatus"),"Ein Spielbericht kann erst nach Beendigung der Begegnung erstellt werden.","warn");
+  if(!$("confirmData").checked)return msg($("reportStatus"),"Bitte die Richtigkeitsbestätigung aktivieren.","warn");
+  if(!$("captainHome").value.trim()||!$("captainAway").value.trim())return msg($("reportStatus"),"Bitte beide Mannschaftsführer eintragen.","warn");
+  if(!hasInk("home")||!hasInk("away"))return msg($("reportStatus"),"Bitte beide Mannschaftsführer unterschreiben.","warn");
+  let q=await sb.from("match_reports").upsert(payload(),{onConflict:"match_id"}).select().single();
+  if(q.error)return msg($("reportStatus"),"Speichern fehlgeschlagen: "+q.error.message,"bad");
+  msg($("reportStatus"),"Spielbericht gespeichert. Jetzt PDF erzeugen.","ok");$("confirmedAt").textContent="Bestätigt am: "+new Date().toLocaleString("de-DE");
+}
+function hasInk(s){const c=$(s==="home"?"sigHome":"sigAway"),x=c.getContext("2d"),d=x.getImageData(0,0,c.width,c.height).data;for(let i=3;i<d.length;i+=4)if(d[i]>0)return true;return false}
+function backToMatches(){$("reportCard").classList.add("hidden");$("selectCard").classList.remove("hidden")}
+async function generatePDF(){
+  if(selected.status!=="finished")return msg($("reportStatus"),"Ein Spielbericht kann erst nach Beendigung der Begegnung erstellt werden.","warn");
+  if(!$("confirmData").checked)return msg($("reportStatus"),"Bitte zuerst bestätigen.","warn");
+  if(!$("captainHome").value.trim()||!$("captainAway").value.trim()||!hasInk("home")||!hasInk("away"))return msg($("reportStatus"),"Bitte beide Mannschaftsführer eintragen und unterschreiben.","warn");
+  let {jsPDF}=window.jspdf,doc=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"}),r=total();
+  doc.setFontSize(17);doc.text("Badminton-Spielbericht",148,14,{align:"center"});doc.setFontSize(9);doc.text("Staffel: "+($('staffel').value||"—"),10,23);doc.text("Staffel-Nr.: "+($('staffelNr').value||"—"),10,29);doc.text("Heim: "+selected.home_team,90,23);doc.text("Gast: "+selected.away_team,190,23);doc.text("Datum: "+($('reportDate').value||"—")+"   Beginn: "+($('reportTime').value||"—"),90,29);doc.text("Ort/Halle: "+($('venue').value||"—"),190,29);
+  let body=games.map(g=>{let s=wins(g),w=winner(g);return[LABELS[g.position]||g.position,(g.player1||"–")+(g.player2?" / "+g.player2:""),g.set1_home!=null?g.set1_home+":"+g.set1_away:"–",g.set2_home!=null?g.set2_home+":"+g.set2_away:"–",g.set3_home!=null?g.set3_home+":"+g.set3_away:"–",s.h+":"+s.a,w=="home"?"1":w=="away"?"0":"–"]});
+  doc.autoTable({startY:35,head:[["Spiel","Heim / Gast","1. Satz","2. Satz","3. Satz","Sätze","Spiel"]],body,styles:{fontSize:8,cellPadding:2}});let y=doc.lastAutoTable.finalY+7;doc.text("Mannschafts-Spielergebnis: "+r.h+" : "+r.a,10,y);doc.text("Sieger: "+(r.h>r.a?selected.home_team:r.a>r.h?selected.away_team:"Unentschieden"),100,y);y+=7;doc.text("Besondere Vorkommnisse: "+($('incidents').value||"Keine."),10,y);y+=7;doc.text("Protestvorbehalt: "+$('protest').value,10,y);if($('protest').value=="ja")doc.text("Grund: "+($('protestReason').value||"—"),80,y);y+=8;doc.text("Mannschaftsführer Heim: "+$('captainHome').value,10,y);doc.text("Mannschaftsführer Gast: "+$('captainAway').value,150,y);y+=3;try{doc.addImage(sig("home"),"PNG",10,y,55,30);doc.addImage(sig("away"),"PNG",150,y,55,30)}catch(e){}y+=34;doc.text("Bestätigt: "+new Date().toLocaleString("de-DE"),10,y);
+  const blob=doc.output("blob");const path=selected.id+"/Spielbericht_"+selected.id+".pdf";
+  const up=await sb.storage.from("match-reports").upload(path,blob,{contentType:"application/pdf",upsert:true});
+  if(up.error)return msg($("reportStatus"),"PDF konnte nicht gespeichert werden: "+up.error.message,"bad");
+  const row=await sb.from("match_reports").upsert({...payload(),pdf_path:path,pdf_generated_at:new Date().toISOString()},{onConflict:"match_id"}).select().single();
+  if(row.error)return msg($("reportStatus"),"Bericht gespeichert, aber Datenbankaktualisierung fehlgeschlagen: "+row.error.message,"bad");
+  doc.save("Spielbericht_"+selected.home_team+"_"+selected.away_team+".pdf");msg($("reportStatus"),"PDF erzeugt und im Spielplan gespeichert.","ok");
+}
+$("loginBtn").onclick=login;$("password").onkeydown=e=>{if(e.key=="Enter")login()};$("logoutBtn").onclick=()=>sb.auth.signOut().then(()=>location.reload());$("confirmData").onchange=e=>$("confirmedAt").textContent=e.target.checked?"Bestätigt am: "+new Date().toLocaleString("de-DE"):"";initCanvas("sigHome");initCanvas("sigAway");(async()=>{let q=await sb.auth.getSession();if(q.data.session)enter(q.data.session.user).catch(e=>msg($("loginStatus"),e.message,"bad"))})();
+</script>
+<a class="home-menu-button" href="index.html">🏠 Zurück zum Hauptmenü</a>
+</body></html>

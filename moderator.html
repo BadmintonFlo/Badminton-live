@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Badminton – Moderator</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:#17202a;background:#f4f6f8
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:linear-gradient(180deg,#eef4f8,#f8fafb)}
+.wrap{max-width:820px;margin:0 auto;padding:14px}
+.card{background:#fff;border-radius:18px;padding:18px;box-shadow:0 8px 28px rgba(0,0,0,.08);margin-bottom:14px}
+h1{font-size:24px;margin:0 0 6px}
+h2{font-size:19px;margin:0 0 12px}
+h3{font-size:17px;margin:0}
+.sub{color:#64748b;font-size:14px;margin-bottom:16px;line-height:1.4}
+label{display:block;font-weight:650;font-size:14px;margin:12px 0 6px}
+input,select{
+  width:100%;padding:12px 13px;border:1px solid #cbd5e1;border-radius:11px;
+  font-size:16px;background:#fff
+}
+button{
+  border:0;border-radius:11px;padding:12px 15px;font-size:15px;font-weight:750;
+  cursor:pointer;touch-action:manipulation
+}
+button:disabled{opacity:.45;cursor:not-allowed}
+.primary{background:#0f766e;color:white}
+.secondary{background:#e2e8f0;color:#17202a}
+.danger{background:#fee2e2;color:#991b1b}
+.full{width:100%}
+.status{padding:12px 14px;border-radius:11px;background:#eef2ff;color:#3730a3;margin-top:12px;font-size:14px;line-height:1.4}
+.ok{background:#ecfdf5;color:#166534}
+.bad{background:#fef2f2;color:#991b1b}
+.warn{background:#fff7ed;color:#9a3412}
+.hidden{display:none!important}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.user{font-size:14px;color:#475569}
+.role{display:inline-block;margin-top:5px;padding:4px 9px;border-radius:999px;background:#dcfce7;color:#166534;font-weight:700;font-size:12px}
+.match-list{display:grid;gap:10px}
+.match{
+  border:1px solid #dbe3ea;border-radius:14px;padding:15px;
+  background:#fff;cursor:pointer
+}
+.match:active{transform:scale(.995)}
+.match.selected{border:2px solid #0f766e;background:#f0fdfa}
+.match-title{font-weight:800;font-size:17px}
+.match-meta{font-size:13px;color:#64748b;margin-top:4px}
+.small{font-size:12px;color:#64748b}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.toolbar button{flex:1;min-width:130px}
+.match-head{
+  padding:15px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;
+  margin-bottom:12px
+}
+.match-head-title{font-size:21px;font-weight:850}
+.match-score{
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;
+  margin-top:10px;text-align:center
+}
+.match-score .team{font-weight:750;line-height:1.2}
+.match-score strong{font-size:28px}
+.progress{height:9px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-top:12px}
+.progress > div{height:100%;background:#0f766e;width:0%}
+.game{
+  border:1px solid #dbe3ea;border-radius:16px;padding:15px;margin-top:12px;
+  background:#fff
+}
+.game.finished{border-color:#bbf7d0;background:#f7fff9}
+.game.live{border-color:#fed7aa;background:#fffaf5}
+.game.excluded{border-color:#cbd5e1;background:#f8fafc}
+.game.forfeit{border-color:#fde68a;background:#fffbeb}
+.special-game{padding:12px;border-radius:12px;margin-top:10px;font-size:14px;line-height:1.45}
+.special-game.excluded{background:#eef2f7;color:#475569}
+.special-game.forfeit{background:#fff7ed;color:#92400e}
+.special-game strong{display:block;margin-bottom:4px}
+.game-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.game-title{font-weight:850;font-size:17px}
+.players{font-size:14px;color:#475569;margin-top:5px;line-height:1.45}.players b{color:#334155}
+.game-result{font-weight:850;white-space:nowrap}
+.game-state{font-size:12px;margin-top:6px;color:#64748b}
+.set-row{
+  display:grid;grid-template-columns:minmax(105px,1fr) 1fr 1fr;
+  gap:8px;align-items:center;margin-top:12px
+}
+.set-label{font-size:13px;font-weight:750;color:#475569}
+.set-action{grid-column:1/-1;display:flex;margin-top:2px}
+.set-action button{width:100%}
+.set-action .secondary{background:#e2e8f0}
+.set-disabled{opacity:.72}
+.set-disabled .score-box{background:#f1f5f9}
+
+.score-box{
+  border:1px solid #dbe3ea;border-radius:12px;padding:8px;
+  text-align:center;background:#f8fafc
+}
+.score-team{font-size:11px;color:#64748b;font-weight:700;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score-number{font-size:26px;font-weight:850;line-height:1;margin:3px 0 7px}
+.stepper{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.stepper button{padding:10px 0;font-size:20px;line-height:1}
+.stepper .minus{background:#e2e8f0}
+.stepper .plus{background:#ccfbf1;color:#115e59}
+.save-row{display:flex;gap:8px;margin-top:13px}
+.save-row button{flex:1}
+.note{font-size:12px;color:#64748b;margin-top:10px;line-height:1.4}
+@media(max-width:520px){
+  .wrap{padding:10px}
+  .card{padding:15px}
+  .set-row{grid-template-columns:1fr 1fr}
+  .set-label{grid-column:1/-1}
+  .game-head{display:block}
+  .game-result{margin-top:7px}
+  .set-action{grid-column:1/-1}
+  .match-score strong{font-size:25px}
+}
+</style>
+
+<style>
+.home-menu-button{display:block;width:100%;box-sizing:border-box;margin:28px 0 8px;padding:15px 18px;border-radius:14px;background:#e8eef5;color:#1f3348;text-decoration:none;text-align:center;font-weight:700;font-size:16px;border:1px solid #d4dee9;}
+.home-menu-button:active{transform:scale(.99);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="loginCard" class="card">
+    <h1>🎙️ Moderator</h1>
+    <div class="sub">Badminton Live-Ticker – geschützter Bereich</div>
+    <label for="email">E-Mail</label>
+    <input id="email" type="email" autocomplete="username" placeholder="E-Mail-Adresse">
+    <label for="password">Passwort</label>
+    <input id="password" type="password" autocomplete="current-password" placeholder="Passwort">
+    <button id="loginBtn" class="primary full" style="margin-top:16px">Anmelden</button>
+    <div id="loginStatus" class="status hidden"></div>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="card">
+      <div class="top">
+        <div>
+          <h1>🎙️ Moderatorbereich</h1>
+          <div id="userInfo" class="user"></div>
+        </div>
+        <button id="logoutBtn" class="secondary">Abmelden</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Begegnung auswählen</h2>
+      <div class="sub">Tippe auf ein Match, um die acht Spiele und die Punkteeingabe zu öffnen.</div>
+      <div id="matches" class="match-list"></div>
+      <div id="appStatus" class="status hidden"></div>
+    </div>
+
+    <div id="editorCard" class="card hidden">
+      <div id="matchHeader"></div>
+      <div id="games"></div>
+      <div id="editorStatus" class="status hidden"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://apsarswjmsrmffoyxsgr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+const $ = id => document.getElementById(id);
+const ORDER = ["HD1","HD2","DD","HE1","HE2","HE3","DE","GD"];
+const LABELS = {
+  HD1:"1. Herrendoppel", HD2:"2. Herrendoppel", DD:"Damendoppel",
+  HE1:"1. Herreneinzel", HE2:"2. Herreneinzel", HE3:"3. Herreneinzel",
+  DE:"Dameneinzel", GD:"Gemischtes Doppel"
+};
+
+let currentUser = null;
+let currentProfile = null;
+let matches = [];
+let selectedMatch = null;
+let selectedGames = [];
+
+function showStatus(el,text,type=""){
+  el.textContent = text;
+  el.className = "status " + type;
+}
+function escapeHtml(v){
+  return String(v??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[c]));
+}
+function formatDate(v){
+  if(!v)return "";
+  try{return new Date(v+"T00:00:00").toLocaleDateString("de-DE");}
+  catch(e){return v;}
+}
+function errorText(e){return e?.message||e?.details||"Unbekannter Fehler";}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function loadProfile(user){
+  const {data,error}=await sb.from("profiles")
+    .select("id,display_name,role,team_name")
+    .eq("id",user.id).single();
+  if(error)throw new Error("Profil konnte nicht geladen werden: "+error.message);
+  return data;
+}
+
+async function loadMatches(){
+  const box=$("matches");
+  box.innerHTML='<div class="empty">Lade Matches …</div>';
+
+  const {data,error}=await sb.from("matches")
+    .select("id,home_team,away_team,match_date,match_time,status")
+    .order("match_date",{ascending:false})
+    .order("match_time",{ascending:false})
+    .limit(50);
+
+  if(error){
+    showStatus($("appStatus"),"Matches konnten nicht geladen werden: "+errorText(error),"bad");
+    box.innerHTML="";
+    return;
+  }
+
+  matches=data||[];
+  if(!matches.length){
+    box.innerHTML='<div class="small">Noch keine Matches vorhanden.</div>';
+    return;
+  }
+
+  box.innerHTML=matches.map(m=>{
+    const active=selectedMatch?.id===m.id ? " selected":"";
+    return `<div class="match${active}" onclick="selectMatch('${escapeHtml(m.id)}')">
+      <div class="match-title">${escapeHtml(m.home_team||"Heim")} – ${escapeHtml(m.away_team||"Gast")}</div>
+      <div class="match-meta">
+        ${m.match_date?escapeHtml(formatDate(m.match_date)):""}
+        ${m.match_time?" · "+escapeHtml(String(m.match_time).slice(0,5))+" Uhr":""}
+        · Status: ${escapeHtml(statusLabel(m.status))}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function statusLabel(s){
+  return s==="live" ? "LIVE" : s==="finished" ? "beendet" : "geplant";
+}
+
+function playerText(g){
+  const home=g.player2 ? `${g.player1||"–"} / ${g.player2||"–"}` : (g.player1||"–");
+  const away=g.opponent_player2 ? `${g.opponent_player1||"–"} / ${g.opponent_player2||"–"}` : (g.opponent_player1||"–");
+  return `<div><b>Heim:</b> ${escapeHtml(home)}</div><div><b>Gast:</b> ${escapeHtml(away)}</div>`;
+}
+
+function isNoPlayer(name){
+  return String(name||"").trim()==="Kein Spieler";
+}
+
+function sideHasNoPlayer(g,side){
+  if(side==="home"){
+    if(g.position==="HD1"||g.position==="HD2"||g.position==="DD"||g.position==="GD")
+      return isNoPlayer(g.player1)&&isNoPlayer(g.player2);
+    return isNoPlayer(g.player1);
+  }
+  if(g.position==="HD1"||g.position==="HD2"||g.position==="DD"||g.position==="GD")
+    return isNoPlayer(g.opponent_player1)&&isNoPlayer(g.opponent_player2);
+  return isNoPlayer(g.opponent_player1);
+}
+
+function gameDisposition(g){
+  const homeNo=sideHasNoPlayer(g,"home");
+  const awayNo=sideHasNoPlayer(g,"away");
+  if(homeNo&&awayNo)return "excluded";
+  if(homeNo)return "forfeit_home";
+  if(awayNo)return "forfeit_away";
+  return "normal";
+}
+
+function forfeitWinner(g){
+  const d=gameDisposition(g);
+  return d==="forfeit_home"?"away":d==="forfeit_away"?"home":null;
+}
+
+function gameWinner(g){
+  const disposition=gameDisposition(g);
+  if(disposition==="excluded")return null;
+  const forced=forfeitWinner(g);
+  if(forced && g.status==="finished")return forced;
+  let home=0,away=0;
+  for(let n=1;n<=3;n++){
+    // Ein laufender Satz (z.B. 1:0) darf noch KEINEN Spielgewinner
+    // erzeugen. Nur regelkonform abgeschlossene Sätze zählen.
+    if(!isSetCompleted(g,n))continue;
+    const h=g[`set${n}_home`], a=g[`set${n}_away`];
+    if(h==null || a==null)continue;
+    if(Number(h)>Number(a))home++;
+    else if(Number(a)>Number(h))away++;
+  }
+  return home>=2 ? "home" : away>=2 ? "away" : null;
+}
+
+function gameSetWins(g){
+  let home=0,away=0;
+  for(let n=1;n<=3;n++){
+    const h=g[`set${n}_home`], a=g[`set${n}_away`];
+    if(h==null || a==null)continue;
+    if(Number(h)>Number(a))home++;
+    else if(Number(a)>Number(h))away++;
+  }
+  return {home,away};
+}
+
+function gameIsTouched(g){
+  for(let n=1;n<=3;n++){
+    if(g[`set${n}_home`]!=null || g[`set${n}_away`]!=null)return true;
+  }
+  return false;
+}
+
+function matchScore(games){
+  let home=0,away=0;
+  games.forEach(g=>{
+    const w=gameWinner(g);
+    if(w==="home")home++;
+    if(w==="away")away++;
+  });
+  return {home,away};
+}
+
+function finishedCount(games){
+  return games.filter(g=>!!gameWinner(g)||gameDisposition(g)==="excluded").length;
+}
+
+async function getGames(matchId){
+  const {data,error}=await sb.from("match_games")
+    .select("*").eq("match_id",matchId);
+  if(error)throw new Error("Spiele konnten nicht geladen werden: "+errorText(error));
+  return (data||[]).sort((a,b)=>ORDER.indexOf(a.position)-ORDER.indexOf(b.position));
+}
+
+async function selectMatch(id){
+  selectedMatch=matches.find(m=>m.id===id)||null;
+  if(!selectedMatch)return;
+
+  await loadMatches();
+  $("editorCard").classList.remove("hidden");
+  $("games").innerHTML='<div class="small">Lade Aufstellung und Spiele …</div>';
+
+  try{
+    selectedGames=await getGames(id);
+    renderEditor();
+    $("editorCard").scrollIntoView({behavior:"smooth",block:"start"});
+  }catch(e){
+    showStatus($("editorStatus"),errorText(e),"bad");
+  }
+}
+
+function renderEditor(){
+  if(!selectedMatch)return;
+
+  const score=matchScore(selectedGames);
+  const done=finishedCount(selectedGames);
+  const pct=Math.round(done/8*100);
+
+  $("matchHeader").innerHTML=`
+    <div class="match-head">
+      <div class="match-head-title">${escapeHtml(selectedMatch.home_team||"Heim")} – ${escapeHtml(selectedMatch.away_team||"Gast")}</div>
+      <div class="match-meta">
+        ${selectedMatch.match_date?escapeHtml(formatDate(selectedMatch.match_date)):""}
+        ${selectedMatch.match_time?" · "+escapeHtml(String(selectedMatch.match_time).slice(0,5))+" Uhr":""}
+        · ${escapeHtml(statusLabel(selectedMatch.status))}
+      </div>
+      <div class="match-score">
+        <div class="team">${escapeHtml(selectedMatch.home_team||"Heim")}</div>
+        <strong>${score.home} : ${score.away}</strong>
+        <div class="team">${escapeHtml(selectedMatch.away_team||"Gast")}</div>
+      </div>
+      <div class="progress"><div style="width:${pct}%"></div></div>
+      <div class="small" style="margin-top:7px">${done} von 8 Spielen erledigt${selectedGames.filter(g=>gameDisposition(g)==="excluded").length?` · ${selectedGames.filter(g=>gameDisposition(g)==="excluded").length} Spiel(e) entfallen`:""}</div>
+      <div class="toolbar">
+        <button class="secondary" onclick="setMatchStatus('live')">🔴 Begegnung LIVE</button>
+        <button class="secondary" onclick="setMatchStatus('finished')">✅ Begegnung beenden</button>
+      </div>
+    </div>`;
+
+  if(!selectedGames.length){
+    $("games").innerHTML='<div class="status bad">Für dieses Match wurden keine Spiele gefunden.</div>';
+    return;
+  }
+
+  $("games").innerHTML=selectedGames.map(g=>renderGame(g)).join("");
+  $("editorStatus").classList.add("hidden");
+}
+
+function isValidCompletedSetScore(h,a){
+  h=h==null?null:Number(h); a=a==null?null:Number(a);
+  if(h==null || a==null || !Number.isInteger(h) || !Number.isInteger(a) || h<0 || a<0 || h>30 || a>30)return false;
+  const high=Math.max(h,a), low=Math.min(h,a);
+  return (high===21 && low<=19) ||
+    (high>=22 && high<=29 && high-low===2) ||
+    (high===30 && (low===28 || low===29));
+}
+
+function isSetCompleted(g,n){
+  if(g._unlockedSet===n)return false;
+  return isValidCompletedSetScore(g[`set${n}_home`],g[`set${n}_away`]);
+}
+
+function isSetEnabled(g,n){
+  if(g._unlockedSet===n)return true;
+  if(g._unlockedSet && n>g._unlockedSet)return false;
+  if(n===1)return true;
+  if(n===2)return isSetCompleted(g,1) && !gameWinnerAfterSet(g,1);
+  if(n===3)return isSetCompleted(g,2) && !gameWinnerAfterSet(g,2) && !gameWinner(g);
+  return false;
+}
+
+function gameWinnerAfterSet(g,n){
+  let home=0,away=0;
+  for(let i=1;i<=n;i++){
+    // Nur tatsächlich beendete Sätze zählen. Ein Zwischenstand wie 1:0
+    // darf weder einen Satz- noch einen Spielgewinner erzeugen.
+    if(!isSetCompleted(g,i))continue;
+    const h=g[`set${i}_home`], a=g[`set${i}_away`];
+    if(h==null || a==null)continue;
+    if(Number(h)>Number(a))home++;
+    else if(Number(a)>Number(h))away++;
+  }
+  return home>=2 ? "home" : away>=2 ? "away" : null;
+}
+
+function renderGame(g){
+  const disposition=gameDisposition(g);
+  const wins=gameSetWins(g);
+  const winner=gameWinner(g);
+
+  if(disposition==="excluded"){
+    return `<div class="game excluded" id="game_${escapeHtml(g.id)}">
+      <div class="game-head">
+        <div>
+          <div class="game-title">${escapeHtml(LABELS[g.position]||g.position)}</div>
+          <div class="players">${playerText(g)}</div>
+        </div>
+        <div class="game-result">–</div>
+      </div>
+      <div class="special-game excluded">
+        <strong>⚪ Spiel entfällt aus der Wertung</strong>
+        Beide Mannschaften stellen für dieses Spiel keinen Spieler. Es wird weder als Sieg noch als Niederlage gewertet.
+      </div>
+    </div>`;
+  }
+
+  if(disposition==="forfeit_home"||disposition==="forfeit_away"){
+    const forcedWinner=forfeitWinner(g);
+    const winnerName=forcedWinner==="home"?(selectedMatch.home_team||"Heim"):(selectedMatch.away_team||"Gast");
+    const alreadyDone=!!winner;
+    return `<div class="game ${alreadyDone?"finished":"forfeit"}" id="game_${escapeHtml(g.id)}">
+      <div class="game-head">
+        <div>
+          <div class="game-title">${escapeHtml(LABELS[g.position]||g.position)}</div>
+          <div class="players">${playerText(g)}</div>
+        </div>
+        <div class="game-result">${alreadyDone?`${wins.home} : ${wins.away}`:"–"}</div>
+      </div>
+      <div class="special-game forfeit">
+        <strong>${alreadyDone?`⚠️ kampflos · ${escapeHtml(winnerName)} gewinnt`:`⚠️ kampflos · ${escapeHtml(winnerName)} würde gewinnen`}</strong>
+        ${alreadyDone
+          ? `Das Spiel wurde mit 21:0 / 21:0 für ${escapeHtml(winnerName)} gewertet.`
+          : `Eine Mannschaft stellt keine Spieler. Das Spiel kann kampflos mit 21:0 / 21:0 gewertet werden.`}
+      </div>
+      ${alreadyDone
+        ? `<div class="set-action" style="margin-top:10px"><button class="secondary" onclick="clearGame('${escapeHtml(g.id)}')">↩ Kampflos-Wertung zurücksetzen</button></div>`
+        : `<div class="set-action" style="margin-top:10px"><button class="primary" onclick="finishForfeit('${escapeHtml(g.id)}')">Kampflos mit 21:0 / 21:0 werten</button></div>`}
+    </div>`;
+  }
+
+  const stateClass=winner?"finished":gameIsTouched(g)?"live":"";
+  const stateText=winner
+    ? (winner==="home" ? "✅ Heim gewinnt das Spiel":"✅ Gast gewinnt das Spiel")
+    : gameIsTouched(g) ? "🔴 läuft" : "⏳ offen";
+
+  return `<div class="game ${stateClass}" id="game_${escapeHtml(g.id)}">
+    <div class="game-head">
+      <div>
+        <div class="game-title">${escapeHtml(LABELS[g.position]||g.position)}</div>
+        <div class="players">${playerText(g)}</div>
+      </div>
+      <div class="game-result">${wins.home} : ${wins.away}</div>
+    </div>
+    <div class="game-state">${stateText}</div>
+    ${[1,2,3].map(n=>renderSetRow(g,n)).join("")}
+  </div>`;
+}
+
+async function finishForfeit(gameId){
+  const g=selectedGames.find(x=>x.id===gameId);
+  if(!g)return;
+  const disposition=gameDisposition(g);
+  const winner=forfeitWinner(g);
+  if(!winner || disposition==="excluded")return;
+  const winnerName=winner==="home"?(selectedMatch.home_team||"Heim"):(selectedMatch.away_team||"Gast");
+  if(!confirm(`Kampfloses Spiel für ${winnerName} werten?\n\nEs werden zwei Sätze mit 21:0 / 21:0 eingetragen.`))return;
+
+  const values=winner==="home"
+    ? {set1_home:21,set1_away:0,set2_home:21,set2_away:0,set3_home:null,set3_away:null,winner:"home",status:"finished"}
+    : {set1_home:0,set1_away:21,set2_home:0,set2_away:21,set3_home:null,set3_away:null,winner:"away",status:"finished"};
+
+  const {error}=await sb.from("match_games").update(values).eq("id",gameId);
+  if(error){showStatus($("editorStatus"),`Kampfloses Spiel konnte nicht gespeichert werden: ${errorText(error)}`,"bad");return;}
+
+  selectedGames=await getGames(selectedMatch.id);
+  await updateOverallMatchStatus();
+  selectedGames=await getGames(selectedMatch.id);
+  renderEditor();
+  showStatus($("editorStatus"),`Kampfloses Spiel gespeichert: ${winnerName} gewinnt mit 21:0 / 21:0.`,"ok");
+  await loadMatches();
+}
+
+function canIncreaseScore(h,a,side){
+  h=Number(h)||0; a=Number(a)||0;
+
+  const nextH=side==="home" ? h+1 : h;
+  const nextA=side==="away" ? a+1 : a;
+
+  if(nextH>30 || nextA>30)return false;
+
+  const currentHigh=Math.max(h,a);
+  const currentLow=Math.min(h,a);
+  const currentWinner =
+    (currentHigh===21 && currentLow<=19) ||
+    (currentHigh>=22 && currentHigh<=29 && currentHigh-currentLow===2) ||
+    (currentHigh===30 && currentLow>=28);
+
+  // Nach einem bereits möglichen Gewinn bleiben Korrekturen möglich:
+  // Der bisher unterlegene Punktestand darf noch erhöht werden, damit
+  // ein versehentlich zu früh eingetragener Spielstand korrigiert werden
+  // kann. Der Sieger darf dagegen nicht direkt z.B. 21:19 -> 22:19 zählen.
+  if(currentWinner){
+    const currentWinnerSide = h>a ? "home" : "away";
+    if(side===currentWinnerSide)return false;
+    // Ausnahme für Korrektur: der andere Wert darf noch bis 20 steigen.
+    return nextH<=21 && nextA<=21;
+  }
+
+  const nextHigh=Math.max(nextH,nextA);
+  const nextLow=Math.min(nextH,nextA);
+
+  // Bis einschließlich 21 Punkte ist die laufende Eingabe möglich.
+  if(nextHigh<=21)return true;
+
+  // Ab 22 Punkten sind nur Verlängerungen ab 20:20 zulässig.
+  if(nextHigh>=22 && nextHigh<=29)return nextLow>=20;
+
+  // 30 Punkte nur als 30:28 oder 30:29.
+  if(nextHigh===30)return nextLow>=28;
+
+  return false;
+}
+
+function renderSetRow(g,n){
+  const h=g[`set${n}_home`];
+  const a=g[`set${n}_away`];
+  const hv=h==null?0:Number(h);
+  const av=a==null?0:Number(a);
+  const completed=isSetCompleted(g,n);
+  const enabled=isSetEnabled(g,n);
+  const disabled=!enabled || completed;
+  const homePlusDisabled=disabled || !canIncreaseScore(hv,av,"home");
+  const awayPlusDisabled=disabled || !canIncreaseScore(hv,av,"away");
+
+  let setState="🟢 Eingabe möglich";
+  if(completed){
+    const sh=Number(h)>Number(a)?"Heim":"Gast";
+    setState=`✅ beendet · ${sh}`;
+  }else if(!enabled){
+    setState=`🔒 erst nach Satz ${n-1}`;
+  }
+
+  return `<div class="set-row ${disabled?"set-disabled":""}">
+    <div class="set-label">
+      <div>Satz ${n}</div>
+      <div class="small">${setState}</div>
+    </div>
+
+    <div class="score-box">
+      <div class="score-team">${escapeHtml(selectedMatch.home_team||"Heim")}</div>
+      <div class="score-number" id="num_${g.id}_${n}_h">${hv}</div>
+      <div class="stepper">
+        <button class="minus" ${disabled?"disabled":""} onclick="changePoint('${escapeHtml(g.id)}',${n},'home',-1)">−</button>
+        <button class="plus" ${homePlusDisabled?"disabled":""} onclick="changePoint('${escapeHtml(g.id)}',${n},'home',1)">+</button>
+      </div>
+    </div>
+
+    <div class="score-box">
+      <div class="score-team">${escapeHtml(selectedMatch.away_team||"Gast")}</div>
+      <div class="score-number" id="num_${g.id}_${n}_a">${av}</div>
+      <div class="stepper">
+        <button class="minus" ${disabled?"disabled":""} onclick="changePoint('${escapeHtml(g.id)}',${n},'away',-1)">−</button>
+        <button class="plus" ${awayPlusDisabled?"disabled":""} onclick="changePoint('${escapeHtml(g.id)}',${n},'away',1)">+</button>
+      </div>
+    </div>
+
+    <div class="set-action">
+      ${completed
+        ? `<button class="secondary" onclick="unlockSet('${escapeHtml(g.id)}',${n})">↩ Satz ${n} wieder freischalten</button>`
+        : enabled
+          ? `<button class="primary" onclick="finishSet('${escapeHtml(g.id)}',${n})">Satz ${n} beenden</button>`
+          : `<button class="secondary" disabled>Satz ${n} gesperrt</button>`
+      }
+    </div>
+  </div>`;
+}
+
+async function unlockSet(gameId,n){
+  let g=selectedGames.find(x=>x.id===gameId);
+  if(!g || !isSetCompleted(g,n))return;
+
+  if(!confirm(`Satz ${n} wieder freischalten?\n\nDie Punkte bleiben zunächst erhalten und können danach korrigiert werden.`))return;
+
+  // Beim Zurücknehmen eines Satzabschlusses wird der Spielstatus zurückgesetzt.
+  // Die Punkte bleiben erhalten. Frühere Sätze bleiben abgeschlossen.
+  const {error}=await sb.from("match_games").update({
+    winner:null,
+    status:"live"
+  }).eq("id",gameId);
+
+  if(error){
+    showStatus($("editorStatus"),`Satz ${n} konnte nicht freigeschaltet werden: ${errorText(error)}`,"bad");
+    return;
+  }
+
+  // Die Begegnung ist durch die Korrektur wieder in Bearbeitung.
+  const {error:matchError}=await sb.from("matches")
+    .update({status:"live"})
+    .eq("id",selectedMatch.id);
+
+  if(matchError){
+    showStatus($("editorStatus"),`Satz ${n} wurde freigeschaltet, aber der Begegnungsstatus konnte nicht aktualisiert werden: ${errorText(matchError)}`,"warn");
+  }else{
+    selectedMatch.status="live";
+  }
+
+  selectedGames=await getGames(selectedMatch.id);
+
+  // Nur der ausgewählte Satz darf wieder bearbeitet werden.
+  // Dafür markieren wir ihn lokal als offen; die Datenbankwerte bleiben bestehen.
+  g = selectedGames.find(x=>x.id===gameId);
+  if(g){
+    g._unlockedSet=n;
+  }
+
+  renderEditor();
+  showStatus(
+    $("editorStatus"),
+    `Satz ${n} ist wieder freigeschaltet. Die vorhandenen Punkte bleiben erhalten und können mit +/− korrigiert werden.`,
+    "ok"
+  );
+}
+
+async function changePoint(gameId,n,side,delta){
+  const g=selectedGames.find(x=>x.id===gameId);
+  if(!g || gameDisposition(g)!=="normal" || !isSetEnabled(g,n))return;
+
+  const key=`set${n}_${side}`;
+  let value=g[key]==null ? 0 : Number(g[key]);
+  // Badminton: maximal 30 Punkte pro Satz.
+  value=Math.max(0,Math.min(30,value+delta));
+  g[key]=value;
+
+  const num=$(`num_${gameId}_${n}_${side==="home"?"h":"a"}`);
+  if(num)num.textContent=value;
+
+  // Die +/−-Schaltflächen sofort anhand des neuen Punktestands prüfen.
+  const row=num?.closest(".set-row");
+  if(row){
+    const buttons=row.querySelectorAll("button.plus");
+    if(buttons[0])buttons[0].disabled=!canIncreaseScore(
+      Number($(`num_${gameId}_${n}_h`)?.textContent||0),
+      Number($(`num_${gameId}_${n}_a`)?.textContent||0),"home"
+    );
+    if(buttons[1])buttons[1].disabled=!canIncreaseScore(
+      Number($(`num_${gameId}_${n}_h`)?.textContent||0),
+      Number($(`num_${gameId}_${n}_a`)?.textContent||0),"away"
+    );
+  }
+
+  // WICHTIG: Jeder Punkt wird sofort in Supabase gespeichert.
+  // Auch der jeweils noch nicht angeklickte Gegnerwert wird als 0 gespeichert.
+  // Sonst bleibt dieser Wert in der Datenbank NULL und der öffentliche
+  // Liveticker kann den Zwischenstand (z.B. 1:0) nicht als Satzstand anzeigen.
+  const homeKey=`set${n}_home`;
+  const awayKey=`set${n}_away`;
+  const homeValue=g[homeKey]==null ? 0 : Number(g[homeKey]);
+  const awayValue=g[awayKey]==null ? 0 : Number(g[awayKey]);
+  g[homeKey]=homeValue;
+  g[awayKey]=awayValue;
+
+  const {error}=await sb.from("match_games").update({
+    [homeKey]:homeValue,
+    [awayKey]:awayValue,
+    winner:null,
+    status:"live"
+  }).eq("id",gameId);
+
+  if(error){
+    // Bei einem Speicherfehler den lokalen Wert wieder aus der Datenbank laden.
+    selectedGames=await getGames(selectedMatch.id);
+    renderEditor();
+    showStatus($("editorStatus"),`Punkt konnte nicht gespeichert werden: ${errorText(error)}`,"bad");
+    return;
+  }
+
+  // Auch der Begegnungsstatus wird beim ersten Punkt auf LIVE gesetzt.
+  if(selectedMatch.status!=="live"){
+    const {error:matchError}=await sb.from("matches")
+      .update({status:"live"})
+      .eq("id",selectedMatch.id);
+    if(!matchError)selectedMatch.status="live";
+  }
+}
+
+async function finishSet(gameId,n){
+  const g=selectedGames.find(x=>x.id===gameId);
+  if(!g || gameDisposition(g)!=="normal")return;
+  // Die UI kann nach einer Live-Punktänderung kurz einen alten Enable-Status
+  // haben. Ein regelkonformer aktueller Punktestand darf deshalb trotzdem
+  // ausdrücklich mit „Satz beenden“ abgeschlossen werden.
+  if(!isSetEnabled(g,n) && !isValidCompletedSetScore(g[`set${n}_home`],g[`set${n}_away`]))return;
+
+  // Ein nicht berührtes Feld zählt als 0. Dadurch kann z. B. 21:0
+  // direkt im ersten Durchgang beendet werden, ohne den Satz vorher
+  // freischalten zu müssen.
+  const h=g[`set${n}_home`]==null ? 0 : Number(g[`set${n}_home`]);
+  const a=g[`set${n}_away`]==null ? 0 : Number(g[`set${n}_away`]);
+
+  if(!Number.isInteger(h) || !Number.isInteger(a) || h<0 || a<0 || h>30 || a>30){
+    showStatus($("editorStatus"),`Satz ${n} hat einen ungültigen Punktestand. Ein Satz kann maximal bis 30 Punkte gehen.`,"warn");
+    return;
+  }
+
+  const high=Math.max(h,a);
+  const low=Math.min(h,a);
+  const validSet = isValidCompletedSetScore(h,a);
+
+  if(!validSet){
+    showStatus(
+      $("editorStatus"),
+      `Satz ${n} ist so nicht regelkonform. Gewinn ist ab 21 Punkten mit 2 Punkten Vorsprung, bei 29:29 mit dem 30. Punkt.`,
+      "warn"
+    );
+    return;
+  }
+
+  const projected={...g};
+  projected[`set${n}_home`]=Number(h);
+  projected[`set${n}_away`]=Number(a);
+
+  const winner=gameWinner(projected);
+  const status=winner ? "finished" : "live";
+
+  const {error}=await sb.from("match_games").update({
+    [`set${n}_home`]:Number(h),
+    [`set${n}_away`]:Number(a),
+    winner,
+    status
+  }).eq("id",gameId);
+
+  if(error){
+    showStatus($("editorStatus"),`Satz ${n} konnte nicht gespeichert werden: ${errorText(error)}`,"bad");
+    return;
+  }
+
+  selectedGames=await getGames(selectedMatch.id);
+  const refreshed=selectedGames.find(x=>x.id===gameId);
+  if(refreshed)delete refreshed._unlockedSet;
+  await updateOverallMatchStatus();
+  selectedGames=await getGames(selectedMatch.id);
+  renderEditor();
+
+  showStatus(
+    $("editorStatus"),
+    winner
+      ? `Satz ${n} beendet und gespeichert. ${winner==="home"?"Heim":"Gast"} gewinnt das Spiel.`
+      : `Satz ${n} beendet und gespeichert. Jetzt ist der nächste Satz freigeschaltet.`,
+    "ok"
+  );
+  await loadMatches();
+}
+
+async function saveGame(id){
+  showStatus($("editorStatus"),"Bitte jeden Satz einzeln mit „Satz beenden“ abschließen.","warn");
+}
+
+async function clearGame(id){
+  const g=selectedGames.find(x=>x.id===id);
+  if(!g)return;
+  if(!confirm(`Ergebnis von ${LABELS[g.position]||g.position} wirklich löschen?`))return;
+
+  const {error}=await sb.from("match_games").update({
+    set1_home:null,set1_away:null,
+    set2_home:null,set2_away:null,
+    set3_home:null,set3_away:null,
+    winner:null,status:"planned"
+  }).eq("id",id);
+
+  if(error){
+    showStatus($("editorStatus"),"Ergebnis konnte nicht gelöscht werden: "+errorText(error),"bad");
+    return;
+  }
+
+  await updateOverallMatchStatus();
+  selectedGames=await getGames(selectedMatch.id);
+  renderEditor();
+  showStatus($("editorStatus"),`${LABELS[g.position]||g.position}: Ergebnis gelöscht.`,"ok");
+  await loadMatches();
+}
+
+async function setMatchStatus(status){
+  if(!selectedMatch)return;
+  const {error}=await sb.from("matches").update({status}).eq("id",selectedMatch.id);
+  if(error){
+    showStatus($("editorStatus"),"Begegnungsstatus konnte nicht gespeichert werden: "+errorText(error),"bad");
+    return;
+  }
+  selectedMatch.status=status;
+  const idx=matches.findIndex(m=>m.id===selectedMatch.id);
+  if(idx>=0)matches[idx].status=status;
+  renderEditor();
+  await loadMatches();
+  showStatus($("editorStatus"),`Begegnungsstatus: ${statusLabel(status)}.`,"ok");
+}
+
+async function updateOverallMatchStatus(){
+  const games=await getGames(selectedMatch.id);
+  const done=finishedCount(games);
+  let status=selectedMatch.status;
+
+  if(done===8)status="finished";
+  else if(games.some(g=>g.status==="live" || gameIsTouched(g)))status="live";
+  else status="planned";
+
+  const {error}=await sb.from("matches").update({status}).eq("id",selectedMatch.id);
+  if(!error){
+    selectedMatch.status=status;
+    const idx=matches.findIndex(m=>m.id===selectedMatch.id);
+    if(idx>=0)matches[idx].status=status;
+  }
+}
+
+async function enterApp(user){
+  try{
+    currentUser=user;
+    currentProfile=await loadProfile(user);
+
+    if(currentProfile.role!=="moderator" && currentProfile.role!=="admin"){
+      await sb.auth.signOut();
+      throw new Error("Dieser Benutzer hat keine Moderator-Berechtigung.");
+    }
+
+    $("loginCard").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    $("userInfo").innerHTML=
+      escapeHtml(currentProfile.display_name||user.email)+
+      "<br><span class='role'>"+escapeHtml(currentProfile.role)+"</span>";
+
+    showStatus($("appStatus"),"Anmeldung erfolgreich. Moderator-Berechtigung wurde aus Supabase gelesen.","ok");
+    await loadMatches();
+  }catch(e){
+    $("app").classList.add("hidden");
+    $("loginCard").classList.remove("hidden");
+    showStatus($("loginStatus"),e.message||"Anmeldung fehlgeschlagen.","bad");
+  }
+}
+
+async function login(){
+  const email=$("email").value.trim();
+  const password=$("password").value;
+  if(!email||!password){
+    showStatus($("loginStatus"),"Bitte E-Mail und Passwort eingeben.","bad");
+    return;
+  }
+
+  $("loginBtn").disabled=true;
+  showStatus($("loginStatus"),"Anmeldung läuft …");
+
+  const {data,error}=await sb.auth.signInWithPassword({email,password});
+  $("loginBtn").disabled=false;
+
+  if(error){
+    showStatus($("loginStatus"),"Login fehlgeschlagen: "+error.message,"bad");
+    return;
+  }
+  await enterApp(data.user);
+}
+
+$("loginBtn").addEventListener("click",login);
+$("password").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
+
+$("logoutBtn").addEventListener("click",async()=>{
+  await sb.auth.signOut();
+  currentUser=null;
+  currentProfile=null;
+  selectedMatch=null;
+  selectedGames=[];
+  $("editorCard").classList.add("hidden");
+  $("app").classList.add("hidden");
+  $("loginCard").classList.remove("hidden");
+  $("password").value="";
+  showStatus($("loginStatus"),"Abgemeldet.","ok");
+});
+
+sb.auth.onAuthStateChange(async(event,session)=>{
+  if(event==="SIGNED_OUT"){
+    $("app").classList.add("hidden");
+    $("loginCard").classList.remove("hidden");
+    $("editorCard").classList.add("hidden");
+  }
+});
+
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(session?.user)await enterApp(session.user);
+})();
+</script>
+
+<a class="home-menu-button" href="index.html">🏠 Zurück zum Hauptmenü</a>
+</body>
+</html>

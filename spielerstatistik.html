@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>Badminton – Spielerstatistik</title>
+<style>
+:root{--bg:#f3f6fa;--card:#fff;--text:#172033;--muted:#667085;--line:#dbe2ea;--accent:#1769aa;--ok:#18794e;--bad:#b42318;--warn:#9a6700;--shadow:0 8px 24px rgba(16,24,40,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}main{max-width:1100px;margin:auto;padding:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}h1{margin:0 0 5px;font-size:24px}h2{font-size:18px;margin:0 0 12px}.muted,.small{color:var(--muted);font-size:13px}.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:15px}label{display:block;font-weight:650;font-size:13px}select,input{width:100%;margin-top:5px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit}button{border:0;border-radius:10px;padding:11px 14px;background:var(--accent);color:#fff;font:inherit;font-weight:700;cursor:pointer}.secondary{background:#eef3f8;color:var(--text);border:1px solid var(--line)}.login{max-width:460px;margin:70px auto}.login input{margin-bottom:10px}.login button{width:100%;margin-top:4px}.hidden{display:none!important}.msg{margin-top:10px;padding:10px 12px;border-radius:10px;background:#eef3f8}.msg.bad{background:#fdecec;color:var(--bad)}.msg.ok{background:#eaf7ef;color:var(--ok)}.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.kpi{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fafbfd}.kpi .value{font-size:25px;font-weight:800;margin-top:3px}.kpi .label{font-size:12px;color:var(--muted)}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.bar{height:11px;border-radius:99px;background:#edf1f5;overflow:hidden;margin-top:7px}.bar>i{display:block;height:100%;background:var(--accent);width:0}.statline{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}.statline:last-child{border-bottom:0}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:700px}th,td{text-align:left;padding:10px 9px;border-bottom:1px solid var(--line);white-space:nowrap}th{font-size:12px;color:var(--muted);text-transform:uppercase}td.num{text-align:center}td.good{color:var(--ok);font-weight:700}td.bad{color:var(--bad);font-weight:700}.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;background:#eef3f8}.footer{text-align:center;margin:22px 0}.footer a{display:inline-block;text-decoration:none;background:#fff;border:1px solid var(--line);padding:11px 16px;border-radius:10px;color:var(--text);font-weight:700}@media(max-width:800px){.controls,.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:12px}.card{padding:14px}.kpi:last-child{grid-column:span 2}}
+</style>
+
+<style>
+.home-menu-button{
+  display:block;width:100%;box-sizing:border-box;margin:28px 0 8px;
+  padding:15px 18px;border-radius:14px;background:#e8eef5;color:#1f3348;
+  text-decoration:none;text-align:center;font-weight:700;font-size:16px;
+  border:1px solid #d4dee9;
+}
+.home-menu-button:active{transform:scale(.99)}
+</style>
+
+</head>
+<body>
+<main>
+<section id="loginCard" class="card login">
+<h1>📊 Spielerstatistik</h1><p class="muted">Bitte anmelden, um die Statistik aufzurufen.</p>
+<input id="email" type="email" placeholder="E-Mail">
+<input id="password" type="password" placeholder="Passwort">
+<button id="loginBtn">Anmelden</button><div id="loginMsg" class="msg hidden"></div>
+</section>
+<section id="app" class="hidden">
+<div class="card">
+<div class="top"><div><h1>📊 Spielerstatistik</h1><div id="who" class="muted"></div></div><button id="logoutBtn" class="secondary">Abmelden</button></div>
+<div id="controls" class="controls">
+<div id="teamBox"><label>Mannschaft<select id="teamFilter"></select></label></div>
+<div id="playerBox"><label>Spieler<select id="playerFilter"></select></label></div>
+<div><label>Saison<select id="seasonFilter"><option value="">Alle Saisons</option></select></label></div>
+</div><div id="msg" class="msg hidden"></div>
+</div>
+<div class="card"><h2 id="headline">Statistik</h2><div id="kpis" class="kpis"></div></div>
+<div class="grid2">
+<div class="card"><h2>Zu-/Absage</h2><div id="availabilityStats"></div></div>
+<div class="card"><h2>Tatsächliche Teilnahme</h2><div id="participationStats"></div></div>
+</div>
+<div class="card"><h2>Übersicht je Begegnung</h2><div class="tablewrap"><table><thead><tr><th>Datum</th><th>Begegnung</th><th>Zu-/Absage</th><th>Teilnahme</th><th>Saison</th></tr></thead><tbody id="detailRows"></tbody></table></div></div>
+<div class="footer"><a href="index.html">🏠 Zurück zum Hauptmenü</a></div>
+</section>
+</main>
+<script>
+const SUPABASE_URL='https://apsarswjmsrmffoyxsgr.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let user=null,profile=null,memberships=[],playerAccounts=[],linkedPlayers=[],matches=[],games=[],availability=[],adminTeams=[];
+const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const isAdmin=()=>profile?.role==='admin', isManager=t=>isAdmin()||memberships.some(x=>x.team===t&&x.role==='team_manager'), isPlayer=()=>profile?.role==='player';
+const teams=()=>isPlayer()?[...new Set(linkedPlayers.map(p=>p.team).filter(Boolean))]:(isAdmin()?[...new Set(adminTeams)]:[...new Set(memberships.map(x=>x.team).filter(Boolean))]);
+const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('de-DE'):'–';
+function normalize(s){return String(s||'').trim().replace(/\s+/g,' ').toLocaleLowerCase('de-DE')}
+function msg(t,kind=''){const e=$('msg');e.textContent=t;e.className='msg '+kind;e.classList.remove('hidden')}
+function loginMsg(t){const e=$('loginMsg');e.textContent=t;e.className='msg bad';e.classList.remove('hidden')}
+function badge(v){if(v==='accepted')return '<span class="pill">Zugesagt</span>';if(v==='declined')return '<span class="pill">Abgesagt</span>';if(v==='pending')return '<span class="pill">Offen</span>';return '<span class="pill">–</span>'}
+function playedFor(m,p){
+ const home=p.team===m.home_team, fields=home?['player1','player2']:['opponent_player1','opponent_player2'];
+ const gs=games.filter(g=>g.match_id===m.id);
+ if(m.status!=='finished'||!gs.length)return null;
+ const n=normalize(p.name); return gs.some(g=>fields.some(f=>normalize(g[f])===n));
+}
+function avFor(m,p){return availability.find(a=>a.match_id===m.id&&Number(a.player_id)===Number(p.id))||availability.find(a=>a.match_id===m.id&&p.user_id&&a.user_id===p.user_id)}
+async function load(){
+ const {data:{user:u}}=await sb.auth.getUser();user=u;if(!u)return showLoggedOut();
+ const [pr,ms,pa]=await Promise.all([
+  sb.from('profiles').select('id,display_name,role').eq('id',u.id).maybeSingle(),
+  sb.from('team_memberships').select('team,role').eq('user_id',u.id),
+  sb.from('player_accounts').select('player_id,is_primary,active').eq('user_id',u.id).eq('active',true)
+ ]);
+ profile=pr.data;memberships=ms.data||[];playerAccounts=pa.data||[];
+ if(isPlayer()&&playerAccounts.length){const ids=playerAccounts.map(x=>Number(x.player_id)).filter(Number.isFinite);const r=await sb.from('players').select('id,team,name,user_id,active').in('id',ids);linkedPlayers=r.data||[]}
+ if(isAdmin()){const r=await sb.from('players').select('team').eq('active',true);adminTeams=[...new Set((r.data||[]).map(x=>x.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'de',{numeric:true}))}
+ if(!isPlayer() && !isAdmin() && !memberships.some(x=>x.role==='team_manager')){msg('Für die Statistik ist eine Mannschaftszuordnung erforderlich.','bad')}
+ $('who').textContent='Angemeldet: '+(profile?.display_name||user.email)+' · '+(profile?.role||'Benutzer');
+ $('loginCard').classList.add('hidden');$('app').classList.remove('hidden');setupFilters();await loadData();
+}
+async function loadData(){
+ let q=sb.from('matches').select('id,home_team,away_team,match_date,status,season').order('match_date',{ascending:true});
+ const {data:m,error:me}=await q;if(me){msg('Begegnungen konnten nicht geladen werden: '+me.message,'bad');return}
+ const allowed=teams(); matches=(m||[]).filter(x=>isAdmin()||allowed.includes(x.home_team)||allowed.includes(x.away_team));
+ const ids=matches.map(x=>x.id);
+ if(!ids.length){games=[];availability=[];render();return}
+ const [gr,ar]=await Promise.all([
+  sb.from('match_games').select('match_id,player1,player2,opponent_player1,opponent_player2').in('match_id',ids),
+  sb.from('match_availability').select('match_id,player_id,user_id,team,status,is_substitute').in('match_id',ids)
+ ]);
+ if(gr.error){msg('Aufstellungen konnten nicht geladen werden: '+gr.error.message,'bad');return}
+ if(ar.error){msg('Zu-/Absagen konnten nicht geladen werden: '+ar.error.message,'bad');return}
+ games=gr.data||[];availability=ar.data||[];populateSeasons();populatePlayers();render();
+}
+function setupFilters(){
+ const ts=teams().sort((a,b)=>a.localeCompare(b,'de',{numeric:true}));
+ $('teamFilter').innerHTML=ts.length?ts.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join(''):'<option value="">Keine Mannschaft</option>';
+ $('teamFilter').disabled=isPlayer()||ts.length<=1;
+ $('teamFilter').onchange=()=>{populatePlayers();render()};$('playerFilter').onchange=render;$('seasonFilter').onchange=render;
+}
+function populateSeasons(){const s=[...new Set(matches.map(m=>m.season).filter(Boolean))].sort((a,b)=>String(b).localeCompare(String(a),'de',{numeric:true}));const old=$('seasonFilter').value;$('seasonFilter').innerHTML='<option value="">Alle Saisons</option>'+s.map(x=>`<option>${esc(x)}</option>`).join('');if(s.includes(old))$('seasonFilter').value=old}
+function selectedTeam(){return $('teamFilter').value}
+function eligiblePlayers(){
+ const t=selectedTeam();
+ if(isPlayer())return linkedPlayers.filter(p=>!t||p.team===t);
+ // Manager/Admin: Spieler der gewählten Mannschaft; Admin kann über Teamfilter eine Mannschaft wählen.
+ return linkedPlayers.filter(p=>!t||p.team===t);
+}
+async function populatePlayers(){
+ if(!isPlayer() && (isAdmin()||memberships.some(x=>x.role==='team_manager'))){
+  const t=selectedTeam();let q=sb.from('players').select('id,team,name,user_id,active').eq('active',true);if(t)q=q.eq('team',t);const r=await q;linkedPlayers=r.data||[];
+ }
+ const ps=eligiblePlayers().sort((a,b)=>String(a.name).localeCompare(String(b.name),'de'));
+ const old=$('playerFilter').value;
+ $('playerFilter').innerHTML=ps.length?ps.map(p=>`<option value="${p.id}">${esc(p.name)}${isAdmin()||!isPlayer()?` · ${esc(p.team)}`:''}</option>`).join(''):'<option value="">Keine Spieler</option>';
+ if(ps.some(p=>String(p.id)===old))$('playerFilter').value=old;
+ $('playerBox').style.display=ps.length?'block':'none';
+}
+function render(){
+ const ps=eligiblePlayers();let p=ps.find(x=>String(x.id)===$('playerFilter').value)||ps[0];if(!p){$('headline').textContent='Keine Spielerdaten';$('kpis').innerHTML='';$('availabilityStats').innerHTML='';$('participationStats').innerHTML='';$('detailRows').innerHTML='';return}
+ const t=selectedTeam();const season=$('seasonFilter').value;
+ const relevant=matches.filter(m=>(!t||m.home_team===t||m.away_team===t)&&(!season||m.season===season)&&m.status!=='live');
+ const own=relevant.filter(m=>m.home_team===p.team||m.away_team===p.team);
+ const av=own.map(m=>({m,a:avFor(m,p)}));
+ const responded=av.filter(x=>x.a?.status==='accepted'||x.a?.status==='declined');
+ const accepted=responded.filter(x=>x.a.status==='accepted').length,declined=responded.filter(x=>x.a.status==='declined').length,open=av.filter(x=>!x.a||x.a.status==='pending').length;
+ const finished=own.filter(m=>m.status==='finished');const played=finished.filter(m=>playedFor(m,p)===true).length;const notPlayed=finished.filter(m=>playedFor(m,p)===false).length;const unknown=finished.length-played-notPlayed;
+ const participationPct=finished.length?Math.round(played/finished.length*100):0;const responsePct=(accepted+declined)?Math.round(accepted/(accepted+declined)*100):0;
+ const confirmedAccepted=av.filter(x=>x.a?.status==='accepted'&&x.m.status==='finished');const acceptedPlayed=confirmedAccepted.filter(x=>playedFor(x.m,p)===true).length;const acceptedNotPlayed=confirmedAccepted.filter(x=>playedFor(x.m,p)===false).length;const declinedPlayed=av.filter(x=>x.a?.status==='declined'&&x.m.status==='finished').filter(x=>playedFor(x.m,p)===true).length;
+ $('headline').textContent=`${p.name} · ${p.team}`;
+ $('kpis').innerHTML=[['Begegnungen',own.length],['Zugesagt',accepted],['Abgesagt',declined],['Teilgenommen',played],['Teilnahmequote',participationPct+' %']].map(x=>`<div class="kpi"><div class="label">${esc(x[0])}</div><div class="value">${esc(x[1])}</div></div>`).join('');
+ $('availabilityStats').innerHTML=`<div class="statline"><span>Zugesagt</span><strong>${accepted}</strong></div><div class="statline"><span>Abgesagt</span><strong>${declined}</strong></div><div class="statline"><span>Offen</span><strong>${open}</strong></div><div class="statline"><span>Antwortquote</span><strong>${responsePct} %</strong></div><div class="bar"><i style="width:${responsePct}%"></i></div>`;
+ $('participationStats').innerHTML=`<div class="statline"><span>Abgeschlossene Begegnungen</span><strong>${finished.length}</strong></div><div class="statline"><span>Tatsächlich gespielt</span><strong>${played}</strong></div><div class="statline"><span>Nicht eingesetzt</span><strong>${notPlayed}</strong></div><div class="statline"><span>Noch nicht eindeutig</span><strong>${unknown}</strong></div><div class="statline"><span>Teilnahmequote</span><strong>${participationPct} %</strong></div><div class="bar"><i style="width:${participationPct}%"></i></div><div class="small" style="margin-top:10px">Zugesagt und gespielt: ${acceptedPlayed} · zugesagt und nicht eingesetzt: ${acceptedNotPlayed} · trotz Absage gespielt: ${declinedPlayed}</div>`;
+ const rows=own.slice().sort((a,b)=>String(a.match_date).localeCompare(String(b.match_date))).map(m=>{const a=avFor(m,p);const pl=playedFor(m,p);let ps=pl===true?'Teilgenommen':pl===false?'Nicht eingesetzt':'–';return `<tr><td>${fmtDate(m.match_date)}</td><td>${esc(m.home_team)} – ${esc(m.away_team)}</td><td>${badge(a?.status)}</td><td>${ps}</td><td>${esc(m.season||'–')}</td></tr>`}).join('');$('detailRows').innerHTML=rows||'<tr><td colspan="5">Keine Begegnungen vorhanden.</td></tr>';
+}
+function showLoggedOut(){$('loginCard').classList.remove('hidden');$('app').classList.add('hidden')}
+$('loginBtn').onclick=async()=>{const {error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)loginMsg('Anmeldung fehlgeschlagen: '+error.message);else await load()};
+$('logoutBtn').onclick=async()=>{await sb.auth.signOut();user=null;showLoggedOut()};
+sb.auth.getSession().then(({data})=>{if(data.session)load()});
+</script>
+<a class="home-menu-button" href="index.html">🏠 Zurück zum Hauptmenü</a>
+</body></html>

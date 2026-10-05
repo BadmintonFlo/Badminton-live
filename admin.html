@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Badminton – Admin-Verwaltung</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f3f6fa;--card:#fff;--text:#172033;--muted:#64748b;--line:#d8e1eb;--accent:#1769aa;--ok:#15803d;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:#12395b;color:#fff;padding:16px 18px}header h1{margin:0;font-size:1.3rem}header p{margin:3px 0 0;opacity:.85;font-size:.88rem}
+main{max-width:1050px;margin:12px auto;padding:0 8px}.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px;margin-bottom:10px;box-shadow:0 2px 10px #00000008}
+h2{font-size:1rem;margin:0 0 10px}.grid{display:grid;gap:9px}.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:1fr 1fr 1fr}
+label{display:block;font-size:.76rem;font-weight:700;color:#475569;margin-bottom:4px}
+input,select,button{font:inherit}input,select{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:10px;background:#fff}
+button{border:0;border-radius:9px;padding:10px 13px;font-weight:750;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#e8eef5;color:#17324d}.danger{background:#fee2e2;color:#991b1b}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}.status{padding:9px;border-radius:9px;background:#f1f5f9;font-size:.8rem;margin-top:9px}.status.ok{background:#ecfdf5;color:#166534}.status.bad{background:#fef2f2;color:#991b1b}
+.small{font-size:.76rem;color:var(--muted);line-height:1.4}.user-row{border:1px solid var(--line);border-radius:11px;padding:12px;margin-top:9px;background:#fbfdff}
+.user-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.name{font-weight:800}.muted{color:var(--muted);font-size:.72rem}
+.members{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.chip{background:#e8eef5;border-radius:999px;padding:5px 9px;font-size:.72rem}.chip.primary{background:#dbeafe;color:#1e40af}
+.assignment{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin-top:10px}
+.account-row{border:1px solid var(--line);border-radius:11px;padding:11px;margin-top:8px;background:#fff}.account-grid{display:grid;grid-template-columns:1.3fr 1fr auto;gap:8px;align-items:end}
+.home-menu-button{display:block;width:100%;box-sizing:border-box;margin:28px 0 8px;padding:15px 18px;border-radius:14px;background:#e8eef5;color:#1f3348;text-decoration:none;text-align:center;font-weight:700;font-size:16px;border:1px solid #d4dee9}
+.note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px;font-size:.78rem;line-height:1.45;color:#1e3a5f;margin-top:9px}
+@media(max-width:760px){.two,.three,.account-grid{grid-template-columns:1fr}.assignment{grid-template-columns:1fr}.toolbar button{width:100%}input,select{font-size:16px}.card{padding:12px}}
+</style>
+</head>
+<body>
+<header><h1>👑 Admin-Verwaltung</h1><p>Benutzer, Rollen, Mannschaften und Spieler-Konten</p></header>
+<main>
+<section class="card" id="recoveryCard" style="display:none">
+<h2>🔑 Neues Passwort setzen</h2>
+<p class="small">Du bist über den Passwort-Reset hierher gekommen. Bitte vergib ein neues Passwort.</p>
+<div class="two grid"><div><label>Neues Passwort</label><input id="recoveryPassword" type="password" autocomplete="new-password"></div><div><label>Passwort wiederholen</label><input id="recoveryPassword2" type="password" autocomplete="new-password"></div></div>
+<div class="toolbar" style="margin-top:9px"><button class="primary" onclick="updateOwnPassword()">Passwort speichern</button></div>
+<div id="recoveryStatus" class="status">–</div>
+</section>
+
+<section class="card" id="loginCard">
+<h2>Anmeldung</h2>
+<div class="two grid"><div><label>E-Mail</label><input id="email" type="email" autocomplete="username"></div><div><label>Passwort</label><input id="password" type="password" autocomplete="current-password"></div></div>
+<div class="toolbar" style="margin-top:9px"><button class="primary" onclick="login()">Anmelden</button><button class="secondary" onclick="logout()">Abmelden</button><button class="secondary" onclick="forgotPassword()">🔑 Passwort per E-Mail zurücksetzen</button></div>
+<div id="authStatus" class="status">Nicht angemeldet.</div>
+</section>
+
+<section class="card" id="createCard" style="display:none">
+<h2>➕ Benutzerkonto anlegen</h2>
+<p class="small">Hier kann ein vorläufiges Konto mit Startpasswort angelegt und direkt einem Spieler zugeordnet werden. Das Startpasswort wird dem Benutzer mitgeteilt und sollte anschließend geändert werden.</p>
+<div class="two grid">
+  <div><label>E-Mail / Login</label><input id="newEmail" type="email" autocomplete="off" placeholder="spieler@verein.de"></div>
+  <div><label>Startpasswort (mind. 8 Zeichen)</label><input id="newPassword" type="password" autocomplete="new-password" placeholder="Startpasswort"></div>
+  <div><label>Anzeigename (optional)</label><input id="newDisplayName" type="text" placeholder="Max Mustermann"></div>
+  <div><label>Rolle</label><select id="newRole"><option value="player">player</option><option value="team_manager">team_manager</option><option value="moderator">moderator</option><option value="admin">admin</option></select></div>
+  <div><label>Spieler (optional)</label><select id="newPlayer"><option value="">– später zuordnen –</option></select></div>
+  <div><label>Mannschaft (optional)</label><select id="newTeam"><option value="">– automatisch / später –</option></select></div>
+</div>
+<div class="toolbar" style="margin-top:9px"><button class="primary" onclick="createUser()">Benutzerkonto anlegen</button></div>
+<div id="createStatus" class="status">–</div>
+</section>
+
+<section class="card" id="appCard" style="display:none">
+<h2>Benutzerverwaltung</h2>
+<p class="small">Ein Benutzerkonto kann hier weiterhin Rollen und Mannschaften erhalten. Ein Spieler kann über „Spielerkonten“ mehrere Benutzerkonten besitzen.</p>
+<div class="toolbar"><button class="secondary" onclick="loadAll()">🔄 Aktualisieren</button></div>
+<div id="usersStatus" class="status">–</div>
+<div id="users"></div>
+</section>
+
+<section class="card" id="accountsCard" style="display:none">
+<h2>👤 Spielerkonten</h2>
+<p class="small">Variante B: Ein Spieler kann mehrere Benutzerkonten/E-Mail-Adressen haben. Ein Konto kann später ergänzt, als Hauptkonto markiert oder entfernt werden. Das eigentliche Passwort bleibt beim jeweiligen Supabase-Benutzerkonto.</p>
+<div class="note">💡 Bei der eigenen E-Mail kann der Benutzer jederzeit über „Passwort per E-Mail zurücksetzen“ einen sicheren Link anfordern. Der Admin kann denselben Reset-Link ebenfalls auslösen.</div>
+<div id="accounts"></div>
+</section>
+
+<section class="card" id="teamsCard" style="display:none">
+<h2>Mannschaften</h2>
+<p class="small">Die Mannschaftsnamen werden aus den vorhandenen Team-Zuordnungen und Spieler-Stammdaten zusammengestellt.</p>
+<div id="teams"></div>
+</section>
+
+<a class="home-menu-button" href="index.html">🏠 Zurück zum Hauptmenü</a>
+</main>
+
+<script>
+"use strict";
+const SUPABASE_URL="https://apsarswjmsrmffoyxsgr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let user=null,profile=null,profiles=[],memberships=[],players=[],accounts=[];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+const msg=e=>e?.message||e?.details||"Unbekannter Fehler";
+function setStatus(id,text,type=""){const e=$(id);e.className="status"+(type?" "+type:"");e.textContent=text}
+
+async function login(){
+  const email=$("email").value.trim(),password=$("password").value;
+  if(!email||!password){setStatus("authStatus","Bitte E-Mail und Passwort eingeben.","bad");return}
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  if(error)setStatus("authStatus","Anmeldung fehlgeschlagen: "+msg(error),"bad");
+}
+async function updateOwnPassword(){
+  const p=$("recoveryPassword").value,p2=$("recoveryPassword2").value;
+  if(!p||p.length<8){setStatus("recoveryStatus","Das Passwort muss mindestens 8 Zeichen haben.","bad");return}
+  if(p!==p2){setStatus("recoveryStatus","Die Passwörter stimmen nicht überein.","bad");return}
+  const {error}=await sb.auth.updateUser({password:p});
+  if(error){setStatus("recoveryStatus","Passwort konnte nicht gespeichert werden: "+msg(error),"bad");return}
+  setStatus("recoveryStatus","Passwort erfolgreich geändert.","ok");
+  $("recoveryPassword").value="";$("recoveryPassword2").value="";
+}
+async function forgotPassword(){
+  const email=$("email").value.trim();
+  if(!email){setStatus("authStatus","Bitte zuerst die E-Mail-Adresse eingeben.","bad");return}
+  const redirectTo=location.origin+location.pathname;
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
+  if(error){setStatus("authStatus","Reset-Mail konnte nicht angefordert werden: "+msg(error),"bad");return}
+  setStatus("authStatus","Wenn für diese E-Mail ein Konto existiert, wurde eine E-Mail zum Zurücksetzen des Passworts angefordert.","ok");
+}
+async function logout(){await sb.auth.signOut();location.reload()}
+
+async function init(){
+  const r=await sb.auth.getSession(); user=r.data.session?.user||null;
+  if(location.hash.includes("type=recovery")||location.search.includes("type=recovery")) $("recoveryCard").style.display="block";
+  if(user) await afterLogin();
+  sb.auth.onAuthStateChange(async(event,s)=>{
+    user=s?.user||null;
+    if(event==="PASSWORD_RECOVERY") $("recoveryCard").style.display="block";
+    if(user) await afterLogin();
+  });
+}
+async function afterLogin(){
+  const {data:p,error}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();
+  if(error){setStatus("authStatus","Profil konnte nicht geladen werden: "+msg(error),"bad");return}
+  profile=p;
+  if(!profile||profile.role!=="admin"){
+    setStatus("authStatus","Zugriff verweigert. Diese Seite ist nur für Admins.","bad");
+    return;
+  }
+  setStatus("authStatus","Als Admin angemeldet.","ok");
+  $("appCard").style.display="block";$("accountsCard").style.display="block";$("teamsCard").style.display="block";$("createCard").style.display="block";
+  await loadAll();
+}
+
+async function loadAll(){
+  setStatus("usersStatus","Lade Benutzer …");
+  const [pr,mr,pl,ar]=await Promise.all([
+    sb.from("profiles").select("*").order("display_name",{ascending:true}),
+    sb.from("team_memberships").select("*").order("team",{ascending:true}),
+    sb.from("players").select("id,team,name,ranking_position,gender,active,user_id").eq("active",true).order("team",{ascending:true}).order("gender",{ascending:true}).order("ranking_position",{ascending:true}),
+    sb.from("player_accounts").select("id,player_id,user_id,is_primary,active,created_at").order("player_id",{ascending:true})
+  ]);
+  if(pr.error){setStatus("usersStatus","Benutzer konnten nicht geladen werden: "+msg(pr.error),"bad");return}
+  if(mr.error){setStatus("usersStatus","Team-Zuordnungen konnten nicht geladen werden: "+msg(mr.error),"bad");return}
+  if(pl.error){setStatus("usersStatus","Spieler konnten nicht geladen werden: "+msg(pl.error),"bad");return}
+  if(ar.error){setStatus("usersStatus","Spielerkonten konnten nicht geladen werden. Wurde player_accounts.sql ausgeführt? "+msg(ar.error),"bad");accounts=[]}else accounts=ar.data||[];
+  profiles=pr.data||[];memberships=mr.data||[];players=pl.data||[];
+  renderUsers();renderAccounts();renderTeams();fillCreateLists();
+  setStatus("usersStatus",profiles.length+" Benutzer geladen.","ok");
+}
+function displayName(p){return p?.display_name||p?.full_name||p?.name||p?.email||p?.id||"Unbekannt"}
+function emailOf(p){return p?.email||p?.username||p?.id||""}
+function memberRows(uid){return memberships.filter(m=>m.user_id===uid)}
+function accountRows(pid){return accounts.filter(a=>String(a.player_id)===String(pid))}
+function allTeams(){
+  const s=new Set();memberships.forEach(m=>{if(m.team)s.add(m.team)});players.forEach(p=>{if(p.team)s.add(p.team)});profiles.forEach(p=>{if(p.team)s.add(p.team)});
+  return [...s].sort((a,b)=>a.localeCompare(b,"de",{numeric:true}));
+}
+function roleOptions(current){return ["player","team_manager","moderator","admin"].map(r=>`<option value="${r}" ${r===current?"selected":""}>${r}</option>`).join("")}
+function playerOptions(selected="",onlyUnlinked=false){
+  return players.filter(p=>!onlyUnlinked||accountRows(p.id).length===0).map(p=>`<option value="${p.id}" ${String(p.id)===String(selected)?"selected":""}>${esc(p.team)} · ${esc(p.name)}${p.ranking_position?" · Rang "+esc(p.ranking_position):""}</option>`).join("")
+}
+function fillCreateLists(){
+  $("newPlayer").innerHTML='<option value="">– später zuordnen –</option>'+playerOptions();
+  $("newTeam").innerHTML='<option value="">– automatisch / später –</option>'+allTeams().map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("");
+}
+function renderUsers(){
+  $("users").innerHTML=profiles.map(p=>{
+    const ms=memberRows(p.id), linked=accounts.filter(a=>a.user_id===p.id);
+    const label=esc(displayName(p)),identifier=esc(emailOf(p));
+    return `<div class="user-row">
+      <div class="user-head"><div><div class="name">${label}</div><div class="muted">${identifier}</div></div>
+      <select id="role_${p.id}" onchange="saveRole('${p.id}',this.value)" style="max-width:170px">${roleOptions(p.role||"player")}</select></div>
+      ${linked.length?`<div class="members">${linked.map(a=>{const pl=players.find(x=>x.id===a.player_id);return `<span class="chip ${a.is_primary?'primary':''}">${esc(pl?.name||('Spieler #'+a.player_id))}${a.is_primary?' · Hauptkonto':''}</span>`}).join("")}</div>`:""}
+      <div class="members">${ms.map(m=>`<span class="chip">${esc(m.team)} · ${esc(m.role)}</span>`).join("")||'<span class="muted">Keine Mannschaft zugeordnet</span>'}</div>
+      <div class="assignment">
+        <div><label>Mannschaft hinzufügen</label><select id="team_${p.id}"><option value="">– auswählen –</option>${allTeams().map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("")}</select></div>
+        <button class="primary" onclick="addMembership('${p.id}')">+ Zuordnen</button>
+      </div>
+      ${ms.length?`<div class="toolbar" style="margin-top:8px">${ms.map(m=>`<button class="secondary" onclick="removeMembership('${m.id}')">✕ ${esc(m.team)} (${esc(m.role)})</button>`).join("")}</div>`:""}
+      <div class="toolbar" style="margin-top:8px"><button class="secondary" onclick="resetForEmail('${esc(emailOf(p))}')">🔑 Passwort-Reset per E-Mail</button></div>
+    </div>`;
+  }).join("")||'<div class="small">Keine Benutzerprofile gefunden.</div>';
+}
+async function saveRole(uid,role){
+  const {error}=await sb.from("profiles").update({role}).eq("id",uid);
+  if(error){alert("Rolle konnte nicht gespeichert werden: "+msg(error));await loadAll();return}
+  const p=profiles.find(x=>x.id===uid);if(p)p.role=role;setStatus("usersStatus","Rolle gespeichert.","ok");
+}
+async function addMembership(uid){
+  const team=$("team_"+uid)?.value;if(!team){alert("Bitte eine Mannschaft auswählen.");return}
+  const role=profiles.find(p=>p.id===uid)?.role==="moderator"?"moderator":profiles.find(p=>p.id===uid)?.role==="team_manager"?"team_manager":"player";
+  const {error}=await sb.from("team_memberships").upsert({user_id:uid,team,role},{onConflict:"user_id,team"});
+  if(error){alert("Zuordnung konnte nicht gespeichert werden: "+msg(error));return}await loadAll();
+}
+async function removeMembership(id){if(!confirm("Diese Mannschafts-Zuordnung wirklich entfernen?"))return;const {error}=await sb.from("team_memberships").delete().eq("id",id);if(error){alert("Zuordnung konnte nicht gelöscht werden: "+msg(error));return}await loadAll()}
+
+async function createUser(){
+  const email=$("newEmail").value.trim().toLowerCase(),password=$("newPassword").value,display_name=$("newDisplayName").value.trim(),role=$("newRole").value,player_id=$("newPlayer").value,team=$("newTeam").value;
+  if(!email||!password){setStatus("createStatus","E-Mail und Startpasswort sind erforderlich.","bad");return}
+  if(password.length<8){setStatus("createStatus","Das Startpasswort muss mindestens 8 Zeichen haben.","bad");return}
+  setStatus("createStatus","Lege Benutzerkonto an …");
+  const session=(await sb.auth.getSession()).data.session;
+  if(!session){setStatus("createStatus","Admin-Sitzung ist abgelaufen.","bad");return}
+  const res=await fetch(SUPABASE_URL+"/functions/v1/Admin-user",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({action:"create",email,password,display_name,role,player_id:player_id||null,team:team||"",primary:true})});
+  let data={};try{data=await res.json()}catch{}
+  if(!res.ok||data.error){setStatus("createStatus","Benutzer konnte nicht angelegt werden: "+(data.error||res.statusText),"bad");return}
+  setStatus("createStatus","Benutzerkonto wurde angelegt.","ok");
+  $("newEmail").value="";$("newPassword").value="";$("newDisplayName").value="";$("newPlayer").value="";$("newTeam").value="";
+  await loadAll();
+}
+async function resetForEmail(email){
+  if(!email)return;
+  if(!confirm("Eine Passwort-Reset-Mail an "+email+" anfordern?"))return;
+  const redirectTo=location.origin+location.pathname;
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
+  if(error){alert("Reset-Mail konnte nicht angefordert werden: "+msg(error));return}
+  alert("Die Passwort-Reset-Mail wurde angefordert.");
+}
+async function linkAccount(playerId){
+  const uid=$("linkUser_"+playerId)?.value;if(!uid){alert("Bitte ein Benutzerkonto auswählen.");return}
+  const {error}=await sb.from("player_accounts").upsert({player_id:Number(playerId),user_id:uid,is_primary:false,active:true},{onConflict:"user_id"});
+  if(error){alert("Spielerkonto konnte nicht zugeordnet werden: "+msg(error));return}await loadAll();
+}
+async function unlinkAccount(id){
+  if(!confirm("Diese Spielerkonto-Zuordnung wirklich entfernen? Das Benutzerkonto selbst wird NICHT gelöscht."))return;
+  const {error}=await sb.from("player_accounts").delete().eq("id",id);if(error){alert("Zuordnung konnte nicht entfernt werden: "+msg(error));return}await loadAll();
+}
+async function makePrimary(id,playerId){
+  await sb.from("player_accounts").update({is_primary:false}).eq("player_id",playerId);
+  const {error}=await sb.from("player_accounts").update({is_primary:true}).eq("id",id);
+  if(error){alert("Hauptkonto konnte nicht gesetzt werden: "+msg(error));return}await loadAll();
+}
+function renderAccounts(){
+  $("accounts").innerHTML=players.map(pl=>{
+    const ars=accountRows(pl.id);
+    const accountHtml=ars.map(a=>{const p=profiles.find(x=>x.id===a.user_id);return `<div class="account-row"><div class="account-grid"><div><div class="name">${esc(emailOf(p))}</div><div class="muted">${esc(displayName(p))} · ${a.active?'aktiv':'inaktiv'}${a.is_primary?' · Hauptkonto':''}</div></div><div class="small">Benutzer-ID<br>${esc(a.user_id)}</div><div class="toolbar">${!a.is_primary?`<button class="secondary" onclick="makePrimary('${a.id}','${pl.id}')">Als Hauptkonto</button>`:''}<button class="danger" onclick="unlinkAccount('${a.id}')">Zuordnung lösen</button><button class="secondary" onclick="resetForEmail('${esc(emailOf(p))}')">🔑 Reset-Mail</button></div></div></div>`}).join("");
+    return `<div class="user-row"><div class="name">${esc(pl.name)}</div><div class="small">${esc(pl.team)} · ${pl.gender==='H'?'Herren':'Damen'}${pl.ranking_position?' · Rang '+esc(pl.ranking_position):''}</div>${accountHtml||'<div class="muted" style="margin-top:8px">Noch kein Benutzerkonto zugeordnet.</div>'}<div class="assignment"><div><label>Bestehendes Benutzerkonto hinzufügen</label><select id="linkUser_${pl.id}"><option value="">– Benutzer auswählen –</option>${profiles.filter(p=>!accounts.some(a=>a.user_id===p.id)).map(p=>`<option value="${p.id}">${esc(emailOf(p))}</option>`).join("")}</select></div><button class="primary" onclick="linkAccount('${pl.id}')">+ Konto zuordnen</button></div></div>`;
+  }).join("")||'<div class="small">Keine aktiven Spieler gefunden.</div>';
+  // Der Button oben braucht den Spieler-Selektor. Wegen dynamischer IDs direkt korrigieren.
+  players.forEach(pl=>{
+    const btns=$("accounts")?.querySelectorAll("button");
+  });
+}
+function renderTeams(){
+  const teams=allTeams();
+  $("teams").innerHTML=teams.map(team=>{const ms=memberships.filter(m=>m.team===team),ps=players.filter(p=>p.team===team);return `<div class="user-row"><div class="name">${esc(team)}</div><div class="small">${ps.length} aktive Spieler · ${ms.length} Benutzer-Zuordnungen</div><div class="members">${ms.map(m=>{const p=profiles.find(x=>x.id===m.user_id);return `<span class="chip">${esc(displayName(p||{id:m.user_id}))} · ${esc(m.role)}</span>`}).join("")||'<span class="muted">Keine Benutzer zugeordnet</span>'}</div></div>`}).join("")||'<div class="small">Noch keine Mannschaften gefunden.</div>';
+}
+init();
+</script>
+</body>
+</html>

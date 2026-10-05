@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Badminton – Aufstellung</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f3f6fa;--card:#fff;--text:#172033;--muted:#64748b;--line:#d8e1eb;--accent:#1769aa;--ok:#15803d;--bad:#b91c1c;--warn:#a16207}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:#12395b;color:#fff;padding:16px 18px}header h1{margin:0;font-size:1.3rem}header p{margin:3px 0 0;opacity:.85;font-size:.88rem}
+main{max-width:1050px;margin:12px auto;padding:0 8px}.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px;margin-bottom:10px;box-shadow:0 2px 10px #00000008}
+h2{font-size:1rem;margin:0 0 10px}.grid{display:grid;gap:9px}.two{grid-template-columns:1fr 1fr}label{display:block;font-size:.76rem;font-weight:700;color:#475569;margin-bottom:4px}
+input,select,button{font:inherit}input,select{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:10px;background:#fff}button{border:0;border-radius:9px;padding:10px 13px;font-weight:750;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#e8eef5;color:#17324d}.danger{background:#fee2e2;color:#991b1b}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}.status{padding:9px;border-radius:9px;background:#f1f5f9;font-size:.8rem;margin-top:9px}.status.ok{background:#ecfdf5;color:#166534}.status.bad{background:#fef2f2;color:#991b1b}.small{font-size:.76rem;color:var(--muted);line-height:1.4}
+.matchinfo{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;text-align:center}.team{font-weight:800;font-size:1rem}.vs{font-weight:800;color:var(--muted)}
+.slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.slot{border:1px solid var(--line);border-radius:11px;padding:10px;background:#fbfdff}.slot h3{font-size:.9rem;margin:0 0 3px}.slot .sub{font-size:.7rem;color:var(--muted);margin-bottom:7px}.slot select{margin-top:5px}.slot input{margin-top:5px}.opponent-label{font-size:.7rem;color:#64748b;margin-top:7px;font-weight:700}
+.validation{border:1px solid var(--line);border-radius:9px;background:#f8fafc;padding:10px;margin-top:10px;font-size:.82rem}.validation div{margin:4px 0}.oktxt{color:var(--ok)}.badtxt{color:var(--bad)}.warntxt{color:var(--warn)}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:1000;padding:10px;align-items:flex-start;justify-content:center;overflow:hidden}.modal-box{background:#fff;border-radius:14px;max-width:720px;width:100%;height:min(94dvh,900px);max-height:calc(100dvh - 20px);overflow:hidden;padding:16px;box-shadow:0 10px 40px #0005;display:flex;flex-direction:column}.modal-box h2{margin-bottom:4px;flex:0 0 auto}.modal-box>p{flex:0 0 auto}.modal-box #opponentFields{overflow:auto;min-height:0;flex:1;padding:2px 2px 10px;-webkit-overflow-scrolling:touch}.modal-box .modal-actions{flex:0 0 auto;background:#fff;padding-top:10px;border-top:1px solid var(--line)}.opp-row{border:1px solid var(--line);border-radius:10px;padding:11px;margin-top:9px;background:#fff}.opp-row h3{font-size:.9rem;margin:0 0 9px}.opp-match{display:block}.opp-side{padding:0}.opp-side-title{font-size:.72rem;font-weight:800;color:#475569;margin-bottom:6px}.opp-side.own .opp-side-title{color:#1d4ed8}.opp-players,.opp-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.opp-player{font-weight:700;font-size:.82rem;padding:10px 8px;background:#eef6ff;border:1px solid #cfe0f5;border-radius:8px;text-align:center;min-width:0}.opp-side input{margin-top:0;width:100%;box-sizing:border-box}.opp-side.opponent-side{margin-top:10px}.opp-side.opponent-side .opp-side-title{margin-bottom:6px}.opp-none-label{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:.78rem;font-weight:700;color:#475569;line-height:1.2}.opp-none-label input{margin:0;flex:0 0 auto;width:18px;height:18px}.opp-divider{display:none}.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}.playerlist{width:100%;border-collapse:collapse;font-size:.78rem}.playerlist th,.playerlist td{padding:7px;border-bottom:1px solid var(--line);text-align:left}.playerlist th{background:#f8fafc}.right{text-align:right}
+@media(max-width:650px){main{padding:0 6px}.two{grid-template-columns:1fr}.slots{grid-template-columns:1fr}.matchinfo{grid-template-columns:1fr}.vs{display:none}.toolbar button{width:100%}input,select{font-size:16px}.card{padding:12px}}
+</style>
+
+<style>
+.home-menu-button{display:block;width:100%;box-sizing:border-box;margin:28px 0 8px;padding:15px 18px;border-radius:14px;background:#e8eef5;color:#1f3348;text-decoration:none;text-align:center;font-weight:700;font-size:16px;border:1px solid #d4dee9;}
+.home-menu-button:active{transform:scale(.99);}
+</style>
+</head>
+<body>
+<header><h1>Badminton – Mannschaftsaufstellung</h1><p>NRW O19 · Begegnung anlegen und Aufstellung erstellen</p></header>
+<main>
+<section class="card" id="loginCard">
+<h2>Anmeldung</h2>
+<div class="two grid"><div><label>E-Mail</label><input id="email" type="email" autocomplete="username"></div><div><label>Passwort</label><input id="password" type="password" autocomplete="current-password"></div></div>
+<div class="toolbar" style="margin-top:9px"><button class="primary" onclick="login()">Anmelden</button><button class="secondary" onclick="logout()">Abmelden</button></div>
+<div id="authStatus" class="status">Nicht angemeldet.</div>
+</section>
+
+<section class="card" id="appCard" style="display:none">
+<div class="two grid">
+<div><label>Angemeldeter Benutzer</label><div id="userInfo" class="status">–</div></div>
+<div><label>Eigene Mannschaft</label><div id="teamInfo" class="status">–</div><select id="teamSelect" style="display:none;margin-top:7px" onchange="teamChanged()"><option value="">– Mannschaft auswählen –</option></select></div>
+</div>
+<hr style="border:0;border-top:1px solid var(--line);margin:13px 0">
+<h2>Begegnung aus dem Spielplan</h2>
+<p class="small">Die Begegnungen werden zentral im Spielplan angelegt. Wähle hier eine deiner geplanten Begegnungen aus. Änderungen an Datum, Uhrzeit, Gegner oder Ort erfolgen ausschließlich im Spielplan.</p>
+<div class="two grid">
+  <div><label for="scheduledMatchSelect">Begegnung</label><select id="scheduledMatchSelect" onchange="selectScheduledMatch()"><option value="">– Begegnung auswählen –</option></select></div>
+  <div><label>&nbsp;</label><button class="secondary" type="button" onclick="loadScheduledMatches()">🔄 Spielplan aktualisieren</button></div>
+</div>
+<div id="matchStatus" class="status">Noch keine Begegnung ausgewählt.</div>
+<div id="matchInfo" style="display:none;margin-top:10px" class="matchinfo"><div><div class="team" id="homeTeam">–</div><div class="small">Heim</div></div><div class="vs">–</div><div><div class="team" id="awayTeam">–</div><div class="small">Gast</div></div></div>
+</section>
+
+<section class="card" id="lineupCard" style="display:none">
+<h2>Eigene Aufstellung</h2>
+<p class="small">Zuerst wird ausschließlich deine eigene Aufstellung festgelegt. Erst nach dem Speichern der vollständigen eigenen Aufstellung kannst du die Gegner in einem separaten Fenster eintragen. Bei einer eigenen kampflosen Abgabe bitte „Kein Spieler“ wählen; bei einem Doppel werden dadurch automatisch beide Positionen auf „Kein Spieler“ gesetzt. Im Gegner-Fenster kann zusätzlich „Gegner stellt keine Spieler“ angekreuzt werden. Wenn beide Mannschaften ein Spiel nicht besetzen können, entfällt es aus der Wertung.</p>
+<div class="slots" id="slots"></div>
+<div id="validation" class="validation">Noch keine Prüfung durchgeführt.</div>
+<div class="toolbar" style="margin-top:10px"><button class="secondary" onclick="validateLineup()">Aufstellung prüfen</button><button class="danger" onclick="clearLineup()">Leeren</button><button class="primary" onclick="saveLineup()">💾 Eigene Aufstellung speichern</button><button id="opponentButton" class="secondary" onclick="openOpponentModal()" disabled>👥 Gegner eintragen</button></div>
+<div id="saveStatus" class="status">Noch nicht gespeichert.</div>
+</section>
+
+<div id="opponentModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="opponentModalTitle">
+  <div class="modal-box">
+    <h2 id="opponentModalTitle">Gegner eintragen</h2>
+    <div class="small">Die eigene Aufstellung ist bereits gespeichert. Bitte jetzt die gegnerischen Spieler für die 8 Spiele eintragen.</div>
+    <div id="opponentFields"></div>
+    <div class="modal-actions">
+      <button type="button" class="secondary" onclick="closeOpponentModal()">Abbrechen</button>
+      <button type="button" class="primary" onclick="saveOpponentModal()">💾 Gegner speichern</button>
+    </div>
+    <div id="opponentStatus" class="status" style="display:none"></div>
+  </div>
+</div>
+
+<section class="card" id="playersCard" style="display:none">
+<h2>Spieler der Mannschaft</h2>
+<div class="tablewrap"><table class="playerlist"><thead><tr><th>Spieler</th><th>Geschlecht</th><th class="right">Rang</th></tr></thead><tbody id="playerTable"></tbody></table></div>
+</section>
+</main>
+<script>
+"use strict";
+const SUPABASE_URL="https://apsarswjmsrmffoyxsgr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj";
+const SPREADSHEET_ID="15Kx7RMZ4vMvA3mJV8U25zE5CkQF2tcNxKPf24lSXGKQ";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const ORDER=["HD1","HD2","DD","HE1","HE2","HE3","DE","GD"];
+const NO_PLAYER="Kein Spieler";
+const LABELS={HD1:"1. Herrendoppel",HD2:"2. Herrendoppel",DD:"Damendoppel",HE1:"1. Herreneinzel",HE2:"2. Herreneinzel",HE3:"3. Herreneinzel",DE:"Dameneinzel",GD:"Gemischtes Doppel"};
+let user=null,profile=null,players=[],matches=[],selectedMatch=null,locked=false,selectedTeam="",ownLineupSaved=false;
+let lineup={HD1:["",""],HD2:["",""],DD:["",""],HE1:"",HE2:"",HE3:"",DE:"",GD:["",""]};
+let opponents={HD1:["",""],HD2:["",""],DD:["",""],HE1:"",HE2:"",HE3:"",DE:"",GD:["",""]};
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function norm(s){return String(s??"").toLowerCase().trim().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[^a-z0-9]/g,"")}
+function num(v){let n=parseFloat(String(v??"").replace(",","."));return Number.isFinite(n)?n:null}
+function gender(v){let x=norm(v);if(["h","m","herr","mann"].includes(x))return"m";if(["d","w","dame","frau"].includes(x))return"w";return""}
+function msg(e){return e?.message||e?.details||"Unbekannter Fehler"}
+function setStatus(id,text,type=""){let e=$(id);e.className="status"+(type?" "+type:"");e.textContent=text}
+async function login(){let email=$("email").value.trim(),password=$("password").value;if(!email||!password){setStatus("authStatus","Bitte E-Mail und Passwort eingeben.","bad");return}let{error}=await sb.auth.signInWithPassword({email,password});if(error)setStatus("authStatus","Anmeldung fehlgeschlagen: "+msg(error),"bad")}
+async function logout(){await sb.auth.signOut();location.reload()}
+async function init(){let r=await sb.auth.getSession();user=r.data.session?.user||null;if(user)await afterLogin();sb.auth.onAuthStateChange(async(_e,s)=>{user=s?.user||null;if(user)await afterLogin()})}
+async function afterLogin(){
+  setStatus("authStatus","Angemeldet.","ok");$("appCard").style.display="block";$("loginCard").querySelectorAll("input,button").forEach(x=>x.disabled=false);
+  let p=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();
+  if(p.error){setStatus("authStatus","Profil konnte nicht geladen werden: "+msg(p.error),"bad");return}
+  profile=p.data;
+  $("userInfo").textContent=profile?.display_name||user.email;
+  if(!profile||!["team_manager","admin"].includes(profile.role)){setStatus("authStatus","Keine Berechtigung für die Mannschaftsaufstellung. Rolle: "+(profile?.role||"unbekannt"),"bad");return}
+  selectedTeam=profile?.team||profile?.team_name||profile?.mannschaft||profile?.club_team||"";
+  if(selectedTeam){$("teamInfo").textContent=selectedTeam;}
+  else {$("teamInfo").textContent=profile.role==="admin"?"Admin – Mannschaft kann ausgewählt werden":"Keine Mannschaft im Profil hinterlegt";}
+  await loadPlayers();
+  if(!selectedTeam && profile.role==="admin") populateTeamSelect();
+  await loadScheduledMatches();
+}
+function loadPlayers(){return new Promise(resolve=>{
+ const old=document.getElementById("gviz-loader");if(old)old.remove();const cb="gviz_"+Date.now();window[cb]=response=>{try{if(!response||response.status!=="ok")throw new Error("Google Sheets konnte nicht gelesen werden.");let rows=(response.table?.rows||[]).slice(1);players=rows.map(r=>(r.c||[]).map(c=>c?c.v:"" )).map(r=>({team:String(r[0]??"").trim(),name:String(r[1]??"").trim(),rank:num(r[2]),gender:gender(r[3])})).filter(p=>p.name);renderPlayers();resolve()}catch(e){setStatus("authStatus","Spielerliste konnte nicht geladen werden: "+msg(e),"bad");resolve()}finally{delete window[cb];document.getElementById("gviz-loader")?.remove()}};
+ const s=document.createElement("script");s.id="gviz-loader";s.onerror=()=>{setStatus("authStatus","Spielerliste konnte nicht geladen werden.","bad");delete window[cb];s.remove();resolve()};s.src="https://docs.google.com/spreadsheets/d/"+SPREADSHEET_ID+"/gviz/tq?tqx=out:json;responseHandler:"+cb+"&headers=0&tq="+encodeURIComponent("select A,B,C,D");document.head.appendChild(s);
+})}
+function getTeams(){return [...new Set(players.map(p=>p.team).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"de",{numeric:true,sensitivity:"base"}))}
+function populateTeamSelect(){let sel=$("teamSelect");sel.style.display="block";let teams=getTeams();sel.innerHTML='<option value="">– Mannschaft auswählen –</option>'+teams.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("");if(selectedTeam&&teams.includes(selectedTeam))sel.value=selectedTeam;}
+async function teamChanged(){selectedTeam=$("teamSelect").value;$("teamInfo").textContent=selectedTeam||"–";renderPlayers();await loadScheduledMatches()}
+function ownPlayers(){return players.filter(p=>p.team===selectedTeam)}
+function teamNumber(team){const m=String(team||"").match(/(\d+)\s*$/);return m?parseInt(m[1],10):null}
+function lowerTeams(){const base=teamNumber(selectedTeam);if(base==null)return [];return getTeams().filter(t=>{const n=teamNumber(t);return n!=null&&n>base})}
+function substitutePlayers(){const lower=new Set(lowerTeams());return players.filter(p=>lower.has(p.team))}
+function eligiblePlayers(g){return ownPlayers().filter(p=>!g||p.gender===g)}
+function eligibleSubstitutes(g){return substitutePlayers().filter(p=>!g||p.gender===g)}
+function optionGroup(list,v){return list.map(p=>`<option value="${esc(p.name)}" ${p.name===v?"selected":""}>${esc(p.name)}${p.rank!=null?" · Rang "+p.rank:""}${p.team!==selectedTeam?" · "+esc(p.team):""}</option>`).join("")}
+function renderPlayers(){if(!selectedTeam)return;let ps=ownPlayers();$("playersCard").style.display="block";$("playerTable").innerHTML=ps.map(p=>`<tr><td>${esc(p.name)}</td><td>${p.gender==="m"?"H":p.gender==="w"?"D":"–"}</td><td class="right">${p.rank??"–"}</td></tr>`).join("")||'<tr><td colspan="3">Keine Spieler für diese Mannschaft gefunden.</td></tr>'}
+async function loadScheduledMatches(){
+  const sel=$("scheduledMatchSelect");
+  if(!sel)return;
+  sel.innerHTML='<option value="">– Begegnung auswählen –</option>';
+  selectedMatch=null; locked=false; ownLineupSaved=false;
+  $("lineupCard").style.display="none";
+  $("matchInfo").style.display="none";
+  if(!selectedTeam){setStatus("matchStatus","Bitte zuerst eine Mannschaft auswählen.");return}
+  const {data,error}=await sb.from("matches").select("id,home_team,away_team,match_date,match_time,status,venue,season,updated_at").order("match_date",{ascending:true}).order("match_time",{ascending:true});
+  if(error){setStatus("matchStatus","Spielplan konnte nicht geladen werden: "+msg(error),"bad");return}
+  matches=(data||[]).filter(m=>m.home_team===selectedTeam||m.away_team===selectedTeam);
+  const label=m=>{
+    const d=m.match_date?new Date(m.match_date+"T00:00:00").toLocaleDateString("de-DE"):"ohne Datum";
+    const t=m.match_time?String(m.match_time).slice(0,5):"";
+    const state=m.status||"planned";
+    const stateLabel=state==="finished"?" · beendet":state==="in_progress"?" · läuft":" · geplant";
+    return `${d}${t?" · "+t:""} · ${m.home_team} – ${m.away_team}${stateLabel}`;
+  };
+  sel.innerHTML+=[...matches].sort((a,b)=>String(a.match_date||"").localeCompare(String(b.match_date||""))||String(a.match_time||"").localeCompare(String(b.match_time||""))).map(m=>`<option value="${esc(m.id)}">${esc(label(m))}</option>`).join("");
+  setStatus("matchStatus",matches.length?`${matches.length} Begegnung${matches.length===1?"":"en"} aus dem Spielplan geladen.`:"Keine Begegnungen für diese Mannschaft gefunden.",matches.length?"ok":"warn");
+}
+
+async function selectScheduledMatch(){
+  const id=$("scheduledMatchSelect").value;
+  if(!id){selectedMatch=null;$("lineupCard").style.display="none";$("matchInfo").style.display="none";setStatus("matchStatus","Noch keine Begegnung ausgewählt.");return}
+  selectedMatch=matches.find(m=>String(m.id)===String(id));
+  if(!selectedMatch)return;
+  locked=["finished","completed","closed"].includes(String(selectedMatch.status||"").toLowerCase());
+  ownLineupSaved=false;
+  $("lineupCard").style.display="block";
+  $("matchInfo").style.display="grid";
+  $("homeTeam").textContent=selectedMatch.home_team;
+  $("awayTeam").textContent=selectedMatch.away_team;
+  resetLineup();
+  if(locked){
+    setStatus("matchStatus","Diese Begegnung ist bereits beendet und für die Aufstellung gesperrt.","warn");
+    await loadSavedLineup();
+    setStatus("saveStatus","Begegnung beendet – Aufstellung nur noch zur Ansicht.","warn");
+  } else {
+    setStatus("matchStatus",`${selectedMatch.match_date?new Date(selectedMatch.match_date+"T00:00:00").toLocaleDateString("de-DE"):""}${selectedMatch.match_time?" · "+String(selectedMatch.match_time).slice(0,5):""} · ${selectedMatch.home_team} – ${selectedMatch.away_team}`,"ok");
+    await loadSavedLineup();
+  }
+  $("lineupCard").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function prepareNewMatchForm(){
+  if(!selectedTeam)return;
+  const home=$("homeTeamInput"),away=$("awayTeamInput");
+  if(profile?.role==="admin") {
+    if(!home.value && !away.value) home.value=selectedTeam;
+  } else {
+    home.value=selectedTeam;
+    home.readOnly=true;
+  }
+  setStatus("matchStatus","Bitte Gegner, Datum und Beginn eintragen und dann die Begegnung anlegen.");
+}
+function ensureOwnTeamSide(){
+  const home=$("homeTeamInput").value.trim(), away=$("awayTeamInput").value.trim();
+  if(!home || !away) return {error:"Bitte Heim- und Gastmannschaft eintragen."};
+  if(home===away) return {error:"Heim- und Gastmannschaft dürfen nicht identisch sein."};
+  if(profile?.role!=="admin" && home!==selectedTeam && away!==selectedTeam) return {error:"Deine Mannschaft muss an der Begegnung beteiligt sein."};
+  return {home,away};
+}
+async function createMatchAndStartLineup(){
+  if(!selectedTeam){setStatus("matchStatus","Bitte zuerst eine Mannschaft auswählen.","bad");return}
+  if(selectedMatch){setStatus("matchStatus","Diese Begegnung wurde bereits angelegt. Die Aufstellung kann unten bearbeitet werden.","ok");$("lineupCard").scrollIntoView({behavior:"smooth",block:"start"});return}
+  const check=ensureOwnTeamSide();
+  if(check.error){setStatus("matchStatus",check.error,"bad");return}
+  const date=$("matchDate").value||null,time=$("matchTime").value||null;
+  if(!date){setStatus("matchStatus","Bitte ein Datum eintragen.","bad");return}
+  if(!time){setStatus("matchStatus","Bitte eine Beginnzeit eintragen.","bad");return}
+  setStatus("matchStatus","Begegnung wird angelegt …");
+  const {data:match,error}=await sb.from("matches").insert({home_team:check.home,away_team:check.away,match_date:date,match_time:time,status:"planned",created_by:user.id}).select("id,home_team,away_team,match_date,match_time,status").single();
+  if(error){setStatus("matchStatus","Begegnung konnte nicht angelegt werden: "+msg(error),"bad");return}
+  const games=ORDER.map(position=>({match_id:match.id,position,status:"planned"}));
+  const {error:gameError}=await sb.from("match_games").insert(games);
+  if(gameError){await sb.from("matches").delete().eq("id",match.id);setStatus("matchStatus","Begegnung wurde nicht vollständig angelegt: "+msg(gameError),"bad");return}
+  selectedMatch=match;locked=false;ownLineupSaved=false;resetLineup();
+  $("lineupCard").style.display="block";$("matchInfo").style.display="grid";
+  $("homeTeam").textContent=match.home_team;$("awayTeam").textContent=match.away_team;
+  setStatus("matchStatus",(date?new Date(date+"T00:00:00").toLocaleDateString("de-DE"):"")+" · "+time+" · Begegnung angelegt.","ok");
+  setStatus("saveStatus","Jetzt die 8 Spiele besetzen und anschließend die Aufstellung speichern.");
+  $("lineupCard").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function resetLineup(){lineup={HD1:["",""],HD2:["",""],DD:["",""],HE1:"",HE2:"",HE3:"",DE:"",GD:["",""]};opponents={HD1:["",""],HD2:["",""],DD:["",""],HE1:"",HE2:"",HE3:"",DE:"",GD:["",""]};ownLineupSaved=false;renderSlots();updateOpponentButton();setStatus("saveStatus","Noch nicht gespeichert.")}
+async function ensureMatchGames(){
+  if(!selectedMatch)return true;
+  const {data,error}=await sb.from("match_games").select("id,position").eq("match_id",selectedMatch.id);
+  if(error){setStatus("saveStatus","Spiele konnten nicht geprüft werden: "+msg(error),"bad");return false}
+  const existing=new Set((data||[]).map(g=>g.position));
+  const missing=ORDER.filter(position=>!existing.has(position)).map(position=>({match_id:selectedMatch.id,position,status:"planned"}));
+  if(missing.length){
+    const {error:insError}=await sb.from("match_games").insert(missing);
+    if(insError){setStatus("saveStatus","Spiele konnten nicht angelegt werden: "+msg(insError),"bad");return false}
+  }
+  return true;
+}
+async function loadSavedLineup(){
+  if(!selectedMatch)return;
+  if(!(await ensureMatchGames()))return;
+  let{data,error}=await sb.from("match_games").select("position,player1,player2,opponent_player1,opponent_player2").eq("match_id",selectedMatch.id);
+  if(error){setStatus("saveStatus","Gespeicherte Aufstellung konnte nicht geladen werden: "+msg(error),"bad");return}
+  const mineIsHome=selectedMatch.home_team===selectedTeam;
+  for(const g of data||[]){
+    const mine=mineIsHome?[g.player1||"",g.player2||""]:[g.opponent_player1||"",g.opponent_player2||""];
+    const opp=mineIsHome?[g.opponent_player1||"",g.opponent_player2||""]:[g.player1||"",g.player2||""];
+    if(Array.isArray(lineup[g.position])){lineup[g.position]=mine;opponents[g.position]=opp;}
+    else if(g.position in lineup){lineup[g.position]=mine[0]||"";opponents[g.position]=opp[0]||"";}
+  }
+  ownLineupSaved = data?.length ? validateLineup() : false;
+  renderSlots();
+  updateOpponentButton();
+  setStatus("saveStatus",data?.length?"Gespeicherte Aufstellung geladen.":"Noch keine Aufstellung gespeichert.");
+}
+function opts(g,v){let own=eligiblePlayers(g),subs=eligibleSubstitutes(g);let html='<option value="">– auswählen –</option>';if(own.length)html+='<optgroup label="Eigene Mannschaft">'+optionGroup(own,v)+'</optgroup>';if(subs.length)html+='<optgroup label="Ersatzspieler aus unteren Mannschaften">'+optionGroup(subs,v)+'</optgroup>';html+='<optgroup label="Kampflos"><option value="'+NO_PLAYER+'" '+(v===NO_PLAYER?"selected":"")+'>'+NO_PLAYER+'</option></optgroup>';return html}
+function selectSlot(id,g,v){return `<select id="${id}" onchange="setSlot('${id}',this.value)" ${locked?"disabled":""}>${opts(g,v)}</select>`}
+function slot(k,controls,sub){return `<div class="slot"><h3>${LABELS[k]}</h3><div class="sub">${sub}</div>${controls.join("")}</div>`}
+function pairSlot(k,a,b,ga,gb){return slot(k,[selectSlot(k+"a",ga,lineup[k][0]),selectSlot(k+"b",gb,lineup[k][1])],ga===gb?subForGender(ga):"Mixed")}
+function singleSlot(k,g){return slot(k,[selectSlot(k,g,lineup[k])],g==="m"?"Herren":"Damen")}
+function subForGender(g){return g==="m"?"Herren":g==="w"?"Damen":""}
+function renderSlots(){
+  $("slots").innerHTML=[
+    pairSlot("HD1",0,1,"m","m"),pairSlot("HD2",0,1,"m","m"),pairSlot("DD",0,1,"w","w"),
+    singleSlot("HE1","m"),singleSlot("HE2","m"),singleSlot("HE3","m"),singleSlot("DE","w"),
+    pairSlot("GD",0,1,"m","w")
+  ].join("");
+  updateOpponentButton();
+}
+function updateOpponentButton(){
+  const b=$("opponentButton");
+  if(!b)return;
+  b.disabled=locked||!ownLineupSaved;
+  b.textContent=ownLineupSaved?"👥 Gegner eintragen":"👥 Gegner eintragen (nach eigener Aufstellung)";
+}
+function setSlot(id,v){
+  const map={HD1a:["HD1",0],HD1b:["HD1",1],HD2a:["HD2",0],HD2b:["HD2",1],DDa:["DD",0],DDb:["DD",1],GDa:["GD",0],GDb:["GD",1]};
+  if(map[id]){
+    const [k,i]=map[id];
+    lineup[k][i]=v;
+    // Ein kampflos abgegebenes Doppel hat auf beiden Positionen "Kein Spieler".
+    if(v===NO_PLAYER) lineup[k]=[NO_PLAYER,NO_PLAYER];
+  } else lineup[id]=v;
+  if(map[id]&&v===NO_PLAYER) renderSlots();
+  setStatus("saveStatus","Änderung noch nicht gespeichert.","warn")
+}
+function opponentRowsHtml(){
+  const player=(name)=>`<div class="opp-player">${esc(name||"–")}</div>`;
+  const pair=(k)=>{
+    const noOpponent=opponents[k]?.[0]===NO_PLAYER&&opponents[k]?.[1]===NO_PLAYER;
+    return `<div class="opp-row"><h3>${LABELS[k]}</h3><div class="opp-side own"><div class="opp-side-title">Eigene Mannschaft</div><div class="opp-players">${player(lineup[k][0])}${player(lineup[k][1])}</div></div><div class="opp-side opponent-side"><div class="opp-side-title">Gegner</div><div class="opp-inputs"><input id="opp_${k}_0" value="${esc(noOpponent?NO_PLAYER:(opponents[k][0]||""))}" placeholder="Gegner 1" ${noOpponent?"disabled":""}><input id="opp_${k}_1" value="${esc(noOpponent?NO_PLAYER:(opponents[k][1]||""))}" placeholder="Gegner 2" ${noOpponent?"disabled":""}></div><label class="opp-none-label"><input type="checkbox" id="opp_${k}_none" ${noOpponent?"checked":""} onchange="toggleOpponentNoPlayer('${k}',2)"> <span>Gegner stellt keine Spieler</span></label></div></div>`;
+  };
+  const single=(k)=>{
+    const noOpponent=opponents[k]===NO_PLAYER;
+    return `<div class="opp-row"><h3>${LABELS[k]}</h3><div class="opp-side own"><div class="opp-side-title">Eigene Mannschaft</div><div class="opp-players" style="grid-template-columns:1fr">${player(lineup[k])}</div></div><div class="opp-side opponent-side"><div class="opp-side-title">Gegner</div><div class="opp-inputs" style="grid-template-columns:1fr"><input id="opp_${k}_0" value="${esc(noOpponent?NO_PLAYER:(opponents[k]||""))}" placeholder="Gegner" ${noOpponent?"disabled":""}></div><label class="opp-none-label"><input type="checkbox" id="opp_${k}_none" ${noOpponent?"checked":""} onchange="toggleOpponentNoPlayer('${k}',1)"> <span>Gegner stellt keine Spieler</span></label></div></div>`;
+  };
+  return [pair("HD1"),pair("HD2"),pair("DD"),single("HE1"),single("HE2"),single("HE3"),single("DE"),pair("GD")].join("");
+}
+function toggleOpponentNoPlayer(k,count){
+  const checked=$("opp_"+k+"_none").checked;
+  for(let i=0;i<count;i++){
+    const input=$("opp_"+k+"_"+i);
+    if(!input)continue;
+    input.disabled=checked;
+    input.value=checked?NO_PLAYER:"";
+  }
+}
+function keepOpponentInputVisible(input){
+  if(!input)return;
+  const scrollIntoView=()=>{
+    try{input.scrollIntoView({behavior:"smooth",block:"center",inline:"nearest"});}catch(e){input.scrollIntoView();}
+  };
+  setTimeout(scrollIntoView,120);
+  setTimeout(scrollIntoView,450);
+  setTimeout(scrollIntoView,800);
+}
+function openOpponentModal(){
+  if(!ownLineupSaved){setStatus("saveStatus","Bitte zuerst die vollständige eigene Aufstellung speichern.","bad");return}
+  $("opponentFields").innerHTML=opponentRowsHtml();
+  $("opponentStatus").style.display="none";
+  $("opponentModal").style.display="flex";
+  const fields=$("opponentFields");
+  fields.querySelectorAll("input").forEach(input=>{
+    input.addEventListener("focus",()=>keepOpponentInputVisible(input));
+  });
+}
+function closeOpponentModal(){$("opponentModal").style.display="none"}
+async function saveOpponentModal(){
+  if(!selectedMatch||!ownLineupSaved)return;
+  const oppNone=k=>$('opp_'+k+'_none')?.checked;
+  const pairValue=k=>oppNone(k)?[NO_PLAYER,NO_PLAYER]:[$('opp_'+k+'_0').value.trim(),$('opp_'+k+'_1').value.trim()];
+  const singleValue=k=>oppNone(k)?NO_PLAYER:$('opp_'+k+'_0').value.trim();
+  const next={HD1:pairValue("HD1"),HD2:pairValue("HD2"),DD:pairValue("DD"),HE1:singleValue("HE1"),HE2:singleValue("HE2"),HE3:singleValue("HE3"),DE:singleValue("DE"),GD:pairValue("GD")};
+  const mineIsHome=mySideIsHome();
+  const rows=ORDER.map(position=>{let v=lineup[position],o=next[position];return{position,player1:mineIsHome?(Array.isArray(v)?v[0]||null:v||null):(Array.isArray(o)?o[0]||null:o||null),player2:mineIsHome?(Array.isArray(v)?v[1]||null:null):(Array.isArray(o)?o[1]||null:null),opponent_player1:mineIsHome?(Array.isArray(o)?o[0]||null:o||null):(Array.isArray(v)?v[0]||null:v||null),opponent_player2:mineIsHome?(Array.isArray(o)?o[1]||null:null):(Array.isArray(v)?v[1]||null:null)}});
+  $("opponentStatus").style.display="block";$("opponentStatus").textContent="Speichere …";
+  for(const row of rows){let{error}=await sb.from("match_games").update({opponent_player1:row.opponent_player1,opponent_player2:row.opponent_player2}).eq("match_id",selectedMatch.id).eq("position",row.position);if(error){$("opponentStatus").className="status bad";$("opponentStatus").textContent="Speichern fehlgeschlagen: "+msg(error);return}}
+  opponents=next;
+  const noPlayerGames=ORDER.filter(k=>{const own=isForfeit(k);const ov=next[k];const opp=Array.isArray(ov)?ov[0]===NO_PLAYER&&ov[1]===NO_PLAYER:ov===NO_PLAYER;return own&&opp;});
+  $("opponentStatus").className="status ok";$("opponentStatus").textContent="✔ Gegner gespeichert.";
+  setStatus("saveStatus","✔ Eigene Aufstellung und Gegner sind gespeichert.","ok");
+  setTimeout(closeOpponentModal,500);
+}
+function mySideIsHome(){return selectedMatch?.home_team===selectedTeam}
+function isForfeit(position){
+  const v=lineup[position];
+  return Array.isArray(v)?v.length===2&&v[0]===NO_PLAYER&&v[1]===NO_PLAYER:v===NO_PLAYER;
+}
+
+function allEligiblePlayers(){return [...ownPlayers(),...substitutePlayers()]}
+function playerByName(name){return allEligiblePlayers().find(p=>p.name===name)}
+function assignments(){let a=[];["HD1","HD2","DD","GD"].forEach(k=>lineup[k].forEach((n,i)=>{if(n&&n!==NO_PLAYER)a.push({name:n,slot:k,index:i})}));["HE1","HE2","HE3","DE"].forEach(k=>{if(lineup[k]&&lineup[k]!==NO_PLAYER)a.push({name:lineup[k],slot:k,index:0})});return a}
+function validateLineup(){
+  let errors=[],warnings=[],used={};
+  if(!selectedTeam)errors.push("Bitte eine Mannschaft auswählen.");
+  if(!selectedMatch)errors.push("Bitte zuerst eine Begegnung aus dem Spielplan auswählen.");
+  assignments().forEach(a=>(used[a.name]??=[]).push(a.slot));
+  Object.entries(used).forEach(([n,slots])=>{
+    if(slots.length>2)errors.push(n+": mehr als 2 Einsätze.");
+    let d=slots.map(s=>s.startsWith("HE")?"HE":s==="DE"?"DE":s.startsWith("HD")?"HD":s);
+    if(new Set(d).size<d.length)errors.push(n+": mehr als ein Einsatz in derselben Disziplin.")
+  });
+  const pairReq=(k,label)=>{
+    const a=lineup[k];
+    const complete=a.every(Boolean);
+    const forfeit=a[0]===NO_PLAYER&&a[1]===NO_PLAYER;
+    if(!complete)errors.push(label+": nicht vollständig besetzt.");
+    if(complete&&!forfeit&&(a[0]===NO_PLAYER||a[1]===NO_PLAYER))errors.push(label+": Bei einer kampflosen Abgabe müssen beide Positionen „Kein Spieler“ sein.");
+  };
+  pairReq("HD1","1. Herrendoppel");
+  pairReq("HD2","2. Herrendoppel");
+  pairReq("DD","Damendoppel");
+  pairReq("GD","Gemischtes Doppel");
+  [["HE1","1. Herreneinzel"],["HE2","2. Herreneinzel"],["HE3","3. Herreneinzel"],["DE","Dameneinzel"]].forEach(([k,label])=>{if(!lineup[k])errors.push(label+": nicht vollständig besetzt.")});
+  if(lineup.GD[0]!==NO_PLAYER&&lineup.GD[1]!==NO_PLAYER){
+    if(lineup.GD[0]&&playerByName(lineup.GD[0])?.gender!=="m")errors.push("Mixed: erste Position muss ein Herr sein.");
+    if(lineup.GD[1]&&playerByName(lineup.GD[1])?.gender!=="w")errors.push("Mixed: zweite Position muss eine Dame sein.");
+  }
+  let s=["HE1","HE2","HE3"].map(k=>playerByName(lineup[k]));
+  for(let i=1;i<s.length;i++)if(s[i-1]?.rank!=null&&s[i]?.rank!=null&&s[i-1].rank>s[i].rank)errors.push("Herreneinzel: Reihenfolge entspricht nicht den Ranglistenplätzen.");
+  let pr=k=>lineup[k].reduce((sum,n)=>sum+(playerByName(n)?.rank??Infinity),0);
+  if(lineup.HD1.every(Boolean)&&lineup.HD2.every(Boolean)&&lineup.HD1[0]!==NO_PLAYER&&lineup.HD2[0]!==NO_PLAYER&&pr("HD1")>pr("HD2"))warnings.push("Herrendoppel: Ranglistensumme des 1. HD ist größer als die des 2. HD.");
+  $("validation").innerHTML=(errors.length?errors.map(e=>`<div class="badtxt">✖ ${esc(e)}</div>`).join(""):'<div class="oktxt">✔ Die eingebaute Prüfung meldet keinen Verstoß.</div>')+warnings.map(w=>`<div class="warntxt">⚠ ${esc(w)}</div>`).join("");
+  return !errors.length
+}
+async function saveLineup(){
+  if(locked)return;if(!validateLineup())return;if(!selectedMatch)return;
+  const mineIsHome=mySideIsHome();
+  let rows=ORDER.map(position=>{let v=lineup[position];return{position,player1:mineIsHome?(Array.isArray(v)?v[0]||null:v||null):null,player2:mineIsHome?(Array.isArray(v)?v[1]||null:null):null,opponent_player1:!mineIsHome?(Array.isArray(v)?v[0]||null:v||null):undefined,opponent_player2:!mineIsHome?(Array.isArray(v)?v[1]||null:null):undefined}});
+  for(const row of rows){
+    const patch=mineIsHome?{player1:row.player1,player2:row.player2}:{opponent_player1:row.opponent_player1,opponent_player2:row.opponent_player2};
+    let{error}=await sb.from("match_games").update(patch).eq("match_id",selectedMatch.id).eq("position",row.position);
+    if(error){setStatus("saveStatus","Speichern fehlgeschlagen bei "+LABELS[row.position]+": "+msg(error),"bad");return}
+  }
+  ownLineupSaved=true;updateOpponentButton();
+  const forfeits=ORDER.filter(isForfeit).length;
+  setStatus("saveStatus",forfeits?`✔ Eigene Aufstellung gespeichert. ${forfeits} Spiel${forfeits===1?"":"e"} ist/sind als kampflos markiert („Kein Spieler“). Jetzt kannst du über „Gegner eintragen“ die Gegner erfassen.`:"✔ Eigene Aufstellung gespeichert. Jetzt kannst du über „Gegner eintragen“ die Gegner in einem separaten Fenster erfassen.","ok");
+}
+function clearLineup(){if(locked)return;resetLineup();setStatus("validation","Aufstellung geleert.","warn")}
+init();
+</script>
+
+<a class="home-menu-button" href="index.html">🏠 Zurück zum Hauptmenü</a>
+</body>
+</html>
