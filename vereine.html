@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vereine – Badminton Mannschaftsverwaltung</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+:root{color-scheme:light dark;--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#667085;--primary:#1769aa;--border:#dbe3ee;--danger:#b42318;--good:#087443}
+html[data-theme="dark"]{color-scheme:dark;--bg:#101722;--card:#182332;--text:#e8eef7;--muted:#b8c4d4;--primary:#3186c8;--border:#344357;--danger:#ff8f86;--good:#62d9a0}
+html[data-theme="dark"] body{background:var(--bg)!important;color:var(--text)!important}
+html[data-theme="dark"] header,html[data-theme="dark"] .club,html[data-theme="dark"] .empty,html[data-theme="dark"] dialog,html[data-theme="dark"] .modal-head,html[data-theme="dark"] .admin-item{background:var(--card)!important;color:var(--text)!important;border-color:var(--border)!important}
+html[data-theme="dark"] p,html[data-theme="dark"] .intro p,html[data-theme="dark"] .city,html[data-theme="dark"] .contact,html[data-theme="dark"] .small,html[data-theme="dark"] footer{color:var(--muted)!important}
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:#111b28!important;color:var(--text)!important;border-color:#46566c!important}
+html[data-theme="dark"] .secondary,html[data-theme="dark"] .badge{background:#26364a!important;color:var(--text)!important;border-color:#46566c!important}
+html[data-theme="dark"] .status{background:#1c3148!important;color:#e8eef7!important;border-color:#426486!important}
+html[data-theme="dark"] .status.error{background:#482729!important;color:#ffd1d1!important;border-color:#784044!important}
+html[data-theme="dark"] .status.success{background:#153d32!important;color:#a8f0d0!important;border-color:#28634f!important}
+html[data-theme="dark"] .badge.published{background:#153d32!important;color:#a8f0d0!important}
+html[data-theme="dark"] .badge.pending{background:#493a20!important;color:#ffe1a3!important}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:#fff;border-bottom:1px solid var(--border)}.header-inner{max-width:1050px;margin:auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.brand{font-weight:800;font-size:18px}
+main{max-width:1050px;margin:auto;padding:24px 16px 44px}.intro{margin-bottom:20px}.intro h1{margin:0 0 8px;font-size:clamp(26px,5vw,36px)}.intro p{color:var(--muted);margin:0;line-height:1.5}
+a.button,button{border:0;border-radius:10px;padding:11px 15px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}.primary{background:var(--primary);color:#fff}.secondary{background:#eef2f7;color:#26364d}.danger{background:#fff0ee;color:var(--danger)}button:disabled{opacity:.55;cursor:not-allowed}
+.status{padding:12px 14px;border-radius:12px;background:#eaf4ff;border:1px solid #c8e0f6;margin:16px 0}.status.error{background:#fff0ee;border-color:#ffd1cc;color:var(--danger)}.status.success{background:#eaf8f0;border-color:#b7e4ca;color:var(--good)}
+.search-panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin:18px 0}.search-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:10px}.search-grid input,.search-grid select{width:100%;padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);font:inherit}.search-query input{width:100%;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font:inherit}.filter-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.filter-chip{background:#edf1f5;color:#344054;border:1px solid #d9e0e8;padding:10px 12px;border-radius:999px;font-size:14px;transition:background .15s,border-color .15s}.filter-chip .chip-state{font-size:12px}.filter-chip .chip-chevron{opacity:.7;margin-left:2px}.filter-chip[aria-expanded="true"]{outline:2px solid #b8dce8}.filter-chip.active-filter{background:#d9f3f8;border-color:#75cbdc;color:#075b70}.filter-chip.active-filter .chip-state{font-weight:800}.filter-drawer{margin-top:10px;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--bg);display:grid;gap:12px}.filter-drawer[hidden]{display:none!important}.drawer-actions{display:flex;justify-content:flex-end;margin-top:4px}.filter-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px}.filter-footer .small{margin:0}@media(max-width:480px){.filter-chip{flex:1 1 calc(50% - 8px);justify-content:space-between}.filter-footer button{width:100%}}
+.view-switch{display:flex;gap:8px;margin:12px 0}.view-switch button.active{background:var(--primary);color:white}#clubMap{height:55vh;min-height:320px;border:1px solid var(--border);border-radius:14px;overflow:hidden}.club-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:14px}.club{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 13px;box-shadow:0 2px 8px #1428460a;cursor:pointer}.club h2{font-size:16px;margin:0 0 3px}.club .city{font-size:13px;margin:0}.club .club-summary{display:flex;align-items:center;justify-content:space-between;gap:8px}.club .club-summary small{color:var(--muted)}.multi-options{display:flex;flex-wrap:wrap;gap:8px}.check-option{display:inline-flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card)}.check-option input{width:auto;margin:0}.detail-grid{display:grid;gap:10px}.detail-line{padding:10px;border-radius:10px;background:var(--bg)}#clubDetailDialog{width:min(600px,calc(100% - 24px));height:auto;max-height:85dvh}#clubDetailDialog .modal-body{overflow-y:auto}
+.club h2{font-size:20px;margin:0 0 5px}.city{color:var(--muted);font-weight:700;margin-bottom:12px}.description{line-height:1.5;white-space:pre-wrap;margin:0 0 12px}.days{font-size:14px;margin:0 0 14px}.contact{font-size:13px;color:var(--muted);margin:0 0 10px}
+.empty{background:#fff;border:1px dashed var(--border);border-radius:14px;padding:24px;text-align:center;color:var(--muted)}
+dialog{position:fixed;left:50%;top:8px;transform:translateX(-50%);margin:0;width:min(760px,calc(100% - 24px));height:calc(var(--visual-viewport-height, 100dvh) - 16px);max-height:calc(var(--visual-viewport-height, 100dvh) - 16px);min-height:0;overflow:hidden;display:none;flex-direction:column;border:1px solid var(--border);border-radius:18px;padding:0;box-shadow:0 20px 60px #10182844;color:var(--text)}dialog[open]{display:flex}dialog::backdrop{background:#10182899}.modal-head{flex:0 0 auto;position:relative;top:auto;background:#fff;border-bottom:1px solid var(--border);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:2}.modal-head h2{margin:0;font-size:21px}.modal-body{padding:18px;padding-bottom:calc(24px + env(safe-area-inset-bottom));overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;flex:1 1 0;min-height:0;max-height:none;scroll-padding-bottom:24px}.admin-nav-group{padding:12px;margin:10px 0;border:1px solid var(--border);border-radius:14px;background:var(--bg)}.admin-nav-group summary{cursor:pointer;list-style:none;font-size:16px;padding:4px 0}.admin-nav-group summary::-webkit-details-marker{display:none}.admin-nav-group summary:after{content:"＋";float:right}.admin-nav-group[open] summary:after{content:"−"}.admin-nav-group p{margin:10px 0}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}.tab.active{background:var(--primary);color:white}.panel[hidden]{display:none}
+form{display:grid;gap:12px}.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px}.field{display:grid;gap:5px}.field label{font-size:14px;font-weight:700}.field input,.field textarea,.field select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;font:inherit;background:white}.field textarea{min-height:100px;max-height:34dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;resize:vertical}.checkline{display:flex;gap:9px;align-items:center}.checkline input{width:auto}.form-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}.admin-item{border:1px solid var(--border);border-radius:12px;padding:14px;margin:10px 0;background:#fff}.admin-item h3{margin:0 0 5px;font-size:17px}.admin-item p{margin:5px 0;color:var(--muted);white-space:pre-wrap}.admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.badge{display:inline-block;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700;background:#eef2f7}.badge.pending{background:#fff3d6}.badge.published{background:#e2f7e9;color:#17603a}.small{font-size:13px;color:var(--muted)}
+.conversation-list{display:grid;gap:10px;margin-top:16px}
+.conversation-row{width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--card);color:var(--text)}
+.conversation-row:active{transform:scale(.995)}.conversation-avatar{width:44px;height:44px;flex:0 0 44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--bg);font-size:20px}
+.conversation-main{min-width:0;flex:1}.conversation-name{font-weight:800;font-size:16px;display:block}.conversation-preview{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}.conversation-meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px}.conversation-time{font-size:11px;color:var(--muted)}
+.chat-overlay{position:fixed;inset:0;z-index:1000;background:#101828aa;display:flex;align-items:center;justify-content:center;padding:12px;overflow-y:auto;overscroll-behavior:contain}.chat-overlay[hidden]{display:none!important}
+.chat-popup{width:min(700px,100%);height:min(820px,calc(100dvh - 24px));max-height:calc(100dvh - 24px);min-height:0;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px #0005}
+.chat-popup-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex:0 0 auto}.chat-popup-head h3{margin:0}.chat-popup-scroll{padding:14px;overflow:hidden;display:flex;flex-direction:column;overscroll-behavior:contain;flex:1 1 auto;min-height:0}.chat-popup .chat-messages{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:2px 2px 8px}.chat-popup .chat-compose{position:relative;bottom:auto;background:var(--card);padding-top:10px;padding-bottom:calc(4px + env(safe-area-inset-bottom));flex:0 0 auto;gap:7px}.chat-popup .chat-compose textarea{display:block;width:100%;min-height:76px;max-height:120px;resize:vertical;flex-shrink:0}.chat-popup .chat-compose label{flex:0 0 auto}.chat-popup .chat-compose .admin-actions{flex:0 0 auto}.chat-popup .admin-actions button{flex:1}
+
+.chat-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.chat-messages{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.chat-bubble{max-width:88%;padding:11px 13px;border-radius:15px;background:var(--card);border:1px solid var(--border);white-space:pre-wrap;overflow-wrap:anywhere}
+.chat-bubble.mine{align-self:flex-end;background:#dceeff;border-color:#b6d8f5;color:#17324b}
+.chat-bubble.theirs{align-self:flex-start}
+.chat-bubble .small{display:block;margin-top:6px}
+.chat-compose{display:grid;gap:8px;margin-top:10px}.chat-compose textarea{width:100%;min-height:70px;padding:11px;border:1px solid var(--border);border-radius:10px;font:inherit;background:var(--card);color:var(--text)}
+html[data-theme="dark"] .chat-bubble.mine{background:#20496b;color:#f1f7ff;border-color:#37678c}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:8px 16px 28px}
+@media(max-width:480px){.header-inner{align-items:flex-start}.header-actions{width:100%}.header-actions a,.header-actions button{width:100%}.form-actions button{flex:1}}
+/* Ensure the HTML hidden attribute wins over component display styles. */
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><div class="header-inner"><div class="brand">🏸 Badminton Mannschaftsverwaltung</div><div class="header-actions"><a class="button secondary" href="index.html">← Startseite</a><button id="requestClubOpen" class="secondary">＋ Verein anmelden</button><button id="adminOpen" class="primary" hidden>⚙️ Vereine verwalten</button></div></div></header>
+<main>
+<section class="intro"><h1>🏸 Vereine finden</h1><p>Entdecke veröffentlichte Badmintonvereine und informiere dich über Ort und Trainingstage. Genaue Trainingsadressen und private Kontaktdaten werden nicht öffentlich angezeigt.</p></section>
+<section class="search-panel" aria-label="Vereinssuche">
+  <div class="field search-query"><label for="clubSearch">Verein, Ort oder PLZ</label><input id="clubSearch" placeholder="z. B. Wesel"></div>
+  <div class="filter-chips" aria-label="Filterkategorien">
+    <button type="button" class="filter-chip" data-filter-toggle="location" aria-expanded="false">📍 Ort &amp; Entfernung <span id="locationChipState" class="chip-state"></span><span class="chip-chevron">⌄</span></button>
+    <button type="button" class="filter-chip" data-filter-toggle="training" aria-expanded="false">📅 Trainingstag <span id="trainingChipState" class="chip-state"></span><span class="chip-chevron">⌄</span></button>
+    <button type="button" class="filter-chip" data-filter-toggle="league" aria-expanded="false">🏸 Spielbetrieb <span id="leagueChipState" class="chip-state"></span><span class="chip-chevron">⌄</span></button>
+    <button type="button" class="filter-chip" data-filter-toggle="offer" aria-expanded="false">✨ Angebote <span id="offerChipState" class="chip-state"></span><span class="chip-chevron">⌄</span></button>
+  </div>
+  <div class="filter-drawer" id="filter-location" hidden>
+    <div class="search-grid"><div class="field"><label for="distanceFilter">Maximale Entfernung</label><select id="distanceFilter"><option value="0">Beliebige Entfernung</option><option value="10">Bis 10 km</option><option value="25">Bis 25 km</option><option value="50">Bis 50 km</option><option value="100">Bis 100 km</option></select></div><div class="field"><label for="locationInput">Mein Standort (Ort/PLZ)</label><input id="locationInput" placeholder="z. B. 46483 Wesel"></div></div>
+    <div class="form-actions"><button id="useMyLocation" type="button" class="secondary">📍 Handy-Standort verwenden</button><button id="applyLocation" type="button" class="primary">Standort übernehmen</button></div>
+  </div>
+  <div class="filter-drawer" id="filter-training" hidden><div class="field"><label>Trainingstage (mehrere auswählbar)</label><div class="multi-options" id="trainingOptions"><label class="check-option"><input type="checkbox" name="trainingFilter" value="Montag"> Montag</label><label class="check-option"><input type="checkbox" name="trainingFilter" value="Dienstag"> Dienstag</label><label class="check-option"><input type="checkbox" name="trainingFilter" value="Mittwoch"> Mittwoch</label><label class="check-option"><input type="checkbox" name="trainingFilter" value="Donnerstag"> Donnerstag</label><label class="check-option"><input type="checkbox" name="trainingFilter" value="Freitag"> Freitag</label><label class="check-option"><input type="checkbox" name="trainingFilter" value="Samstag"> Samstag</label><label class="check-option"><input type="checkbox" name="trainingFilter" value="Sonntag"> Sonntag</label></div></div><div class="drawer-actions"><button type="button" class="primary apply-filter" data-close-filter="training">Übernehmen</button></div></div>
+  <div class="filter-drawer" id="filter-league" hidden><div class="field"><label>Spielbetrieb (mehrere auswählbar)</label><div class="multi-options" id="leagueOptions"><label class="check-option"><input type="checkbox" name="leagueFilter" value="O19"> O19</label><label class="check-option"><input type="checkbox" name="leagueFilter" value="U19"> U19</label><label class="check-option"><input type="checkbox" name="leagueFilter" value="Freizeit"> Freizeit</label></div></div><div class="drawer-actions"><button type="button" class="primary apply-filter" data-close-filter="league">Übernehmen</button></div></div>
+  <div class="filter-drawer" id="filter-offer" hidden><div class="field"><label for="offerFilter">Angebot</label><select id="offerFilter"><option value="">Alle Angebote</option><option value="Jugendtraining">Jugendtraining</option><option value="Anfängertraining">Anfängertraining</option><option value="Trainer verfügbar">Trainer verfügbar</option><option value="Neue Spieler gesucht">Neue Spieler gesucht</option></select></div><div class="drawer-actions"><button type="button" class="primary apply-filter" data-close-filter="offer">Übernehmen</button></div></div>
+  <div class="filter-footer"><span id="activeFilterSummary" class="small">Keine Filter aktiv</span><button id="resetFilters" type="button" class="secondary">Filter zurücksetzen</button></div>
+  <div class="view-switch"><button id="showList" type="button" class="primary active">☷ Liste</button><button id="showMap" type="button" class="secondary">🗺 Karte</button></div>
+  <p id="searchHint" class="small">Entfernung und Karte werden genauer, sobald die Vereine Koordinaten hinterlegt haben. Filter ohne hinterlegte Vereinsdaten werden nicht angewendet.</p>
+</section>
+<div id="status" class="status" role="status">Vereine werden geladen …</div>
+<section id="clubList" class="club-list" aria-live="polite"></section><div id="clubMap" hidden aria-label="Karte der Vereine"></div>
+</main>
+<footer>Badminton Mannschaftsverwaltung</footer>
+
+<dialog id="clubDetailDialog"><div class="modal-head"><div><h2 id="clubDetailTitle">Vereinsdetails</h2><div id="clubDetailLocation" class="small"></div></div><button type="button" id="closeClubDetail" class="secondary">Schließen ✕</button></div><div class="modal-body"><div id="clubDetailContent" class="detail-grid"></div><div id="selfMembershipActions" class="detail-grid"></div><div id="joinClubArea" class="detail-grid"></div><div id="clubDetailAuthNote" class="status" hidden></div><form id="quickContactForm" hidden><input type="hidden" id="quickContactClubId"><h3>Kontaktanfrage senden</h3><div class="field"><label for="quickContactSubject">Betreff *</label><input id="quickContactSubject" required maxlength="160" placeholder="z. B. Frage zum Training"></div><div class="field"><label for="quickContactMessage">Nachricht *</label><textarea id="quickContactMessage" required maxlength="3000" placeholder="Schreibe deine Nachricht …"></textarea></div><div class="form-actions"><button class="primary" type="submit">Anfrage senden</button></div><div id="quickContactStatus" class="status" hidden></div></form></div></dialog>
+<dialog id="requestClubDialog"><div class="modal-head"><h2>＋ Verein anmelden</h2><button type="button" id="closeRequestClub" class="secondary">Schließen ✕</button></div><div class="modal-body"><p class="small">Deine Anmeldung wird an die Administration gesendet. Der Verein wird erst nach Prüfung durch einen Admin angelegt und freigegeben.</p><div id="requestClubAuthNote" class="status" hidden></div><form id="requestClubForm"><div class="fields"><div class="field"><label for="suggestClubName">Vereinsname *</label><input id="suggestClubName" required maxlength="160"></div><div class="field"><label for="suggestClubCity">Ort *</label><input id="suggestClubCity" required maxlength="160"></div><div class="field"><label for="suggestClubPostal">Postleitzahl *</label><input id="suggestClubPostal" required maxlength="12"></div></div><h3>Deine Kontaktdaten</h3><div class="fields"><div class="field"><label for="applicantName">Vor- und Nachname *</label><input id="applicantName" required maxlength="160" autocomplete="name"></div><div class="field"><label for="applicantEmail">Kontakt-E-Mail-Adresse *</label><input id="applicantEmail" type="email" required maxlength="254" autocomplete="email"><small class="small">Der Admin nutzt diese Adresse zur Prüfung und für Rückfragen. Sie wird nicht öffentlich angezeigt.</small></div></div><div class="field"><label for="suggestClubWebsite">Website (optional)</label><input id="suggestClubWebsite" type="url" maxlength="500" placeholder="https://…"></div><div class="field"><label for="suggestClubReason">Zusätzliche Informationen (optional)</label><textarea id="suggestClubReason" maxlength="2000" placeholder="z. B. Trainingsort, Quelle oder Kontaktmöglichkeit"></textarea></div><div class="form-actions"><button class="primary" type="submit">Anmeldung an Admin senden</button></div><div id="requestClubFormStatus" class="status" hidden></div></form></div></dialog>
+<dialog id="adminDialog">
+  <div class="modal-head"><h2>⚙️ Vereinsverwaltung</h2><button id="closeAdmin" class="secondary" aria-label="Fenster schließen">✕</button></div>
+  <div class="modal-body">
+    <div id="adminStatus" class="status" role="status">Adminzugriff wird geprüft …</div>
+    <div id="adminContent" hidden>
+      <div id="managedClubsSummary" class="status" hidden></div>
+      <details class="admin-nav-group" open><summary><strong>📨 Allgemeine Anfragen &amp; Freigaben</strong></summary><p class="small">Kontaktanfragen und offene Anträge.</p><div class="tabs">
+        <button class="tab active" data-tab="requests">📨 Kontaktanfragen bearbeiten</button><button class="tab secondary" data-tab="club-suggestions" hidden>🏷️ Vereinsanmeldungen <span id="openClubApplicationsBadge" class="badge published" hidden>0 offen</span></button><button class="tab secondary" data-tab="membership-requests">📥 Beitrittsanträge <span id="membershipRequestBadge" class="badge new-request" hidden>0 offen</span></button>
+      </div></details>
+      <details class="admin-nav-group"><summary><strong>🏢 Vereinsverwaltung</strong></summary><p class="small">Verein suchen und Verwaltungsbereiche öffnen.</p><div class="tabs">
+        <button class="tab secondary" data-tab="manage">🔎 Verein suchen &amp; verwalten</button><button class="tab secondary" data-tab="add">＋ Verein hinzufügen</button>
+      </div></details>
+      <details class="admin-nav-group" open><summary><strong>🏸 Spielerimport vorbereiten</strong></summary><p class="small">Turnier.de-Spielerliste nur ansehen. Keine Datenbankänderungen.</p><div class="tabs"><button class="tab secondary" data-tab="turnierde-preview">👁️ Turnier.de-Vorschau</button></div></details>
+      <details class="admin-nav-group"><summary><strong>👥 Mitglieder &amp; Historien</strong></summary><div class="tabs"><button type="button" class="tab secondary" data-member-view="current">Aktuelle Mitglieder</button><button type="button" class="tab secondary" data-member-view="members-history">Historie Mitglieder</button><button type="button" class="tab secondary" data-member-view="requests-history">Historie Anträge</button><button class="tab secondary" data-tab="contact" hidden>✉️ Andere Vereine kontaktieren</button></div></details>
+      <section id="panel-add" class="panel">
+        <h3 id="clubFormTitle">Neuen Verein anlegen</h3>
+        <p class="small">Neue Vereine werden zunächst als Entwurf gespeichert und sind öffentlich nicht sichtbar. Erst nach Prüfung veröffentlichen.</p>
+        <form id="clubForm">
+          <input type="hidden" id="editClubId">
+          <div class="fields">
+            <div class="field"><label for="clubName">Vereinsname *</label><input id="clubName" required maxlength="160"></div>
+            <div class="field"><label for="clubCity">Ort *</label><input id="clubCity" required maxlength="160"></div><div class="field"><label for="clubPostalCode">Postleitzahl des Vereinsstandorts *</label><input id="clubPostalCode" required inputmode="numeric" maxlength="12" placeholder="z. B. 46483"></div>
+          </div>
+          <div class="fields"><div class="field"><label for="clubLatitude">Breitengrad (für Karte)</label><input id="clubLatitude" type="number" step="any" min="-90" max="90" placeholder="z. B. 51.66"></div><div class="field"><label for="clubLongitude">Längengrad (für Karte)</label><input id="clubLongitude" type="number" step="any" min="-180" max="180" placeholder="z. B. 6.62"></div></div><p class="small">Bitte nur Koordinaten des öffentlich angezeigten Vereinsstandorts eintragen, nicht zwingend die genaue Hallenadresse.</p><div class="fields"><div class="field"><label for="clubLeagues">Spielbetrieb (Komma trennen)</label><input id="clubLeagues" placeholder="O19, U19, Freizeit"></div><div class="field"><label for="clubOffers">Angebote (Komma trennen)</label><input id="clubOffers" placeholder="Jugendtraining, Trainer verfügbar"></div></div><div class="field"><label for="clubDescription">Beschreibung</label><textarea id="clubDescription" maxlength="3000"></textarea></div>
+          <div class="field"><label for="clubDays">Trainingstage (mit Komma trennen)</label><input id="clubDays" placeholder="z. B. Montag, Mittwoch"></div>
+          <div class="fields">
+            <div class="field"><label for="contactMethod">Kontaktweg *</label><select id="contactMethod" required><option value="internal">Kontakt über die App</option><option value="email">Kontakt per E-Mail</option><option value="both">E-Mail und App</option></select></div>
+            <div class="field"><label for="privateEmail">Private Kontakt-E-Mail (nicht öffentlich)</label><input id="privateEmail" type="email" maxlength="254"></div>
+            <div class="field"><label for="privatePhone">Private Telefonnummer (nicht öffentlich)</label><input id="privatePhone" type="tel" maxlength="80"></div>
+          </div>
+          <div class="field"><label for="trainingAddress">Genaue Trainingsadresse (nicht öffentlich)</label><input id="trainingAddress" maxlength="500"></div>
+          <div class="field"><label for="contactInstructions">Interne Kontakt-Hinweise</label><textarea id="contactInstructions" maxlength="2000"></textarea></div>
+          <label class="checkline"><input type="checkbox" id="publishNow"> Nach dem Speichern direkt veröffentlichen</label>
+          <div class="form-actions"><button class="primary" type="submit">Speichern</button><button class="secondary" type="button" id="resetClubForm">Formular zurücksetzen</button></div>
+        </form>
+      </section>
+      <section id="panel-requests" class="panel" hidden><h3 id="requestsPanelTitle">Eingegangene Vereinsanfragen</h3><p class="small">Hier findest du eingehende und gesendete Kontakte als Chat. Nur die beteiligten Vereine können den Verlauf sehen und Nachrichten schreiben.</p><div id="requestList" class="conversation-list">Anfragen werden geladen …</div><div id="chatOverlay" class="chat-overlay" hidden><section class="chat-popup" role="dialog" aria-modal="true" aria-labelledby="chatPopupTitle"><div class="chat-popup-head"><div><h3 id="chatPopupTitle">Chat</h3><div id="chatPopupSub" class="small"></div></div><button type="button" id="closeChatPopup" class="secondary">Schließen ✕</button></div><div id="chatPopupContent" class="chat-popup-scroll"></div></section></div></section>
+      <section id="panel-club-suggestions" class="panel" hidden><h3>Vereinsanmeldungen prüfen</h3><p class="small">Vorschläge werden erst nach Prüfung als Entwurf angelegt. Die Veröffentlichung erfolgt anschließend durch den Admin.</p><div id="clubSuggestionList">Vorschläge werden geladen …</div></section>
+      <section id="panel-manage" class="panel" hidden><h3 id="managePanelTitle">Vereinsverwaltung</h3><p class="small">Suche nach Vereinsname oder Ort. In der jeweiligen Vereinskarte kannst du Einstellungen, Veröffentlichung, Beitrittsanträge sowie Mitglieder und Historie öffnen. Archivieren erhält den Verein und seine Historie, nimmt aber Verwaltungsrechte weg.</p><div class="fields"><div class="field"><label for="adminClubSearch">Verein suchen</label><input id="adminClubSearch" type="search" placeholder="Vereinsname oder Ort eingeben …" autocomplete="off"></div></div><div id="adminClubList">Vereine werden geladen …</div></section>
+      <section id="panel-membership-requests" class="panel" hidden>
+        <h3>📥 Beitrittsanträge</h3><p class="small">Hier bearbeitest du ausschließlich Beitrittsanträge für die von dir verwalteten Vereine. Die Liste aktualisiert sich beim Öffnen und automatisch alle 30 Sekunden, solange die Vereinsverwaltung geöffnet ist.</p>
+        <div class="fields"><div class="field"><label for="membershipRequestClubSelect">Verein</label><select id="membershipRequestClubSelect"><option value="">Verein auswählen …</option></select></div></div>
+        <div class="form-actions"><button type="button" class="primary" id="reloadMembershipRequests">↻ Anfragen aktualisieren</button></div><div id="membershipRequestsStatus" class="status" hidden></div><div id="membershipRequestsList"><div class="empty">Anträge werden geladen …</div></div>
+      </section>
+      <section id="panel-members" class="panel" hidden>
+        <h3>👥 Vereinsmitglieder &amp; Historie</h3>
+        <p class="small">Aktive Mitgliedschaften und frühere Mitgliedschaften deines Vereins. Beendete Einträge bleiben als Historie erhalten. Die Suche berücksichtigt Spielername und Kontoname.</p>
+        <div class="fields">
+          <div class="field" id="memberClubSelectField"><label for="memberClubSelect">Verein</label><select id="memberClubSelect"><option value="">Verein auswählen …</option></select></div>
+          <div class="field"><label for="memberSearch">Spielername suchen</label><input id="memberSearch" type="search" placeholder="Name eingeben …" autocomplete="off"></div>
+        </div>
+        <div class="form-actions"><button type="button" class="primary" id="reloadMembers">Aktualisieren</button></div>
+        <div id="memberHistoryStatus" class="status" hidden></div>
+        <div id="memberCurrentSection"><h3>Aktuelle Mitglieder</h3><div id="memberHistoryList"><div class="empty">Bitte einen Verein auswählen.</div></div></div>
+        <div id="memberHistorySection" hidden><h3>Historie Mitglieder</h3><p class="small">Frühere oder beendete Mitgliedschaften und Vereinsmanager-Zuordnungen.</p><div id="memberHistoryListHistorical"></div></div>
+        <div id="requestHistorySection" hidden><h3>Historie Anträge</h3><p class="small">Angenommene, abgelehnte und zurückgezogene Anträge. Diese Einträge sind unabhängig von einer regulären Mitgliedschaft.</p><div id="membershipRequestHistoryList"><div class="empty">Bitte einen Verein auswählen.</div></div></div>
+      </section>
+      <section id="panel-turnierde-preview" class="panel" hidden>
+        <h3>👁️ Turnier.de-Spielerliste – Vorschau</h3>
+        <p class="small">Die Liste wird über die vorhandene Supabase Edge Function <code>turnierde-preview</code> geladen. Diese Ansicht ist ausschließlich eine Vorschau: Es werden keine Spieler angelegt, geändert, verknüpft oder importiert.</p>
+        <div class="field"><label for="turnierClubUrl">Turnier.de-Adresse des Vereins *</label><input id="turnierClubUrl" type="url" inputmode="url" placeholder="https://www.turnier.de/..." autocomplete="url" required><p class="small">Füge die URL der Vereins-Spielerseite auf turnier.de ein. Die Adresse wird nur für diese Vorschau verwendet.</p></div>
+        <div class="form-actions"><button type="button" class="primary" id="loadTurnierPreview">Spielerliste laden / aktualisieren</button></div>
+        <div id="turnierPreviewStatus" class="status" role="status">Noch nicht geladen. Tippe auf „Spielerliste laden / aktualisieren“.</div>
+        <div id="turnierPreviewCount" class="small"></div>
+        <div id="turnierPreviewTableWrap"></div>
+      </section>
+      <section id="panel-contact" class="panel" hidden>
+        <h3>Andere Vereine kontaktieren</h3>
+        <p class="small">Wähle einen veröffentlichten Verein und sende eine Kontaktanfrage. Deine Anfrage wird an den ausgewählten Verein übermittelt. Eine Spielgemeinschaft oder zusätzliche Berechtigung entsteht dadurch nicht.</p>
+        <form id="contactClubForm">
+          <div class="field"><label for="targetClub">Verein auswählen *</label><select id="targetClub" required><option value="">Vereine werden geladen …</option></select></div>
+          <div class="field"><label for="contactSubject">Betreff *</label><input id="contactSubject" required maxlength="160" placeholder="z. B. Interesse an Zusammenarbeit"></div>
+          <div class="field"><label for="contactMessage">Nachricht *</label><textarea id="contactMessage" required maxlength="3000" placeholder="Schreibe deine Nachricht …"></textarea></div>
+          <div class="form-actions"><button class="primary" type="submit">Anfrage senden</button></div>
+        </form>
+        <div id="contactFormStatus" class="status" role="status" hidden></div>
+      </section>
+    </div>
+  </div>
+</dialog>
+
+<script>
+// Android/Chrome: keep dialogs within the actually visible viewport when the soft keyboard opens.
+(function(){
+  function updateVisibleViewport(){
+    const vv = window.visualViewport;
+    const height = vv && vv.height ? vv.height : window.innerHeight;
+    document.documentElement.style.setProperty('--visual-viewport-height', Math.max(240, height) + 'px');
+    document.querySelectorAll('dialog[open]').forEach(function(d){
+      d.style.maxHeight = 'calc(var(--visual-viewport-height) - 16px)';
+      d.style.height = 'calc(var(--visual-viewport-height) - 16px)';
+      d.style.top = '8px';
+    });
+  }
+  window.addEventListener('resize', updateVisibleViewport, {passive:true});
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', updateVisibleViewport, {passive:true}); window.visualViewport.addEventListener('scroll', updateVisibleViewport, {passive:true}); }
+  document.addEventListener('focusin', function(e){ if(e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) setTimeout(updateVisibleViewport, 50); });
+  document.addEventListener('focusout', function(){ setTimeout(updateVisibleViewport, 150); });
+  document.addEventListener('DOMContentLoaded', updateVisibleViewport);
+})();
+const SUPABASE_URL='https://apsarswjmsrmffoyxsgr.supabase.co';
+const SUPABASE_KEY='sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+// Darstellung ausschließlich aus den Einstellungen der Startseite übernehmen.
+(function(){
+ const key='badminton-theme';
+ const systemTheme=()=>window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+ const saved=()=>{try{return localStorage.getItem(key)}catch(e){return null}};
+ function applySavedTheme(){const value=saved();document.documentElement.dataset.theme=(value==='dark'||value==='light')?value:systemTheme();}
+ applySavedTheme();
+ // Übernimmt Änderungen, falls die Einstellung in einem anderen Tab geändert wird.
+ window.addEventListener('storage',event=>{if(event.key===key)applySavedTheme();});
+ if(window.matchMedia){const m=window.matchMedia('(prefers-color-scheme: dark)');const update=()=>{const value=saved();if(value!=='dark'&&value!=='light')applySavedTheme()};m.addEventListener?m.addEventListener('change',update):m.addListener(update);}
+})();
+const statusEl=document.getElementById('status'),listEl=document.getElementById('clubList');
+const adminOpen=document.getElementById('adminOpen'),dialog=document.getElementById('adminDialog');
+const adminStatus=document.getElementById('adminStatus'),adminContent=document.getElementById('adminContent');
+let currentUser=null,isAdmin=false,isClubManager=false,managedClubIds=[];
+
+const requestClubDialog=document.getElementById('requestClubDialog');
+document.getElementById('requestClubOpen').addEventListener('click',async()=>{const {data:{session}}=await sb.auth.getSession();currentUser=session?.user||null;const note=document.getElementById('requestClubAuthNote');const form=document.getElementById('requestClubForm');if(!currentUser){form.hidden=true;note.hidden=false;note.innerHTML='Bitte melde dich zuerst an, um einen Verein anzumelden. <a href="index.html">Zur Anmeldung</a>';note.className='status';}else{form.hidden=false;note.hidden=true;const email=document.getElementById('applicantEmail');if(!email.value)email.value=currentUser.email||'';const meta=currentUser.user_metadata||{};const nameInput=document.getElementById('applicantName');if(!nameInput.value)nameInput.value=meta.full_name||meta.name||[meta.first_name,meta.last_name].filter(Boolean).join(' ')||'';}document.getElementById('requestClubFormStatus').hidden=true;requestClubDialog.showModal();});
+document.getElementById('closeRequestClub').addEventListener('click',()=>requestClubDialog.close());
+document.getElementById('requestClubForm').addEventListener('submit',async e=>{e.preventDefault();const {data:{session}}=await sb.auth.getSession();if(!session?.user){message(document.getElementById('requestClubFormStatus'),'Bitte zuerst anmelden.','error');return;}const applicantName=document.getElementById('applicantName').value.trim();const applicantEmail=document.getElementById('applicantEmail').value.trim().toLowerCase();if(!applicantName||!applicantEmail){message(document.getElementById('requestClubFormStatus'),'Bitte Name und Kontakt-E-Mail-Adresse angeben.','error');return;}if(session.user.email&&applicantEmail!==session.user.email.toLowerCase()){message(document.getElementById('requestClubFormStatus'),'Bitte nutze zunächst die E-Mail-Adresse deines angemeldeten, bestätigten Kontos. So kann die Administration deine Kontaktadresse verlässlich zuordnen.','error');return;}const payload={requester_id:session.user.id,applicant_name:applicantName,applicant_email:applicantEmail,club_name:document.getElementById('suggestClubName').value.trim(),city:document.getElementById('suggestClubCity').value.trim(),postal_code:document.getElementById('suggestClubPostal').value.trim(),website:document.getElementById('suggestClubWebsite').value.trim()||null,reason:document.getElementById('suggestClubReason').value.trim()||null,status:'pending'};const {error}=await sb.from('club_creation_requests').insert(payload);if(error){message(document.getElementById('requestClubFormStatus'),'Anmeldung konnte nicht gesendet werden: '+error.message,'error');return;}message(document.getElementById('requestClubFormStatus'),'Anmeldung wurde an die Administration gesendet.','success');e.target.reset();});
+async function loadClubSuggestions(){const el=document.getElementById('clubSuggestionList');el.textContent='Vorschläge werden geladen …';const {data,error}=await sb.from('club_creation_requests').select('id,requester_id,applicant_name,applicant_email,club_name,city,postal_code,website,reason,status,created_at').order('created_at',{ascending:false});if(error){el.textContent='Vorschläge konnten nicht geladen werden: '+error.message;return;}const pendingCount=(data||[]).filter(r=>r.status==='pending').length;const badge=document.getElementById('openClubApplicationsBadge');if(badge){badge.textContent=pendingCount+' offen';badge.hidden=pendingCount===0;}const tab=document.querySelector('[data-tab="club-suggestions"]');if(tab){tab.setAttribute('aria-label',pendingCount+' offene Vereinsanmeldungen');}if(!data?.length){el.innerHTML='<div class="empty">Keine Vereinsanmeldungen vorhanden.</div>';return;}el.innerHTML=data.map(r=>'<article class="admin-item"><h3>'+esc(r.club_name)+' <span class="badge '+(r.status==='pending'?'pending':r.status==='approved'?'published':'')+'">'+esc(r.status==='pending'?'Zu prüfen':r.status==='approved'?'Angenommen':'Abgelehnt')+'</span></h3><p>📍 '+esc((r.postal_code||'')+' '+r.city)+'</p><p>👤 Anmelder: '+esc(r.applicant_name||'Keine Angabe')+'</p><p>✉️ Kontakt: '+(r.applicant_email?'<a href="mailto:'+esc(r.applicant_email)+'">'+esc(r.applicant_email)+'</a>':'Keine Angabe')+'</p>'+(r.website?'<p>🌐 <a href="'+esc(r.website)+'" target="_blank" rel="noopener">Website öffnen</a></p>':'')+(r.reason?'<p>'+esc(r.reason)+'</p>':'')+'<p class="small">Eingegangen: '+new Date(r.created_at).toLocaleString('de-DE')+'</p>'+(r.status==='pending'?'<div class="admin-actions"><button class="primary" data-approve-suggestion="'+esc(r.id)+'">Annehmen &amp; als Entwurf anlegen</button><button class="danger" data-reject-suggestion="'+esc(r.id)+'">Ablehnen</button></div>':'')+'</article>').join('');el.querySelectorAll('[data-approve-suggestion]').forEach(b=>b.addEventListener('click',()=>approveClubSuggestion(b.dataset.approveSuggestion)));el.querySelectorAll('[data-reject-suggestion]').forEach(b=>b.addEventListener('click',()=>rejectClubSuggestion(b.dataset.rejectSuggestion)));}
+async function approveClubSuggestion(id){
+  if(!isAdmin||!currentUser)return;
+  const button=document.querySelector('[data-approve-suggestion="'+CSS.escape(id)+'"]');
+  if(button){button.disabled=true;button.textContent='Wird genehmigt …';}
+  const {data:clubId,error}=await sb.rpc('approve_club_creation_request',{p_request_id:id});
+  if(error){
+    message(adminStatus,'Genehmigung fehlgeschlagen: '+error.message,'error');
+    if(button){button.disabled=false;button.textContent='Annehmen & als Entwurf anlegen';}
+    return;
+  }
+  if(!clubId){
+    message(adminStatus,'Genehmigung wurde ausgeführt, aber es wurde keine Vereins-ID zurückgegeben. Bitte den Status prüfen.','error');
+    return;
+  }
+  message(adminStatus,'Anmeldung angenommen. Der Verein wurde als unveröffentlichter Entwurf angelegt; der Anmelder ist Vereinsmanager und aktives Mitglied. Bitte den Verein prüfen und anschließend veröffentlichen.','success');
+  await Promise.all([loadClubSuggestions(),loadAdminClubs(),loadClubs()]);
+}
+async function rejectClubSuggestion(id){if(!isAdmin||!currentUser)return;const {error}=await sb.from('club_creation_requests').update({status:'rejected',reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq('id',id).eq('status','pending');if(error){message(adminStatus,'Ablehnen fehlgeschlagen: '+error.message,'error');return;}await loadClubSuggestions();}
+
+
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function message(el,text,type=''){el.className='status'+(type?' '+type:'');el.textContent=text;el.hidden=false;}
+function showEmpty(text){listEl.innerHTML='<div class="empty">'+esc(text)+'</div>';listEl.style.display='block';}
+let allPublicClubs=[], userPoint=null, clubMap=null, mapMarkers=[];
+function distanceKm(a,b){const r=Math.PI/180,dLat=(b.lat-a.lat)*r,dLon=(b.lon-a.lon)*r;const x=Math.sin(dLat/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLon/2)**2;return 6371*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+function checkedValues(name){return [...document.querySelectorAll('input[name="'+name+'"]:checked')].map(x=>x.value);}
+function currentFilters(){return {q:document.getElementById('clubSearch').value.trim().toLowerCase(),dist:Number(document.getElementById('distanceFilter').value),day:checkedValues('trainingFilter'),league:checkedValues('leagueFilter'),offer:document.getElementById('offerFilter').value};}
+function filteredClubs(){const f=currentFilters();return allPublicClubs.filter(c=>{const text=[c.name,c.city,c.postal_code].filter(Boolean).join(' ').toLowerCase();if(f.q&&!text.includes(f.q))return false;if(f.day.length&& !f.day.some(d=>(c.training_days||[]).some(x=>String(x).toLowerCase().includes(d.toLowerCase()))))return false;if(f.league.length&& !f.league.some(x=>(c.league_levels||[]).includes(x)))return false;if(f.offer&&!(c.offers||[]).includes(f.offer))return false;if(f.dist){if(!userPoint||c.latitude==null||c.longitude==null)return false;if(distanceKm(userPoint,{lat:Number(c.latitude),lon:Number(c.longitude)})>f.dist)return false;}return true;}).sort((a,b)=>{if(userPoint&&a.latitude!=null&&a.longitude!=null&&b.latitude!=null&&b.longitude!=null)return distanceKm(userPoint,{lat:a.latitude,lon:a.longitude})-distanceKm(userPoint,{lat:b.latitude,lon:b.longitude});return a.name.localeCompare(b.name,'de');});}
+function renderClubs(){const data=filteredClubs();if(!data.length){showEmpty('Keine Vereine passen zu diesen Filtern. Bitte Filter anpassen oder zurücksetzen.');}else{listEl.style.display='';listEl.className='club-list';listEl.innerHTML=data.map(c=>{const km=userPoint&&c.latitude!=null&&c.longitude!=null?Math.round(distanceKm(userPoint,{lat:Number(c.latitude),lon:Number(c.longitude)}))+' km entfernt':'';return '<button type="button" class="club" data-club-detail="'+esc(c.id)+'" aria-label="Details zu '+esc(c.name)+' öffnen"><span class="club-summary"><span><h2>'+esc(c.name)+'</h2><span class="city">📍 '+esc((c.postal_code?c.postal_code+' ':'')+c.city)+'</span></span><span><small>'+esc(km)+'</small>　⌄</span></span></button>';}).join('');listEl.querySelectorAll('[data-club-detail]').forEach(b=>b.addEventListener('click',()=>openClubDetails(b.dataset.clubDetail)));}renderMap(data);document.getElementById('searchHint').textContent=`${data.length} Verein(e) gefunden. Entfernung und Kartenmarkierungen benötigen gespeicherte Vereinskoordinaten.`;}
+async function openClubDetails(id){
+ const c=allPublicClubs.find(x=>x.id===id);if(!c)return;
+ document.getElementById('clubDetailTitle').textContent=c.name;document.getElementById('clubDetailLocation').textContent=(c.postal_code?c.postal_code+' ':'')+c.city;
+ const tags=[...(c.league_levels||[]),...(c.offers||[])];
+ document.getElementById('clubDetailContent').innerHTML=(c.description?'<div class="detail-line">'+esc(c.description)+'</div>':'')+'<div class="detail-line"><strong>Trainingstage</strong><br>'+esc((c.training_days||[]).join(', ')||'Nicht angegeben')+'</div><div class="detail-line"><strong>Spielbetrieb und Angebote</strong><br>'+esc(tags.join(' · ')||'Keine Angaben')+'</div><div class="detail-line">Die genaue Trainingsadresse und private Kontaktdaten werden nicht öffentlich angezeigt.</div>';
+ const form=document.getElementById('quickContactForm'),note=document.getElementById('clubDetailAuthNote'),self=document.getElementById('selfMembershipActions'),join=document.getElementById('joinClubArea');self.innerHTML='';join.innerHTML='';form.hidden=!currentUser;note.hidden=!!currentUser;
+ if(!currentUser){note.innerHTML='Für Kontaktanfragen und Beitrittsanträge musst du angemeldet sein. <a href="index.html">Zur Anmeldung</a>';note.className='status';}
+ document.getElementById('quickContactClubId').value=id;document.getElementById('quickContactStatus').hidden=true;document.getElementById('clubDetailDialog').showModal();
+ if(currentUser){
+  const [{data:membershipRows,error:memErr},{data:request,error:reqErr}] = await Promise.all([
+   sb.from('club_memberships').select('id,status,created_at,joined_at,ended_at,end_type').eq('club_id',id).eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+   sb.from('club_membership_requests').select('id,status').eq('club_id',id).eq('user_id',currentUser.id).eq('status','pending').maybeSingle()
+  ]);
+  // Bei älteren doppelten Datensätzen den neuesten Eintrag als aktuellen Status behandeln.
+  const latestMembership=(membershipRows||[])[0]||null;
+  const membership=latestMembership?.status==='active'?latestMembership:null;
+  if(!memErr&&membership){self.innerHTML='<div class="detail-line"><strong>Deine Vereinsmitgliedschaft</strong><p>Du bist aktuell Mitglied bei '+esc(c.name)+'. Beitritt: '+(membership.joined_at?new Date(membership.joined_at).toLocaleDateString('de-DE'):'Datum nicht hinterlegt')+'.</p><button type="button" class="danger" id="leaveClubButton">Mitgliedschaft beenden</button><div id="leaveClubStatus" class="status" hidden></div></div>';document.getElementById('leaveClubButton').addEventListener('click',async()=>{if(!confirm('Möchtest du deine Mitgliedschaft bei „'+c.name+'“ wirklich beenden? Deine Spielergebnisse und die Historie bleiben erhalten.'))return;const b=document.getElementById('leaveClubButton');b.disabled=true;const {error}=await sb.rpc('leave_club',{target_membership_id:membership.id});const st=document.getElementById('leaveClubStatus');if(error){message(st,'Austritt fehlgeschlagen: '+error.message,'error');st.hidden=false;b.disabled=false;return;}message(st,'Deine Mitgliedschaft wurde beendet. Der historische Eintrag bleibt erhalten. Bitte schließe die Vereinsdetails und öffne sie erneut, um den Status zu aktualisieren.','success');st.hidden=false;b.remove();});}
+  else if(!memErr){
+   if(latestMembership&&latestMembership.status!=='active'){self.innerHTML='<div class="detail-line"><strong>Frühere Mitgliedschaft</strong><p>Deine letzte Mitgliedschaft bei '+esc(c.name)+' ist beendet. Du kannst bei Interesse erneut eine Beitrittsanfrage stellen.</p></div>';}
+   if(!reqErr&&request){join.innerHTML='<div class="detail-line"><strong>Beitrittsantrag offen</strong><p>Deine Anfrage wartet auf die Entscheidung des Vereins.</p><button type="button" class="secondary" id="withdrawJoinRequest">Antrag zurückziehen</button><div id="joinRequestStatus" class="status" hidden></div></div>';document.getElementById('withdrawJoinRequest').addEventListener('click',async()=>{if(!confirm('Möchtest du deinen Beitrittsantrag zurückziehen?'))return;const {error}=await sb.from('club_membership_requests').update({status:'withdrawn',updated_at:new Date().toISOString()}).eq('id',request.id).eq('user_id',currentUser.id).eq('status','pending');const st=document.getElementById('joinRequestStatus');if(error){message(st,'Antrag konnte nicht zurückgezogen werden: '+error.message,'error');st.hidden=false;return;}message(st,'Antrag zurückgezogen.','success');st.hidden=false;});}
+   else if(!reqErr){const meta=currentUser.user_metadata||{},prefillName=meta.full_name||meta.name||[meta.first_name,meta.last_name].filter(Boolean).join(' ')||'';join.innerHTML='<form id="joinClubForm" class="detail-line"><h3>Mitgliedschaft beantragen</h3><p>Der Vereinsmanager prüft deinen Antrag. Eine Mitgliedschaft entsteht erst nach Annahme.</p><div class="field"><label for="joinApplicantName">Vor- und Nachname *</label><input id="joinApplicantName" required maxlength="160" autocomplete="name" value="'+esc(prefillName)+'"></div><div class="field"><label for="joinApplicantEmail">E-Mail-Adresse *</label><input id="joinApplicantEmail" type="email" required maxlength="254" autocomplete="email" readonly value="'+esc(currentUser.email||'')+'"><small class="small">Die E-Mail-Adresse stammt aus deinem angemeldeten Konto.</small></div><div class="field"><label for="joinApplicantPhone">Telefon (optional)</label><input id="joinApplicantPhone" type="tel" maxlength="80" autocomplete="tel"></div><div class="field"><label for="joinApplicantMessage">Nachricht (optional)</label><textarea id="joinApplicantMessage" maxlength="1500" placeholder="z. B. Trainingsinteresse oder Altersklasse"></textarea></div><div class="form-actions"><button class="primary" type="submit">Mitgliedschaft beantragen</button></div><div id="joinRequestStatus" class="status" hidden></div></form>';document.getElementById('joinClubForm').addEventListener('submit',async ev=>{ev.preventDefault();const b=ev.currentTarget.querySelector('button[type="submit"]'),st=document.getElementById('joinRequestStatus');if(!currentUser?.email){message(st,'Dein Konto hat keine hinterlegte E-Mail-Adresse. Bitte ergänze sie in deinem Konto.','error');st.hidden=false;return;}b.disabled=true;const payload={club_id:id,user_id:currentUser.id,applicant_name:document.getElementById('joinApplicantName').value.trim(),contact_email:currentUser.email,contact_phone:document.getElementById('joinApplicantPhone').value.trim()||null,message:document.getElementById('joinApplicantMessage').value.trim()||null,status:'pending'};const {error}=await sb.from('club_membership_requests').insert(payload);if(error){message(st,error.code==='23505'?'Für diesen Verein gibt es bereits einen offenen Antrag.':'Antrag konnte nicht gesendet werden: '+error.message,'error');st.hidden=false;b.disabled=false;return;}message(st,'Dein Beitrittsantrag wurde gesendet. Der Verein muss ihn noch bestätigen.','success');st.hidden=false;b.remove();});}
+  }
+ }
+}
+function renderMap(data){if(!window.L)return;const el=document.getElementById('clubMap');if(!clubMap){clubMap=L.map(el).setView([51.5,7.5],8);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap-Mitwirkende'}).addTo(clubMap);}mapMarkers.forEach(m=>m.remove());mapMarkers=[];data.filter(c=>c.latitude!=null&&c.longitude!=null).forEach(c=>{const m=L.marker([Number(c.latitude),Number(c.longitude)]).addTo(clubMap).bindPopup('<strong>'+esc(c.name)+'</strong><br>'+esc((c.postal_code?c.postal_code+' ':'')+c.city));mapMarkers.push(m);});const pts=data.filter(c=>c.latitude!=null&&c.longitude!=null);if(pts.length){const bounds=L.latLngBounds(pts.map(c=>[Number(c.latitude),Number(c.longitude)]));clubMap.fitBounds(bounds.pad(.18),{maxZoom:12});}else if(userPoint)clubMap.setView([userPoint.lat,userPoint.lon],10);setTimeout(()=>clubMap.invalidateSize(),100);}
+async function geocodeLocation(q){if(!q.trim())throw new Error('Bitte Ort oder Postleitzahl eingeben.');const url='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&country=Germany&q='+encodeURIComponent(q);const res=await fetch(url,{headers:{'Accept':'application/json'}});if(!res.ok)throw new Error('Standort konnte nicht gesucht werden. Bitte erneut versuchen.');const data=await res.json();if(!data.length)throw new Error('Kein passender Standort gefunden.');return {lat:Number(data[0].lat),lon:Number(data[0].lon)};}
+async function loadClubs(){
+ const {data,error}=await sb.from('clubs').select('id,name,city,postal_code,latitude,longitude,description,training_days,contact_method,league_levels,offers').eq('is_published',true).is('archived_at',null).order('name');
+ if(error){message(statusEl,'Die Vereinsliste konnte nicht geladen werden. Bitte später erneut versuchen.','error');showEmpty('Es ist ein Fehler beim Laden aufgetreten.');console.error(error);return;}
+ allPublicClubs=data||[];statusEl.style.display='none';updateFilterChips();renderClubs();
+}
+let openFilterName=null;
+function closeFilter(name){const target=name||openFilterName;if(!target)return;const drawer=document.getElementById('filter-'+target);const chip=document.querySelector('[data-filter-toggle="'+target+'"]');if(drawer)drawer.hidden=true;if(chip)chip.setAttribute('aria-expanded','false');if(openFilterName===target)openFilterName=null;}
+function openFilter(name){if(openFilterName&&openFilterName!==name)closeFilter(openFilterName);const drawer=document.getElementById('filter-'+name);const chip=document.querySelector('[data-filter-toggle="'+name+'"]');if(!drawer||!chip)return;const willOpen=drawer.hidden;drawer.hidden=!willOpen;chip.setAttribute('aria-expanded',String(willOpen));openFilterName=willOpen?name:null;}
+function updateFilterChips(){const f=currentFilters();const loc=!!f.dist||!!userPoint;const train=f.day.length>0,league=f.league.length>0,offer=!!f.offer;[['location',loc,loc?(f.dist?f.dist+' km':(document.getElementById('locationInput').value||'Standort')):''],['training',train,f.day.join(', ')],['league',league,f.league.join(', ')],['offer',offer,f.offer]].forEach(([name,active,label])=>{const chip=document.querySelector('[data-filter-toggle="'+name+'"]');const state=document.getElementById(name+'ChipState');chip.classList.toggle('active-filter',active);state.textContent=active?' · '+label:'';});const count=[loc,train,league,offer].filter(Boolean).length;document.getElementById('activeFilterSummary').textContent=count+' Filter aktiv';}
+function applyFilterAndClose(name){closeFilter(name);updateFilterChips();renderClubs();}
+document.querySelectorAll('[data-filter-toggle]').forEach(btn=>btn.addEventListener('click',()=>openFilter(btn.dataset.filterToggle)));
+document.querySelectorAll('[data-close-filter]').forEach(btn=>btn.addEventListener('click',()=>applyFilterAndClose(btn.dataset.closeFilter)));
+document.getElementById('clubSearch').addEventListener('input',renderClubs);
+['distanceFilter','offerFilter'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{updateFilterChips();renderClubs();}));
+document.getElementById('resetFilters').addEventListener('click',()=>{['clubSearch','distanceFilter','offerFilter','locationInput'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('input[name="trainingFilter"],input[name="leagueFilter"]').forEach(x=>x.checked=false);userPoint=null;closeFilter();updateFilterChips();renderClubs();});
+document.getElementById('applyLocation').addEventListener('click',async()=>{const b=document.getElementById('applyLocation');b.disabled=true;try{userPoint=await geocodeLocation(document.getElementById('locationInput').value);closeFilter('location');updateFilterChips();renderClubs();}catch(e){message(statusEl,e.message,'error');}finally{b.disabled=false;}});
+document.getElementById('useMyLocation').addEventListener('click',()=>{if(!window.isSecureContext){message(statusEl,'Der Handy-Standort wird in lokal geöffneten HTML-Dateien von Chrome oft blockiert. Für GPS muss die Seite über eine sichere HTTPS-Adresse geöffnet werden. Bis dahin bitte Ort oder PLZ manuell eingeben.','error');return;}if(!navigator.geolocation){message(statusEl,'Standortfreigabe wird von diesem Browser nicht unterstützt. Bitte Ort oder PLZ manuell eingeben.','error');return;}navigator.geolocation.getCurrentPosition(pos=>{userPoint={lat:pos.coords.latitude,lon:pos.coords.longitude};document.getElementById('locationInput').value='Handy-Standort';closeFilter('location');updateFilterChips();renderClubs();},err=>message(statusEl,err.code===1?'Standortfreigabe wurde abgelehnt. Bitte Berechtigung erlauben oder Ort/PLZ eingeben.':'Standort konnte nicht ermittelt werden. Bitte Ort/PLZ manuell eingeben.', 'error'),{enableHighAccuracy:false,timeout:15000,maximumAge:300000});});
+document.getElementById('closeClubDetail').addEventListener('click',()=>document.getElementById('clubDetailDialog').close());
+document.getElementById('quickContactForm').addEventListener('submit',async e=>{e.preventDefault();const status=document.getElementById('quickContactStatus');if(!currentUser){message(status,'Bitte zuerst anmelden.','error');return;}const clubId=document.getElementById('quickContactClubId').value;const subject=document.getElementById('quickContactSubject').value.trim();const body=document.getElementById('quickContactMessage').value.trim();if(!subject||!body){message(status,'Bitte Betreff und Nachricht eingeben.','error');return;}if(managedClubIds.includes(clubId)){message(status,'Du kannst keine Anfrage an deinen eigenen Verein senden.','error');return;}const {error}=await sb.from('club_contact_requests').insert({club_id:clubId,requester_id:currentUser.id,subject,message:body,status:'new'});if(error){message(status,'Anfrage konnte nicht gesendet werden: '+error.message,'error');return;}message(status,'Kontaktanfrage wurde gesendet.','success');document.getElementById('quickContactSubject').value='';document.getElementById('quickContactMessage').value='';});
+document.getElementById('showList').addEventListener('click',()=>{listEl.hidden=false;document.getElementById('clubMap').hidden=true;document.getElementById('showList').className='primary active';document.getElementById('showMap').className='secondary';});
+document.getElementById('showMap').addEventListener('click',()=>{listEl.hidden=true;document.getElementById('clubMap').hidden=false;document.getElementById('showMap').className='primary active';document.getElementById('showList').className='secondary';renderMap(filteredClubs());});
+
+async function checkAdmin(){
+ const {data:{session}}=await sb.auth.getSession();
+ currentUser=session?.user||null;isAdmin=false;isClubManager=false;managedClubIds=[];
+ if(currentUser){
+  const {data:profile,error}=await sb.from('profiles').select('role').eq('id',currentUser.id).maybeSingle();
+  isAdmin=!error&&profile?.role==='admin';
+  const {data:memberships}=await sb.from('club_managers').select('club_id').eq('user_id',currentUser.id);
+  managedClubIds=(memberships||[]).map(x=>x.club_id).filter(Boolean);
+  isClubManager=managedClubIds.length>0;
+ }
+ adminOpen.hidden=!(isAdmin||isClubManager);
+}
+adminOpen.addEventListener('click',async()=>{
+ if(!isAdmin&&!isClubManager){message(adminStatus,'Du hast keine Vereinsverwaltungsrechte für einen Verein.','error');dialog.showModal();return;}
+ dialog.showModal();adminContent.hidden=false;
+ const tabs=[...document.querySelectorAll('[data-tab]')];
+ tabs.forEach(t=>{t.hidden=t.dataset.tab==='contact'?isAdmin:(t.dataset.tab==='club-suggestions'?!isAdmin:(!isAdmin&&!['manage','requests','members','membership-requests','turnierde-preview'].includes(t.dataset.tab)));});
+ document.getElementById('publishNow').closest('label').hidden=!isAdmin;
+ document.querySelector('[data-tab="manage"]').textContent=isAdmin?'🔎 Vereine & Verwaltung':'✏️ Meinen Verein bearbeiten';
+ document.querySelector('[data-tab="requests"]').textContent=isAdmin?'📨 Anfragen bearbeiten':'📥 Eingehende Anfragen';
+ document.getElementById('requestsPanelTitle').textContent=isAdmin?'Eingegangene Vereinsanfragen':'Anfragen an deinen Verein';
+ document.getElementById('managePanelTitle').textContent=isAdmin?'Vereine und Veröffentlichungen':'Meinen Verein bearbeiten';
+ if(isAdmin){message(adminStatus,'Adminzugriff bestätigt.','success');document.getElementById('managedClubsSummary').hidden=true;await Promise.all([loadAdminClubs(),loadRequests(),loadClubSuggestions(),loadMemberClubOptions(),loadMembershipRequestClubOptions()]);document.querySelector('[data-tab="requests"]').click();}
+ else {await Promise.all([loadAdminClubs(),loadContactTargets(),loadRequests(),loadMemberClubOptions(),loadMembershipRequestClubOptions()]);const clubNames=[...document.querySelectorAll('#adminClubList .admin-item')].map(x=>x.querySelector('h3')?.childNodes[0]?.textContent?.trim()).filter(Boolean);const summary=document.getElementById('managedClubsSummary');summary.hidden=false;message(summary,'Du verwaltest '+(clubNames.length===1?'diesen Verein: ':'diese Vereine: ')+(clubNames.length?clubNames.join(' · '):'Es sind keine Vereine zugeordnet.'),'success');adminStatus.hidden=true;adminStatus.textContent='';document.querySelector('[data-tab="manage"]').click();}
+});
+document.getElementById('closeAdmin').addEventListener('click',()=>{dialog.close();if(membershipRequestRefreshTimer){clearInterval(membershipRequestRefreshTimer);membershipRequestRefreshTimer=null;}});
+dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
+document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('[data-tab]').forEach(b=>{b.classList.toggle('active',b===btn);b.classList.toggle('secondary',b!==btn);});
+ document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='panel-'+btn.dataset.tab);
+ if(btn.dataset.tab==='members'){loadMemberClubOptions();setMemberView(memberView||'current');}
+ if(btn.dataset.tab==='membership-requests'){loadMembershipRequestClubOptions();loadMembershipRequests();if(membershipRequestRefreshTimer)clearInterval(membershipRequestRefreshTimer);membershipRequestRefreshTimer=setInterval(()=>{if(dialog.open&&document.getElementById('panel-membership-requests').hidden===false)loadMembershipRequests();},30000);}else if(membershipRequestRefreshTimer){clearInterval(membershipRequestRefreshTimer);membershipRequestRefreshTimer=null;}
+}));
+
+document.getElementById('loadTurnierPreview').addEventListener('click', loadTurnierPreview);
+
+function renderTurnierPreview(players){
+ const wrap=document.getElementById('turnierPreviewTableWrap');
+ const count=document.getElementById('turnierPreviewCount');
+ const safeRows=Array.isArray(players)?players:[];
+ count.textContent=safeRows.length+' Spieler in der Vorschau. Es wurden keine Daten gespeichert.';
+ if(!safeRows.length){
+  wrap.innerHTML='<div class="empty">Die Funktion hat keine Spieler zurückgegeben. Bitte die Statusmeldung oben prüfen.</div>';
+  return;
+ }
+ const columns=[
+  ['name','Name'],
+  ['playerId','Spieler-ID'],
+  ['gender','Geschlecht'],
+  ['birthYear','Geburtsjahr'],
+  ['ageClass','Altersklasse']
+ ];
+ wrap.innerHTML='<div style="overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:12px"><table style="width:100%;border-collapse:collapse;min-width:600px;background:var(--card)"><thead><tr>'+
+  columns.map(c=>'<th scope="col" style="text-align:left;padding:10px;border-bottom:1px solid var(--border);white-space:nowrap">'+c[1]+'</th>').join('')+
+  '</tr></thead><tbody>'+safeRows.map(p=>'<tr>'+columns.map(c=>'<td style="padding:10px;border-bottom:1px solid var(--border)">'+esc(p?.[c[0]]??'—')+'</td>').join('')+'</tr>').join('')+
+  '</tbody></table></div>';
+}
+async function loadTurnierPreview(){
+ const button=document.getElementById('loadTurnierPreview');
+ const status=document.getElementById('turnierPreviewStatus');
+ const wrap=document.getElementById('turnierPreviewTableWrap');
+ const count=document.getElementById('turnierPreviewCount');
+ if(!currentUser||(!isAdmin&&!isClubManager)){
+  message(status,'Bitte als Vereinsmanager oder Admin anmelden.','error');
+  return;
+ }
+ button.disabled=true;button.textContent='Spielerliste wird geladen …';
+ status.hidden=false;message(status,'Turnier.de-Spielerliste wird abgerufen. Es werden keine Daten in der Datenbank gespeichert.','');
+ wrap.innerHTML='';count.textContent='';
+ try{
+  const url=document.getElementById('turnierClubUrl').value.trim();
+  if(!url)throw new Error('Bitte zuerst die Turnier.de-Adresse des Vereins eingeben.');
+  let parsedUrl;try{parsedUrl=new URL(url);}catch{throw new Error('Bitte eine gültige vollständige URL eingeben.');}
+  if(parsedUrl.protocol!=='https:'||!/(^|\.)turnier\.de$/i.test(parsedUrl.hostname))throw new Error('Bitte eine HTTPS-Adresse von turnier.de eingeben.');
+  const {data,error}=await sb.functions.invoke('turnierde-preview',{body:{url}});
+  if(error)throw error;
+  const result=data?.data&&typeof data.data==='object'?data.data:data;
+  if(!result||result.success===false)throw new Error(result?.error||result?.message||'Die Vorschau-Funktion hat keinen erfolgreichen Status zurückgegeben.');
+  const players=Array.isArray(result.players)?result.players:(Array.isArray(result.data?.players)?result.data.players:[]);
+  if(!Array.isArray(result.players)&&!Array.isArray(result.data?.players)){
+   throw new Error('Die Funktion wurde erreicht, aber die erwartete Spielerliste fehlt in der Antwort.');
+  }
+  renderTurnierPreview(players);
+  message(status,'Vorschau erfolgreich geladen. Es wurden keine Daten importiert oder gespeichert.','success');
+ }catch(err){
+  const detail=err?.context?.status?(' HTTP '+err.context.status):'';
+  message(status,'Spielerliste konnte nicht geladen werden: '+(err?.message||String(err))+detail,'error');
+  count.textContent='Wenn „Failed to send a request“ erneut erscheint, muss die Edge Function turnierde-preview in Supabase geprüft werden (Deployment, URL/CORS und Logs). Für individuelle Vereinsadressen muss sie außerdem das Feld „url“ aus der Anfrage verarbeiten.';
+ }finally{
+  button.disabled=false;button.textContent='Spielerliste laden / aktualisieren';
+ }
+}
+
+function updateMembershipRequestBadge(n){const b=document.getElementById('membershipRequestBadge');if(!b)return;b.textContent=n+' offen';b.hidden=!n;}
+async function loadMembershipRequestClubOptions(){
+ const sel=document.getElementById('membershipRequestClubSelect');if(!sel)return;
+ let q=sb.from('clubs').select('id,name,city').is('archived_at',null).order('name');
+ if(!isAdmin){if(!managedClubIds.length){sel.innerHTML='<option value="">Keine verwalteten Vereine</option>';return;}q=q.in('id',managedClubIds);}
+ const {data,error}=await q;if(error){sel.innerHTML='<option value="">Vereine konnten nicht geladen werden</option>';return;}
+ const old=sel.value;sel.innerHTML='<option value="">Verein auswählen …</option>'+(data||[]).map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name+' – '+c.city)+'</option>').join('');
+ if(old&&(data||[]).some(c=>c.id===old))sel.value=old;else if(data?.length===1)sel.value=data[0].id;
+ if(sel.value)await loadMembershipRequests();else{document.getElementById('membershipRequestsList').innerHTML='<div class="empty">Bitte einen Verein auswählen.</div>';updateMembershipRequestBadge(0);}
+}
+document.getElementById('membershipRequestClubSelect').addEventListener('change',loadMembershipRequests);
+document.getElementById('reloadMembershipRequests').addEventListener('click',loadMembershipRequests);
+let membershipRequestRefreshTimer=null;
+document.getElementById('adminClubSearch')?.addEventListener('input',()=>{const term=document.getElementById('adminClubSearch').value.trim().toLocaleLowerCase('de-DE');document.querySelectorAll('#adminClubList .admin-item').forEach(card=>{card.hidden=!card.textContent.toLocaleLowerCase('de-DE').includes(term);});});
+// Mitgliederübersicht: Manager sehen ausschließlich Vereine, für die sie berechtigt sind.
+async function loadMemberClubOptions(){
+ const sel=document.getElementById('memberClubSelect');
+ const field=document.getElementById('memberClubSelectField');
+ const ids=isAdmin?null:managedClubIds;
+ let q=sb.from('clubs').select('id,name,city').is('archived_at',null).order('name');
+ if(ids) { if(!ids.length){sel.innerHTML='<option value="">Keine verwalteten Vereine</option>';if(field)field.hidden=true;return;} q=q.in('id',ids); }
+ const {data,error}=await q;
+ if(error){sel.innerHTML='<option value="">Vereine konnten nicht geladen werden</option>';return;}
+ const previous=sel.value;
+ sel.innerHTML='<option value="">Verein auswählen …</option>'+(data||[]).map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name+' – '+c.city)+'</option>').join('');
+ if(previous&&(data||[]).some(c=>c.id===previous))sel.value=previous;
+ else if(data?.length===1)sel.value=data[0].id;
+ // Globale Admins behalten die Vereinsauswahl. Manager mit genau einem zugeordneten Verein brauchen sie nicht.
+ if(field)field.hidden=!isAdmin&&(data||[]).length===1;
+ if(sel.value){await loadMemberHistory();await loadMembershipRequests();}
+}
+function memberStatusLabel(m){if(m.status==='active')return '<span class="badge published">Aktiv</span>';const t=m.end_type==='left_voluntarily'?'Selbst ausgetreten':m.end_type==='removed_by_manager'?'Durch Manager entfernt':'Beendet';return '<span class="badge">'+esc(t)+'</span>';}
+async function loadMembershipRequests(){
+ const clubId=document.getElementById('membershipRequestClubSelect').value,el=document.getElementById('membershipRequestsList'),status=document.getElementById('membershipRequestsStatus')||document.getElementById('memberHistoryStatus');
+ if(!clubId){el.innerHTML='<div class="empty">Bitte einen Verein auswählen.</div>';updateMembershipRequestBadge(0);return;}
+ if(!isAdmin&&!managedClubIds.includes(clubId)){el.innerHTML='<div class="empty">Keine Berechtigung.</div>';return;}
+ el.textContent='Beitrittsanträge werden geladen …';
+ const {data,error}=await sb.from('club_membership_requests').select('id,user_id,applicant_name,contact_email,contact_phone,message,status,created_at').eq('club_id',clubId).eq('status','pending').order('created_at',{ascending:true});
+ if(error){el.innerHTML='<div class="empty">Anträge konnten nicht geladen werden: '+esc(error.message)+'</div>';updateMembershipRequestBadge(0);return;}
+ updateMembershipRequestBadge(data?.length||0);
+ if(!data?.length){el.innerHTML='<div class="empty">Keine offenen Beitrittsanträge für diesen Verein.</div>';return;}
+ el.innerHTML=data.map(r=>'<article class="admin-item"><h3>'+esc(r.applicant_name)+' <span class="badge new-request">Neue Anfrage · Offen</span></h3><p>✉️ '+esc(r.contact_email)+(r.contact_phone?' · ☎️ '+esc(r.contact_phone):'')+'</p>'+(r.message?'<p>'+esc(r.message)+'</p>':'')+'<p class="small">Eingegangen: '+new Date(r.created_at).toLocaleString('de-DE')+'</p><div class="admin-actions"><button type="button" class="primary" data-accept-join="'+esc(r.id)+'">Annehmen</button><button type="button" class="danger" data-reject-join="'+esc(r.id)+'">Ablehnen</button></div></article>').join('');
+ el.querySelectorAll('[data-accept-join]').forEach(b=>b.addEventListener('click',async()=>{const r=data.find(x=>x.id===b.dataset.acceptJoin);if(!r||!confirm('Mitgliedschaft von '+r.applicant_name+' annehmen?'))return;b.disabled=true;const oldLabel=b.textContent;b.textContent='Wird angenommen …';const {data:result,error}=await sb.rpc('approve_club_membership_request',{p_request_id:r.id});if(error){message(status,'Genehmigung fehlgeschlagen: '+error.message,'error');status.hidden=false;b.disabled=false;b.textContent=oldLabel;return;}message(status,result==='already_active'?r.applicant_name+' war bereits aktives Mitglied; der Antrag wurde angenommen.':r.applicant_name+' wurde als Mitglied aufgenommen.','success');status.hidden=false;await loadMembershipRequests();await loadMemberHistory();}));
+ el.querySelectorAll('[data-reject-join]').forEach(b=>b.addEventListener('click',async()=>{const r=data.find(x=>x.id===b.dataset.rejectJoin);if(!r||!confirm('Beitrittsantrag von '+r.applicant_name+' ablehnen?'))return;b.disabled=true;const oldLabel=b.textContent;b.textContent='Wird abgelehnt …';const {data:result,error}=await sb.rpc('reject_club_membership_request',{p_request_id:r.id});if(error){message(status,'Ablehnung fehlgeschlagen: '+error.message,'error');status.hidden=false;b.disabled=false;b.textContent=oldLabel;return;}message(status,result==='rejected'?'Beitrittsantrag von '+r.applicant_name+' wurde abgelehnt.':'Der Antrag wurde bearbeitet.','success');status.hidden=false;await loadMembershipRequests();}));
+}
+async function loadMemberHistory(){
+ const clubId=document.getElementById('memberClubSelect').value, el=document.getElementById('memberHistoryList'), status=document.getElementById('memberHistoryStatus');
+ const historicalEl=document.getElementById('memberHistoryListHistorical');
+ if(!clubId){el.innerHTML='<div class="empty">Bitte einen Verein auswählen.</div>';return;}
+ if(!isAdmin&&!managedClubIds.includes(clubId)){message(status,'Keine Berechtigung für diesen Verein.','error');status.hidden=false;return;}
+ status.hidden=true;el.textContent='Mitglieder und Vereinsmanager werden geladen …';
+ const {data,error}=await sb.from('club_memberships').select('id,club_id,user_id,player_id,status,joined_at,created_at,ended_at,end_type,end_reason,ended_by').eq('club_id',clubId).order('joined_at',{ascending:false});
+ if(error){el.innerHTML='<div class="empty">Mitgliedschaften konnten nicht geladen werden: '+esc(error.message)+'</div>';return;}
+ const rawRows=data||[];
+ // Pro Nutzer nur den zeitlich neuesten Mitgliedschaftsdatensatz als aktuellen Status verwenden.
+ // Frühere Einträge bleiben in der Datenbank erhalten; so erscheinen widersprüchliche Alt-Datensätze nicht gleichzeitig als aktiv und beendet.
+ const newestByUser=new Map();
+ rawRows.sort((a,b)=>new Date(b.created_at||b.joined_at||0)-new Date(a.created_at||a.joined_at||0)).forEach(row=>{if(!newestByUser.has(row.user_id))newestByUser.set(row.user_id,row);});
+ const rows=[...newestByUser.values()];
+ // Den bei der Annahme angegebenen Namen aus dem bestätigten Antrag übernehmen.
+ // So wird kein Profilname überschrieben und ältere Mitgliedschaften benötigen keine Schemaänderung.
+ const requestHistoryEl=document.getElementById('membershipRequestHistoryList');
+ const {data:requestHistory,error:requestHistoryError}=await sb.from('club_membership_requests').select('id,user_id,applicant_name,contact_email,status,created_at,reviewed_at,updated_at').eq('club_id',clubId).in('status',['accepted','rejected','withdrawn']).order('created_at',{ascending:false});
+ if(requestHistoryError){requestHistoryEl.innerHTML='<div class="empty">Antragshistorie konnte nicht geladen werden: '+esc(requestHistoryError.message)+'</div>';}
+ else {
+  const requestNeedle=document.getElementById('memberSearch').value.trim().toLocaleLowerCase('de-DE');
+  const historyRows=(requestHistory||[]).filter(r=>!requestNeedle||[r.applicant_name,r.contact_email].filter(Boolean).join(' ').toLocaleLowerCase('de-DE').includes(requestNeedle));
+  const labels={accepted:'Angenommen',rejected:'Abgelehnt',withdrawn:'Zurückgezogen'};
+  const badgeClasses={accepted:'published',rejected:'',withdrawn:''};
+  requestHistoryEl.innerHTML=historyRows.length?historyRows.map(r=>'<article class="admin-item"><h3>'+esc(r.applicant_name||'Name nicht hinterlegt')+' <span class="badge '+badgeClasses[r.status]+'">'+labels[r.status]+'</span></h3>'+(r.contact_email?'<p>✉️ '+esc(r.contact_email)+'</p>':'')+'<p class="small">Eingegangen: '+(r.created_at?new Date(r.created_at).toLocaleString('de-DE'):'—')+(r.reviewed_at?' · Bearbeitet: '+new Date(r.reviewed_at).toLocaleString('de-DE'):'')+'</p></article>').join(''):'<div class="empty">Keine abgeschlossenen Beitrittsanträge gefunden.</div>';
+ }
+ const {data:acceptedRequests,error:acceptedError}=await sb.from('club_membership_requests').select('user_id,applicant_name,created_at').eq('club_id',clubId).eq('status','accepted').order('created_at',{ascending:false});
+ if(acceptedError){el.innerHTML='<div class="empty">Namen aus Beitrittsanträgen konnten nicht geladen werden: '+esc(acceptedError.message)+'</div>';return;}
+ const acceptedNameMap={};(acceptedRequests||[]).forEach(r=>{if(r.user_id&&!acceptedNameMap[r.user_id]&&r.applicant_name)acceptedNameMap[r.user_id]=r.applicant_name;});
+ // Vereinsmanager werden separat angezeigt; die Managerzuordnung ist keine Spielermitgliedschaft.
+ const {data:managerRows,error:managerError}=await sb.from('club_managers').select('id,club_id,user_id,created_at').eq('club_id',clubId);
+ if(managerError){el.innerHTML='<div class="empty">Vereinsmanager konnten nicht geladen werden: '+esc(managerError.message)+'</div>';return;}
+ const playerIds=[...new Set(rows.map(x=>x.player_id).filter(Boolean))], userIds=[...new Set([...rows.map(x=>x.user_id),...(managerRows||[]).map(x=>x.user_id)].filter(Boolean))];
+ let playerMap={},profileMap={};
+ if(playerIds.length){const r=await sb.from('players').select('id,name,team').in('id',playerIds);if(!r.error)(r.data||[]).forEach(x=>playerMap[x.id]=x);}
+ if(userIds.length){const r=await sb.from('profiles').select('id,display_name').in('id',userIds);if(!r.error)(r.data||[]).forEach(x=>profileMap[x.id]=x);}
+ const managers=(managerRows||[]).map(m=>({...m,_kind:'manager',status:'manager'}));
+ const combined=[...rows,...managers];
+ const needle=document.getElementById('memberSearch').value.trim().toLocaleLowerCase('de-DE');
+ const filtered=combined.filter(m=>{const player=playerMap[m.player_id],profile=profileMap[m.user_id],name=(player?.name||acceptedNameMap[m.user_id]||'')+' '+(profile?.display_name||'');return !needle||name.toLocaleLowerCase('de-DE').includes(needle);});
+ const currentRows=filtered.filter(m=>m._kind==='manager'||m.status==='active');
+ const historicalRows=filtered.filter(m=>m._kind!=='manager'&&m.status!=='active');
+ const renderMemberRows=items=>items.length?items.map(m=>{const player=playerMap[m.player_id],profile=profileMap[m.user_id],name=player?.name||acceptedNameMap[m.user_id]||profile?.display_name||'Name nicht hinterlegt';if(m._kind==='manager'){const details=[m.created_at?'Als Vereinsmanager zugeordnet: '+new Date(m.created_at).toLocaleDateString('de-DE'):'','Keine reguläre Spielermitgliedschaft aus dieser Zuordnung abgeleitet'].filter(Boolean).join(' · ');return '<article class="admin-item"><h3>'+esc(name)+' <span class="badge published">Vereinsmanager</span></h3><p>'+esc(details)+'</p></article>';};const details=[player?.team?'Team: '+player.team:'',m.joined_at?'Beitritt: '+new Date(m.joined_at).toLocaleDateString('de-DE'):'',m.ended_at?'Beendet: '+new Date(m.ended_at).toLocaleString('de-DE'):'',m.end_reason?'Interner Grund: '+m.end_reason:''].filter(Boolean).join(' · ');return '<article class="admin-item"><h3>'+esc(name)+' '+memberStatusLabel(m)+'</h3><p>'+esc(details||'Keine weiteren Angaben')+'</p>'+(m.status==='active'?'<div class="admin-actions"><button type="button" class="danger" data-remove-member="'+esc(m.id)+'" data-member-name="'+esc(name)+'">Mitgliedschaft beenden</button></div>':'')+'</article>';}).join(''):'<div class="empty">Keine passenden Einträge gefunden.</div>';
+ el.innerHTML=renderMemberRows(currentRows);historicalEl.innerHTML=renderMemberRows(historicalRows);
+ el.querySelectorAll('[data-remove-member]').forEach(b=>b.addEventListener('click',async()=>{const name=b.dataset.memberName;if(!confirm('Soll die aktive Mitgliedschaft von „'+name+'“ wirklich beendet werden? Die Historie und Spielergebnisse bleiben erhalten.'))return;const reason=prompt('Interner Grund (optional, nur für berechtigte Vereinsverwaltung):','');if(reason===null)return;b.disabled=true;const {error}=await sb.rpc('remove_club_member',{target_membership_id:b.dataset.removeMember,reason:reason.trim()||null});if(error){message(status,'Mitgliedschaft konnte nicht beendet werden: '+error.message,'error');status.hidden=false;b.disabled=false;return;}message(status,'Mitgliedschaft beendet. Der Eintrag bleibt in der Historie.','success');status.hidden=false;await loadMemberHistory();}));
+}
+let memberView='current';
+function setMemberView(view){memberView=view;document.getElementById('memberCurrentSection').hidden=view!=='current';document.getElementById('memberHistorySection').hidden=view!=='members-history';document.getElementById('requestHistorySection').hidden=view!=='requests-history';document.getElementById('memberSearch').closest('.field').hidden=view==='requests-history';document.querySelectorAll('[data-member-view]').forEach(b=>{const active=b.dataset.memberView===view;b.classList.toggle('active',active);b.classList.toggle('secondary',!active);});loadMemberHistory();}
+document.querySelectorAll('[data-member-view]').forEach(b=>b.addEventListener('click',e=>{
+ e.preventDefault();e.stopPropagation();
+ const view=b.getAttribute('data-member-view');
+ // Direkt zum Mitglieder-Panel wechseln, ohne einen zweiten Button-Klick auszulösen.
+ document.querySelectorAll('[data-tab]').forEach(t=>{t.classList.toggle('active',t.dataset.tab==='members');t.classList.toggle('secondary',t.dataset.tab!=='members');});
+ document.querySelectorAll('.panel').forEach(p=>{p.hidden=p.id!=='panel-members';});
+ setMemberView(view);
+}));
+document.getElementById('memberClubSelect').addEventListener('change',()=>{loadMemberHistory();loadMembershipRequests();});
+document.getElementById('memberSearch').addEventListener('input',()=>{clearTimeout(window.__memberSearchTimer);window.__memberSearchTimer=setTimeout(loadMemberHistory,250);});
+document.getElementById('reloadMembers').addEventListener('click',()=>{loadMemberHistory();loadMembershipRequests();});
+
+function resetForm(){
+ document.getElementById('clubForm').reset();document.getElementById('editClubId').value='';
+ document.getElementById('clubFormTitle').textContent=isAdmin?'Neuen Verein anlegen':'Verein bearbeiten';
+}
+document.getElementById('resetClubForm').addEventListener('click',resetForm);
+document.getElementById('clubForm').addEventListener('submit',async e=>{
+ e.preventDefault();if((!isAdmin&&!isClubManager)||!currentUser){message(adminStatus,'Keine gültigen Vereinsverwaltungsrechte. Bitte Seite neu laden und erneut anmelden.','error');return;}
+ const id=document.getElementById('editClubId').value;
+ if(!id&&!isAdmin){message(adminStatus,'Vereinsmanager dürfen keine neuen Vereine anlegen.','error');return;}
+ if(id&&isClubManager&&!isAdmin&&!managedClubIds.includes(id)){message(adminStatus,'Du darfst nur deinen zugeordneten Verein bearbeiten.','error');return;}
+ const club={name:document.getElementById('clubName').value.trim(),city:document.getElementById('clubCity').value.trim(),postal_code:document.getElementById('clubPostalCode').value.trim(),latitude:document.getElementById('clubLatitude').value===''?null:Number(document.getElementById('clubLatitude').value),longitude:document.getElementById('clubLongitude').value===''?null:Number(document.getElementById('clubLongitude').value),league_levels:document.getElementById('clubLeagues').value.split(',').map(s=>s.trim()).filter(Boolean),offers:document.getElementById('clubOffers').value.split(',').map(s=>s.trim()).filter(Boolean),description:document.getElementById('clubDescription').value.trim()||null,training_days:document.getElementById('clubDays').value.split(',').map(s=>s.trim()).filter(Boolean),contact_method:document.getElementById('contactMethod').value};
+ if(isAdmin)club.is_published=document.getElementById('publishNow').checked;
+ if(!club.name||!club.city){message(adminStatus,'Bitte Vereinsname und Ort ausfüllen.','error');return;}
+ let result;
+ if(id) result=await sb.from('clubs').update(club).eq('id',id);
+ else result=await sb.from('clubs').insert({...club,created_by:currentUser.id});
+ if(result.error){message(adminStatus,'Speichern fehlgeschlagen: '+result.error.message,'error');return;}
+ const {data:clubs}=await sb.from('clubs').select('id').eq('name',club.name).eq('city',club.city).order('created_at',{ascending:false}).limit(1);
+ const clubId=id||(clubs&&clubs[0]?.id);
+ if(clubId){
+  const privateDetails={club_id:clubId,training_address:document.getElementById('trainingAddress').value.trim()||null,private_contact_email:document.getElementById('privateEmail').value.trim()||null,private_contact_phone:document.getElementById('privatePhone').value.trim()||null,contact_instructions:document.getElementById('contactInstructions').value.trim()||null,updated_by:currentUser.id};
+  const privateResult=await sb.from('club_private_details').upsert(privateDetails,{onConflict:'club_id'});
+  if(privateResult.error){message(adminStatus,'Verein gespeichert, aber private Kontaktdaten konnten nicht gespeichert werden: '+privateResult.error.message,'error');await loadAdminClubs();await loadClubs();return;}
+ }
+ message(adminStatus,isAdmin?(club.is_published?'Verein gespeichert und veröffentlicht.':'Verein als Entwurf gespeichert.'):'Vereinsdaten gespeichert.','success');
+ resetForm();await loadAdminClubs();await loadClubs();
+});
+async function loadAdminClubs(){
+ const el=document.getElementById('adminClubList');el.textContent='Vereine werden geladen …';
+ let query=sb.from('clubs').select('id,name,city,is_published,archived_at,created_at').order('created_at',{ascending:false});
+ if(!isAdmin)query=query.in('id',managedClubIds);
+ const {data,error}=await query;
+ if(error){el.textContent='Vereine konnten nicht geladen werden: '+error.message;return;}
+ if(!data?.length){el.innerHTML='<div class="empty">Noch keine Vereine angelegt.</div>';return;}
+ el.innerHTML=data.map(c=>'<article class="admin-item"><h3>'+esc(c.name)+' <span class="badge '+(c.is_published&&!c.archived_at?'published':'pending')+'">'+(c.archived_at?'Archiviert':c.is_published?'Veröffentlicht':'Entwurf')+'</span></h3><p>📍 '+esc(c.city)+'</p><div class="admin-actions">'+(isAdmin&&!c.archived_at&&!c.is_published?'<button class="primary" data-publish="'+esc(c.id)+'">Veröffentlichen</button>':'')+(isAdmin&&!c.archived_at&&c.is_published?'<button class="secondary" data-unpublish="'+esc(c.id)+'">Veröffentlichung zurücknehmen</button>':'')+(!c.archived_at?'<button class="secondary" data-edit="'+esc(c.id)+'">Bearbeiten</button>':'')+(isAdmin&&!c.archived_at?'<button class="danger" data-archive="'+esc(c.id)+'">Archivieren</button>':'')+'<button class="secondary" data-open-join="'+esc(c.id)+'">Beitrittsanträge</button><button class="secondary" data-open-members="'+esc(c.id)+'">Mitglieder &amp; Historie</button></div></article>').join('');
+ el.querySelectorAll('[data-publish]').forEach(b=>b.addEventListener('click',()=>setPublished(b.dataset.publish,true)));
+ el.querySelectorAll('[data-unpublish]').forEach(b=>b.addEventListener('click',()=>setPublished(b.dataset.unpublish,false)));
+ el.querySelectorAll('[data-archive]').forEach(b=>b.addEventListener('click',()=>archiveClub(b.dataset.archive)));
+ el.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>editClub(b.dataset.edit)));
+ el.querySelectorAll('[data-open-join]').forEach(b=>b.addEventListener('click',()=>{document.getElementById('membershipRequestClubSelect').value=b.dataset.openJoin;document.querySelector('[data-tab="membership-requests"]').click();loadMembershipRequests();}));
+ el.querySelectorAll('[data-open-members]').forEach(b=>b.addEventListener('click',()=>{document.getElementById('memberClubSelect').value=b.dataset.openMembers;document.querySelector('[data-tab="members"]').click();loadMemberHistory();}));
+ const search=document.getElementById('adminClubSearch');if(search?.value.trim()){const term=search.value.trim().toLocaleLowerCase('de-DE');el.querySelectorAll('.admin-item').forEach(card=>card.hidden=!card.textContent.toLocaleLowerCase('de-DE').includes(term));}
+}
+async function setPublished(id,value){
+ if(!isAdmin)return;
+ const {error}=await sb.from('clubs').update({is_published:value,published_by:value?currentUser.id:null}).eq('id',id);
+ if(error){message(adminStatus,'Änderung fehlgeschlagen: '+error.message,'error');return;}
+ message(adminStatus,value?'Verein veröffentlicht.':'Veröffentlichung zurückgenommen.','success');await loadAdminClubs();await loadClubs();
+}
+async function archiveClub(id){
+ if(!isAdmin)return;
+ const card=[...document.querySelectorAll('#adminClubList .admin-item')].find(x=>x.querySelector('[data-archive]')?.dataset.archive===id);
+ const clubName=card?.querySelector('h3')?.childNodes[0]?.textContent?.trim()||'diesen Verein';
+ if(!confirm('„'+clubName+'“ archivieren? Der Verein wird aus der öffentlichen Übersicht genommen und die zugeordneten Vereinsmanager verlieren ihre Rechte. Mitgliedschafts- und Antrags-Historien bleiben erhalten. Der Vorgang kann nur durch einen Admin rückgängig gemacht werden.'))return;
+ const {error}=await sb.rpc('archive_club_and_revoke_managers',{p_club_id:id});
+ if(error){message(adminStatus,'Archivieren fehlgeschlagen: '+error.message+'\nBitte prüfen, ob die SQL-Funktion archive_club_and_revoke_managers bereits in Supabase angelegt wurde.','error');return;}
+ message(adminStatus,'Verein archiviert. Vereinsmanager-Zuordnungen wurden entzogen; die Historie bleibt erhalten.','success');await Promise.all([loadAdminClubs(),loadClubs()]);
+}
+async function editClub(id){
+ if(!isAdmin&&!managedClubIds.includes(id))return;
+ const {data:c,error}=await sb.from('clubs').select('id,name,city,postal_code,latitude,longitude,league_levels,offers,description,training_days,contact_method,is_published').eq('id',id).single();
+ if(error){message(adminStatus,'Verein konnte nicht geladen werden: '+error.message,'error');return;}
+ const {data:p}=await sb.from('club_private_details').select('training_address,private_contact_email,private_contact_phone,contact_instructions').eq('club_id',id).maybeSingle();
+ document.getElementById('editClubId').value=c.id;document.getElementById('publishNow').closest('label').hidden=!isAdmin;document.getElementById('clubName').value=c.name||'';document.getElementById('clubCity').value=c.city||'';document.getElementById('clubPostalCode').value=c.postal_code||'';document.getElementById('clubLatitude').value=c.latitude??'';document.getElementById('clubLongitude').value=c.longitude??'';document.getElementById('clubLeagues').value=(c.league_levels||[]).join(', ');document.getElementById('clubOffers').value=(c.offers||[]).join(', ');
+ document.getElementById('clubDescription').value=c.description||'';document.getElementById('clubDays').value=Array.isArray(c.training_days)?c.training_days.join(', '):'';
+ document.getElementById('contactMethod').value=c.contact_method||'internal';document.getElementById('publishNow').checked=!!c.is_published;
+ document.getElementById('trainingAddress').value=p?.training_address||'';document.getElementById('privateEmail').value=p?.private_contact_email||'';document.getElementById('privatePhone').value=p?.private_contact_phone||'';document.getElementById('contactInstructions').value=p?.contact_instructions||'';
+ document.getElementById('clubFormTitle').textContent='Verein bearbeiten';document.querySelector('[data-tab="add"]').click();dialog.scrollTop=0;
+}
+async function loadContactTargets(){
+ const select=document.getElementById('targetClub');
+ select.innerHTML='<option value="">Vereine werden geladen …</option>';
+ const {data,error}=await sb.from('clubs').select('id,name,city').eq('is_published',true).is('archived_at',null).order('name');
+ if(error){select.innerHTML='<option value="">Vereine konnten nicht geladen werden</option>';message(document.getElementById('contactFormStatus'),'Vereine konnten nicht geladen werden: '+error.message,'error');return;}
+ const targets=(data||[]).filter(c=>!managedClubIds.includes(c.id));
+ if(!targets.length){select.innerHTML='<option value="">Aktuell keine anderen veröffentlichten Vereine verfügbar</option>';return;}
+ select.innerHTML='<option value="">Bitte Verein auswählen</option>'+targets.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+' – '+esc(c.city)+'</option>').join('');
+}
+document.getElementById('contactClubForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const status=document.getElementById('contactFormStatus');
+ if(!currentUser||!isClubManager){message(status,'Nur angemeldete Vereinsmanager können Kontaktanfragen senden.','error');status.hidden=false;return;}
+ const clubId=document.getElementById('targetClub').value;
+ const subject=document.getElementById('contactSubject').value.trim();
+ const body=document.getElementById('contactMessage').value.trim();
+ if(!clubId||!subject||!body){message(status,'Bitte Verein, Betreff und Nachricht ausfüllen.','error');status.hidden=false;return;}
+ if(managedClubIds.includes(clubId)){message(status,'Du kannst keine Kontaktanfrage an deinen eigenen Verein senden.','error');status.hidden=false;return;}
+ const {error}=await sb.from('club_contact_requests').insert({club_id:clubId,requester_id:currentUser.id,subject,message:body,status:'new'});
+ if(error){message(status,'Anfrage konnte nicht gesendet werden: '+error.message,'error');status.hidden=false;return;}
+ document.getElementById('contactClubForm').reset();message(status,'Kontaktanfrage wurde gesendet.','success');status.hidden=false;
+});
+async function loadRequests(){
+ const el=document.getElementById('requestList');el.textContent='Gespräche werden geladen …';
+ const {data:requests,error}=await sb.from('club_contact_requests').select('id,club_id,requester_id,subject,message,status,created_at,response_message,responded_at,clubs(name)').order('created_at',{ascending:false});
+ if(error){el.textContent='Gespräche konnten nicht geladen werden: '+error.message;return;}
+ if(!requests?.length){el.innerHTML='<div class="empty">Noch keine Kontaktgespräche vorhanden.</div>';return;}
+ const ids=requests.map(r=>r.id);
+ const participantIds=[...new Set(requests.map(r=>r.requester_id).filter(Boolean))];
+ const {data:requesterMemberships}=await sb.from('club_managers').select('user_id,club_id').in('user_id',participantIds);
+ const requesterClubIds=[...(requesterMemberships||[]).map(x=>x.club_id),...managedClubIds,...requests.map(r=>r.club_id)].filter(Boolean);
+ const {data:clubRows}=await sb.from('clubs').select('id,name').in('id',[...new Set(requesterClubIds)]);
+ const clubNameById={};(clubRows||[]).forEach(c=>clubNameById[c.id]=c.name);
+ const requesterClubByUser={};(requesterMemberships||[]).forEach(x=>{if(!requesterClubByUser[x.user_id])requesterClubByUser[x.user_id]=x.club_id;});
+ const myClubName=managedClubIds.map(id=>clubNameById[id]).find(Boolean)||'Dein Verein';
+ const {data:messages,error:messagesError}=await sb.from('club_contact_messages').select('id,request_id,sender_id,body,created_at').in('request_id',ids).order('created_at',{ascending:true});
+ if(messagesError){el.textContent='Chat-Nachrichten konnten nicht geladen werden: '+messagesError.message+' Bitte zuerst die Chat-SQL-Migration ausführen.';return;}
+ const byRequest={};(messages||[]).forEach(m=>(byRequest[m.request_id] ||= []).push(m));
+ const chatData={};
+ el.innerHTML=requests.map(r=>{
+  const isRecipient=managedClubIds.includes(r.club_id);
+  const conversation=[{sender_id:r.requester_id,body:r.message,created_at:r.created_at,initial:true},...(byRequest[r.id]||[])];
+  const last=conversation[conversation.length-1];
+  let label;
+  if(r.status==='closed') label='Geschlossen';
+  else if(r.status==='new' && conversation.length===1) label='Neu';
+  else if(last.sender_id!==currentUser.id) label='Ungelesen';
+  else label='Beantwortet';
+  const requesterClubName=clubNameById[requesterClubByUser[r.requester_id]]||'Anfragender Verein';
+  const contactName=isRecipient?requesterClubName:(r.clubs?.name||clubNameById[r.club_id]||'Kontaktverein');
+  const preview=last.body||r.message||'Kontaktanfrage';
+  chatData[r.id]={request:r,conversation,isRecipient,contactName,label};
+  return '<button type="button" class="conversation-row" data-open-chat="'+esc(r.id)+'"><span class="conversation-avatar">🏸</span><span class="conversation-main"><span class="conversation-name">'+esc(contactName)+'</span><span class="conversation-preview"><strong>'+esc(r.subject||'Kontakt')+'</strong> · '+esc(preview)+'</span></span><span class="conversation-meta"><span class="badge '+(label==='Neu'||label==='Ungelesen'?'pending':label==='Geschlossen'?'':'published')+'">'+esc(label)+'</span><span class="conversation-time">'+esc(new Date(last.created_at).toLocaleDateString('de-DE'))+'</span></span></button>';
+ }).join('');
+ function renderChat(requestId){
+  const d=chatData[requestId];if(!d)return;
+  const {request:r,conversation,isRecipient,contactName}=d;
+  document.getElementById('chatPopupTitle').textContent=contactName;
+  document.getElementById('chatPopupSub').textContent=(r.subject||'Kontaktanfrage')+' · '+statusLabel(r.status);
+  const bubbles=conversation.map(m=>{const senderName=m.sender_id===currentUser.id?myClubName:(m.sender_id===r.requester_id?requesterClubName:(r.clubs?.name||clubNameById[r.club_id]||'Kontaktverein'));return '<div class="chat-bubble '+(m.sender_id===currentUser.id?'mine':'theirs')+'">'+esc(m.body)+'<span class="small">'+esc(senderName)+' · '+esc(new Date(m.created_at).toLocaleString('de-DE'))+'</span></div>';}).join('');
+  document.getElementById('chatPopupContent').innerHTML='<div class="chat-messages">'+bubbles+'</div>'+(r.status==='closed'?'<div class="empty">Dieser Chat wurde geschlossen.</div>':'<form class="chat-compose" data-chat-form="'+esc(r.id)+'"><label for="chat-'+esc(r.id)+'"><strong>Nachricht schreiben</strong></label><textarea id="chat-'+esc(r.id)+'" name="body" maxlength="3000" required placeholder="Nachricht schreiben …"></textarea><div class="admin-actions"><button class="primary" type="submit">Nachricht senden</button>'+(isRecipient?'<button class="secondary" type="button" data-chat-status="'+esc(r.id)+'" data-value="closed">Chat schließen</button>':'')+'</div></form>');
+  const form=document.querySelector('#chatPopupContent [data-chat-form]');
+  if(form)form.addEventListener('submit',async e=>{
+   e.preventDefault();const body=new FormData(form).get('body').trim();if(!body)return;
+   const sendButton=form.querySelector('button[type="submit"]');sendButton.disabled=true;
+   const {error}=await sb.from('club_contact_messages').insert({request_id:r.id,sender_id:currentUser.id,body});
+   sendButton.disabled=false;
+   if(error){message(adminStatus,'Nachricht konnte nicht gesendet werden: '+error.message,'error');return;}
+   // A sent message means the conversation has been answered; keep the initial request's status until the recipient starts working on it.
+   message(adminStatus,'Nachricht gesendet.','success');await loadRequests();
+   const refreshed=await sb.from('club_contact_messages').select('id,request_id,sender_id,body,created_at').eq('request_id',r.id).order('created_at',{ascending:true});
+   if(!refreshed.error){d.conversation=[{sender_id:r.requester_id,body:r.message,created_at:r.created_at,initial:true},...(refreshed.data||[])];renderChat(r.id);}
+  });
+  document.querySelectorAll('#chatPopupContent [data-chat-status]').forEach(b=>b.addEventListener('click',async()=>{
+   const {error}=await sb.from('club_contact_requests').update({status:'closed'}).eq('id',b.dataset.chatStatus);
+   if(error){message(adminStatus,'Chat konnte nicht geschlossen werden: '+error.message,'error');return;}
+   document.getElementById('chatOverlay').hidden=true;message(adminStatus,'Chat geschlossen.','success');await loadRequests();
+  }));
+  document.getElementById('chatOverlay').hidden=false;
+ }
+ el.querySelectorAll('[data-open-chat]').forEach(b=>b.addEventListener('click',()=>renderChat(b.dataset.openChat)));
+}
+document.getElementById('closeChatPopup').addEventListener('click',()=>{document.getElementById('chatOverlay').hidden=true;});
+document.getElementById('chatOverlay').addEventListener('click',e=>{if(e.target.id==='chatOverlay')e.currentTarget.hidden=true;});
+
+function statusLabel(status){return ({new:'Neu',in_progress:'In Bearbeitung',answered:'Beantwortet',closed:'Geschlossen'})[status]||status||'Unbekannt';}
+
+sb.auth.onAuthStateChange(()=>{checkAdmin();});
+(async()=>{await checkAdmin();await loadClubs();})();
+</script>
+</body>
+</html>
