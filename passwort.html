@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Passwort zurücksetzen – Badminton</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#667085;--primary:#1769aa;--primary2:#0d4f83;--border:#dbe3ee;--danger:#b42318;--success:#067647}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}header{background:#fff;border-bottom:1px solid var(--border);padding:12px 16px;font-weight:800}main{width:min(460px,calc(100% - 28px));margin:40px auto}.card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:24px;box-shadow:0 8px 30px rgba(20,40,70,.08)}h1{margin:0 0 8px;font-size:25px}p{color:var(--muted);line-height:1.45}label{display:block;font-weight:700;margin:16px 0 6px}input{width:100%;padding:12px;border:1px solid #cfd8e3;border-radius:10px;font:inherit;background:#fff}button{width:100%;border:0;border-radius:10px;padding:12px 15px;font:inherit;font-weight:700;cursor:pointer;margin-top:18px;background:var(--primary);color:#fff}button:hover{background:var(--primary2)}.secondary{background:#eef2f7;color:#26364d}.error{display:none;margin-top:12px;color:var(--danger);background:#fff0ee;border:1px solid #ffd1cc;padding:10px;border-radius:10px}.success{display:none;margin-top:12px;color:var(--success);background:#ecfdf3;border:1px solid #abefc6;padding:10px;border-radius:10px}.info{background:#f8fafc;border-radius:10px;padding:10px;margin-top:12px;font-size:14px;color:var(--muted)}#formArea{display:none}
+/* Darkmode-Kontrastkorrektur: überschreibt auch helle Inline-Hintergründe */
+html[data-theme="dark"] body{background:#101722!important;color:#e8eef7!important}
+html[data-theme="dark"] body :is(header,nav,main,section,article,aside,.card,.panel,.box,.modal,.wrap,.container,.stat,.tile,.dashboard-card,.welcome,.welcome-box,.quick-card,.content-card,[class*="card"],[class*="panel"]){background-color:#182332!important;color:#e8eef7!important;border-color:#344357!important}
+html[data-theme="dark"] body :is(h1,h2,h3,h4,h5,h6,p,span,label,li,dt,dd,strong,b,legend,summary,figcaption){color:inherit}
+html[data-theme="dark"] body :is(p,label,small,.muted,.hint,.description,.subtitle,.text-muted){color:#b8c4d4!important}
+html[data-theme="dark"] body :is(input,select,textarea){background:#111b28!important;color:#e8eef7!important;border-color:#46566c!important}
+html[data-theme="dark"] body :is(input,select,textarea)::placeholder{color:#9baabd!important;opacity:1}
+html[data-theme="dark"] body :is(table,tbody,tfoot){color:#e8eef7!important}
+html[data-theme="dark"] body th{background:#26364a!important;color:#f1f5fb!important}
+html[data-theme="dark"] body td{background-color:transparent!important;color:#e8eef7!important;border-color:#344357!important}
+html[data-theme="dark"] body tr:nth-child(even){background:#1c2939!important}
+html[data-theme="dark"] body a:not(.button):not(.btn){color:#8dccff!important}
+html[data-theme="dark"] body :is(button,.button,.btn,[role="button"]){color:#f7fbff}
+html[data-theme="dark"] body :is(.secondary,.profile-option){background:#26364a!important;color:#e8eef7!important;border-color:#46566c!important}
+html[data-theme="dark"] body :is(.success,.status-success){background:#153d32!important;color:#a8f0d0!important}
+html[data-theme="dark"] body :is(.error,.danger,.status-error){background:#482729!important;color:#ffd1d1!important}
+/* Feinschliff Darkmode: Kopfzeilen-Buttons, Begruessung und Dashboard-Kacheln */
+html[data-theme="dark"] .profile-btn,
+html[data-theme="dark"] .logout-btn,
+html[data-theme="dark"] .quick-edit,
+html[data-theme="dark"] .close,
+html[data-theme="dark"] .dashboard-head > button {
+  background:#26364a !important; color:#f1f5fb !important; border:1px solid #46566c !important;
+}
+html[data-theme="dark"] #profileBtn {
+  background:#263b53 !important; color:#ffffff !important; border:1px solid #5b7592 !important;
+  opacity:1 !important; text-shadow:none !important; box-shadow:0 1px 2px rgba(0,0,0,.18);
+}
+html[data-theme="dark"] #profileBtn:hover { background:#34516f !important; }
+html[data-theme="dark"] .profile-btn:hover,
+html[data-theme="dark"] .logout-btn:hover,
+html[data-theme="dark"] .quick-edit:hover,
+html[data-theme="dark"] .close:hover,
+html[data-theme="dark"] .dashboard-head > button:hover { background:#344a63 !important; color:#ffffff !important; }
+html[data-theme="dark"] .statusbar {
+  background:#1c3148 !important; color:#f1f5fb !important; border:1px solid #426486 !important;
+}
+html[data-theme="dark"] .statusbar strong,
+html[data-theme="dark"] #welcome,
+html[data-theme="dark"] #roleInfo { color:#f1f5fb !important; }
+html[data-theme="dark"] .dash-card {
+  background:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important;
+}
+html[data-theme="dark"] .dash-card h3,
+html[data-theme="dark"] .dash-value { color:#f1f5fb !important; }
+html[data-theme="dark"] .dash-muted,
+html[data-theme="dark"] .dashboard-note,
+html[data-theme="dark"] .area-desc { color:#bdc9d9 !important; }
+html[data-theme="dark"] .dash-actions a {
+  background:#21496b !important; color:#eaf5ff !important; border:1px solid #3d719a !important;
+}
+html[data-theme="dark"] .dash-actions a:hover { background:#2a5b83 !important; color:#fff !important; }
+html[data-theme="dark"] .hero p { color:#bdc9d9 !important; }
+
+
+/* Darkmode-Nachbesserung für seitenindividuelle Inhaltsflächen und Auswertungen */
+html[data-theme="dark"] body { background:#101722 !important; color:#e8eef7 !important; }
+html[data-theme="dark"] body :is(.card,.panel,.box,.match,.game,.stat,.tile,.kpi,.statline,.tablewrap,.controls,.login,.result,.encounter,.meeting,.player-card,.chart-card,.summary,.detail,.list-item,.item-card) { background-color:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body :is(h1,h2,h3,h4,strong,b,th,.value,.label,.title) { color:#f1f5fb; }
+html[data-theme="dark"] body :is(p,small,label,.muted,.small,.hint,.description,.subtitle) { color:#bdc9d9; }
+html[data-theme="dark"] body :is(input,select,textarea) { background:#111b28 !important; color:#e8eef7 !important; border-color:#46566c !important; }
+html[data-theme="dark"] body table { color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body th { background:#26364a !important; color:#f1f5fb !important; }
+html[data-theme="dark"] body td { background-color:transparent !important; color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body tr:nth-child(even) { background:#1c2939 !important; }
+html[data-theme="dark"] body :is(.secondary,.pill,.role,.stepper .minus,.set-action .secondary) { background:#26364a !important; color:#e8eef7 !important; border-color:#46566c !important; }
+html[data-theme="dark"] body :is(.status,.msg) { background:#223248 !important; color:#e8eef7 !important; }
+html[data-theme="dark"] body :is(.ok,.success,.status-success,.game.finished) { background:#153d32 !important; color:#b9f4d8 !important; }
+html[data-theme="dark"] body :is(.bad,.danger,.error,.status-error) { background:#482729 !important; color:#ffd1d1 !important; }
+html[data-theme="dark"] body :is(.warn,.game.live,.special-game.forfeit) { background:#443321 !important; color:#ffe0b3 !important; }
+html[data-theme="dark"] body :is(.match.selected,.selected) { background:#173b3a !important; border-color:#2b9c91 !important; }
+html[data-theme="dark"] body :is(.progress,.bar) { background:#2a3748 !important; }
+html[data-theme="dark"] body a:not(.button) { color:#83c7ff; }
+html[data-theme="dark"] body button { color:#f1f5fb; }
+html[data-theme="dark"] body .footer a { background:#26364a !important; color:#f1f5fb !important; border-color:#46566c !important; }
+
+/* Gemeinsame responsive Plattformnavigation */
+#platformNav{position:sticky;top:0;z-index:900;background:#102f4b;color:#f7fbff;box-shadow:0 3px 14px #0b1b2b22}
+#platformNav *{box-sizing:border-box}
+#platformNav .pn-inner{max-width:1200px;margin:auto;padding:9px 14px;display:flex;align-items:center;gap:12px}
+#platformNav .pn-brand{font-weight:850;white-space:nowrap;font-size:14px;color:#fff;text-decoration:none}
+#platformNav .pn-links{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
+#platformNav a{display:inline-flex;align-items:center;justify-content:center;color:#dcecff;text-decoration:none;border-radius:9px;padding:10px 11px;font-size:13px;font-weight:750;white-space:nowrap}
+#platformNav a:hover{background:#214d70;color:#fff}
+#platformNav a[aria-current="page"]{background:#fff;color:#12395b}
+#platformNav .pn-more{position:relative}
+#platformNav .pn-more summary{cursor:pointer;list-style:none;padding:10px 11px;border-radius:9px;font-size:13px;font-weight:750;color:#dcecff;white-space:nowrap}
+#platformNav .pn-more summary::-webkit-details-marker{display:none}
+#platformNav .pn-more[open] summary,#platformNav .pn-more summary:hover{background:#214d70;color:#fff}
+#platformNav .pn-menu{position:absolute;right:0;top:100%;min-width:210px;padding:7px;background:#102f4b;border:1px solid #315572;border-radius:12px;box-shadow:0 12px 30px #0003;display:grid;gap:3px}
+#platformNav .pn-menu a{justify-content:flex-start;white-space:normal}
+#platformNav .pn-user{font-size:12px;color:#c4d8e8;white-space:nowrap}
+#platformNav .pn-toggle{display:none;border:1px solid #45657e;background:#214d70;color:#fff;border-radius:9px;padding:9px 11px;font-weight:800}
+@media(max-width:760px){
+ #platformNav .pn-inner{flex-wrap:wrap;gap:8px;padding:8px 10px}
+ #platformNav .pn-brand{flex:1;min-width:0}
+ #platformNav .pn-toggle{display:inline-flex}
+ #platformNav .pn-links{display:none;flex:0 0 100%;width:100%;align-items:stretch;flex-direction:column;gap:4px;padding-top:5px}
+ #platformNav .pn-links.pn-open{display:flex}
+ #platformNav .pn-links>a,#platformNav .pn-more summary{justify-content:flex-start;width:100%;padding:12px}
+ #platformNav .pn-more{width:100%}
+ #platformNav .pn-menu{position:static;box-shadow:none;border:0;background:#0c263c;margin:4px 0 0;padding:5px}
+ #platformNav .pn-user{display:none}
+}
+
+</style><style>
+/* Einheitlicher Darkmode: Systemeinstellung als Standard, manuell überschreibbar */
+:root{color-scheme:light dark}
+html[data-theme="dark"]{color-scheme:dark;--bg:#101722;--card:#182332;--text:#e8eef7;--muted:#aab7c8;--primary:#3186c8;--primary2:#246da7;--border:#344357;--danger:#ff8f86;--success:#62d9a0}
+html[data-theme="dark"] body{background:var(--bg)!important;color:var(--text)!important}
+html[data-theme="dark"] header,html[data-theme="dark"] nav,html[data-theme="dark"] .card,html[data-theme="dark"] .panel,html[data-theme="dark"] .box,html[data-theme="dark"] .modal,html[data-theme="dark"] .wrap,html[data-theme="dark"] section,html[data-theme="dark"] .stat,html[data-theme="dark"] .tile{background-color:var(--card);color:var(--text);border-color:var(--border)}
+html[data-theme="dark"] p,html[data-theme="dark"] label,html[data-theme="dark"] small,html[data-theme="dark"] .muted{color:var(--muted)}
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:#111b28!important;color:var(--text)!important;border-color:var(--border)!important}
+html[data-theme="dark"] table{color:var(--text)}html[data-theme="dark"] th{background:#223248!important;color:var(--text)!important}html[data-theme="dark"] td{border-color:var(--border)!important}html[data-theme="dark"] tr:nth-child(even){background:#1c2939}
+html[data-theme="dark"] a:not(.button){color:#83c7ff}html[data-theme="dark"] .secondary,html[data-theme="dark"] .profile-option{background:#26364a!important;color:var(--text)!important;border-color:var(--border)!important}
+@media print{}
+</style>
+<style id="darkmode-page-fixes">
+html[data-theme="dark"] body .slot,
+html[data-theme="dark"] body .modal-box,
+html[data-theme="dark"] body .modal-actions,
+html[data-theme="dark"] body .opp-row,
+html[data-theme="dark"] body .opp-player,
+html[data-theme="dark"] body .validation,
+html[data-theme="dark"] body .playerlist,
+html[data-theme="dark"] body .playerlist tr,
+html[data-theme="dark"] body .playerlist td { background-color:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body .slot h3,
+html[data-theme="dark"] body .opp-row h3,
+html[data-theme="dark"] body .modal-box h2,
+html[data-theme="dark"] body .opp-side-title,
+html[data-theme="dark"] body .opponent-label,
+html[data-theme="dark"] body .opp-none-label { color:#e8eef7 !important; }
+html[data-theme="dark"] body .slot .sub,
+html[data-theme="dark"] body .modal-box p { color:#b8c4d4 !important; }
+html[data-theme="dark"] body .modal-box .modal-actions { background:#182332 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body .opp-player { background:#20364d !important; color:#e8eef7 !important; border-color:#3a5876 !important; }
+html[data-theme="dark"] body .slot select, html[data-theme="dark"] body .slot input { background:#111b28 !important; color:#e8eef7 !important; border-color:#46566c !important; }
+html[data-theme="dark"] body .slot select option { background:#182332 !important; color:#e8eef7 !important; }
+</style>
+
+<style id="darkmode-final-contrast-fix">
+html[data-theme="dark"] body :is(.user-row,.match-card,.encounter-card,.stat-card,.statistic-card,.player-card,.game-card,.game,.match,.fixture,.lineup-card,.discipline-card,.report-card,.admin-card,.section-card,.result-card,.ranking-card,.team-card,.player-stat,.stat-box,.metric-card,.info-card,.form-card,.list-card,.accordion-item,.modal-content,.modal-box,.slot,.pair-card,.set-card,.score-card,.table-wrap,.table-container,.chart-card,.chart-container,[class*="match"],[class*="encounter"],[class*="stat"],[class*="player"],[class*="lineup"],[class*="admin"],[class*="report"],[class*="result"],[class*="ranking"],[class*="fixture"],[class*="score"],[class*="chart"],[class*="team"]){background-color:#182332 !important;color:#e8eef7 !important;border-color:#344357 !important}
+html[data-theme="dark"] body :is(.user-row,.match-card,.encounter-card,.stat-card,.statistic-card,.player-card,.game-card,.game,.match,.fixture,.lineup-card,.discipline-card,.report-card,.admin-card,.section-card,.result-card,.ranking-card,.team-card,.player-stat,.stat-box,.metric-card,.info-card,.form-card,.list-card,.accordion-item,.modal-content,.modal-box,.slot,.pair-card,.set-card,.score-card,.table-wrap,.table-container,.chart-card,.chart-container,[class*="match"],[class*="encounter"],[class*="stat"],[class*="player"],[class*="lineup"],[class*="admin"],[class*="report"],[class*="result"],[class*="ranking"],[class*="fixture"],[class*="score"],[class*="chart"],[class*="team"]) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,b,div,td,th,li){color:inherit}
+html[data-theme="dark"] body :is(.user-row,.match-card,.encounter-card,.stat-card,.statistic-card,.player-card,.game-card,.game,.match,.fixture,.lineup-card,.discipline-card,.report-card,.admin-card,.section-card,.result-card,.ranking-card,.team-card,.player-stat,.stat-box,.metric-card,.info-card,.form-card,.list-card,.accordion-item,.modal-content,.modal-box,.slot,.pair-card,.set-card,.score-card,.table-wrap,.table-container,.chart-card,.chart-container) :is(input,select,textarea){background:#111b28 !important;color:#e8eef7 !important;border-color:#46566c !important}
+html[data-theme="dark"] body select option{background:#182332 !important;color:#e8eef7 !important}
+html[data-theme="dark"] body :is(.card,.user-row,.match-card,.encounter-card,.stat-card,.player-card,.game-card,.section-card,.result-card,.team-card,.modal-box,.slot) [style*="background: white"],html[data-theme="dark"] body :is(.card,.user-row,.match-card,.encounter-card,.stat-card,.player-card,.game-card,.section-card,.result-card,.team-card,.modal-box,.slot) [style*="background-color: white"]{background:#182332 !important;color:#e8eef7 !important}
+</style>
+</head><body>
+
+<nav id="platformNav" aria-label="Hauptnavigation">
+ <div class="pn-inner">
+  <a class="pn-brand" href="index.html">🏸 Badminton-Plattform</a>
+  <button class="pn-toggle" type="button" aria-expanded="false" aria-controls="pnLinks">☰ Menü</button>
+  <div class="pn-links" id="pnLinks"><a href="index.html">Dashboard</a><a href="vereine.html">Vereine</a><a href="mannschaft.html">Mannschaften</a><a href="spielplan.html">Spielplan</a><a href="aufstellung.html">Aufstellung</a><a href="live.html">Live</a></div>
+  <span class="pn-user">Navigation wird geladen …</span>
+ </div>
+</nav>
+<header>🏸 Badminton Mannschaftsverwaltung</header><main><div class="card"><h1>🔑 Passwort zurücksetzen</h1><p>Hier kannst du ein neues Passwort festlegen. <strong>Das alte Passwort wird nicht benötigt.</strong></p><div id="checking" class="info">Reset-Link wird geprüft …</div><div id="formArea"><form onsubmit="savePassword(event)"><label for="password">Neues Passwort</label><input id="password" type="password" autocomplete="new-password" minlength="8" required><label for="password2">Neues Passwort wiederholen</label><input id="password2" type="password" autocomplete="new-password" minlength="8" required><button id="saveBtn" type="submit">Neues Passwort speichern</button><div id="error" class="error"></div><div id="success" class="success">Passwort erfolgreich geändert. Du wirst aus der Reset-Sitzung abgemeldet.</div></form><button id="homeBtn" class="secondary" type="button" onclick="leaveReset()">🏠 Zum Hauptmenü</button></div></div></main><script>const SUPABASE_URL='https://apsarswjmsrmffoyxsgr.supabase.co';const SUPABASE_KEY='sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj';const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);function showError(msg){const e=document.getElementById('error');e.textContent=msg;e.style.display='block'}function clearError(){document.getElementById('error').style.display='none'}async function prepare(){const checking=document.getElementById('checking');const {data:{session}}=await sb.auth.getSession();if(session){checking.style.display='none';document.getElementById('formArea').style.display='block';return}checking.textContent='Der Reset-Link ist ungültig oder abgelaufen. Bitte fordere einen neuen Passwort-Link an.';checking.style.color='#b42318';checking.style.background='#fff0ee'}async function savePassword(e){e.preventDefault();clearError();const p1=document.getElementById('password').value,p2=document.getElementById('password2').value;if(p1.length<8){showError('Das Passwort muss mindestens 8 Zeichen lang sein.');return}if(p1!==p2){showError('Die Passwörter stimmen nicht überein.');return}const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Wird gespeichert …';const {data:{session}}=await sb.auth.getSession();if(!session){btn.disabled=false;btn.textContent='Neues Passwort speichern';showError('Die Reset-Sitzung ist nicht mehr gültig. Bitte fordere einen neuen Link an.');return}const {error}=await sb.auth.updateUser({password:p1});if(error){btn.disabled=false;btn.textContent='Neues Passwort speichern';showError('Passwort konnte nicht geändert werden: '+error.message);return}document.getElementById('success').style.display='block';document.getElementById('password').value='';document.getElementById('password2').value='';await sb.auth.signOut();btn.textContent='Passwort geändert';document.getElementById('homeBtn').textContent='🏠 Zum Login'}async function leaveReset(){await sb.auth.signOut();window.location.replace('index.html')}sb.auth.onAuthStateChange((event,session)=>{if(event==='PASSWORD_RECOVERY'&&session){document.getElementById('checking').style.display='none';document.getElementById('formArea').style.display='block'}});prepare();</script>
+<script>(function(){const key='badminton-theme';function systemTheme(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}let saved=null;try{saved=localStorage.getItem(key)}catch(e){}document.documentElement.dataset.theme=saved==='dark'||saved==='light'?saved:systemTheme();if(window.matchMedia){const mq=window.matchMedia('(prefers-color-scheme: dark)');const changed=()=>{let v=null;try{v=localStorage.getItem(key)}catch(e){}if(v!=='dark'&&v!=='light')document.documentElement.dataset.theme=systemTheme()};if(mq.addEventListener)mq.addEventListener('change',changed);else if(mq.addListener)mq.addListener(changed)}})();</script>
+<script>
+(function(){const key='badminton-theme';function sys(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}function apply(t){document.documentElement.dataset.theme=t;const p=document.getElementById('profileThemeButton');if(p)p.textContent=t==='dark'?'☀️ Helles Design':'🌙 Dark Mode'}function saved(){try{return localStorage.getItem(key)}catch(e){return null}}apply(saved()==='dark'||saved()==='light'?saved():sys());window.toggleTheme=function(){const t=document.documentElement.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem(key,t)}catch(e){}apply(t)};if(window.matchMedia){const m=window.matchMedia('(prefers-color-scheme: dark)');const f=()=>{const v=saved();if(v!=='dark'&&v!=='light')apply(sys())};m.addEventListener?m.addEventListener('change',f):m.addListener(f)}document.addEventListener('DOMContentLoaded',()=>apply(document.documentElement.dataset.theme||sys()))})();
+</script>
+<script>
+
+(function(){
+ const root=document.getElementById('platformNav'); if(!root) return;
+ const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+ const items=[
+  {label:'Dashboard',href:'index.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Vereine',href:'vereine.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Mannschaften',href:'mannschaft.html',roles:['team_manager','moderator','admin','board','advisory']},
+  {label:'Spielplan',href:'spielplan.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Aufstellung',href:'aufstellung.html',roles:['team_manager','moderator','admin']},
+  {label:'Live',href:'live.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Moderator',href:'moderator.html',roles:['moderator','scorer','admin']},
+  {label:'Spielbericht',href:'spielbericht.html',roles:['moderator','admin']},
+  {label:'Spielerstatistik',href:'spielerstatistik.html',roles:['player','team_manager','moderator','admin','board','advisory']},
+  {label:'Rangliste',href:'Rangliste.html',roles:['player','team_manager','moderator','admin','board','advisory']},
+  {label:'Administration',href:'admin.html',roles:['admin']}
+ ];
+ const primary=['Dashboard','Vereine','Mannschaften','Spielplan','Aufstellung','Live'];
+ const labels=new Set(primary);
+ function link(it){const a=document.createElement('a');a.href=it.href;a.textContent=it.label;if(current===it.href.toLowerCase())a.setAttribute('aria-current','page');return a}
+ const links=root.querySelector('.pn-links'); if(!links)return;
+ function render(role,loggedIn){
+   links.innerHTML='';
+   const allowed=items.filter(it=>it.roles.includes(role));
+   allowed.filter(it=>labels.has(it.label)).forEach(it=>links.appendChild(link(it)));
+   const more=allowed.filter(it=>!labels.has(it.label));
+   if(more.length){
+     const d=document.createElement('details');d.className='pn-more';
+     const s=document.createElement('summary');s.textContent='Mehr ▾';d.appendChild(s);
+     const menu=document.createElement('div');menu.className='pn-menu';more.forEach(it=>menu.appendChild(link(it)));d.appendChild(menu);links.appendChild(d);
+   }
+   const u=root.querySelector('.pn-user'); if(u)u.textContent=loggedIn?'Angemeldet':'Öffentlicher Bereich';
+ }
+ const toggle=root.querySelector('.pn-toggle');
+ if(toggle)toggle.addEventListener('click',()=>{const open=links.classList.toggle('pn-open');toggle.setAttribute('aria-expanded',String(open));toggle.textContent=open?'✕ Schließen':'☰ Menü';});
+ // Keep public access functional; logged-in roles receive a tailored menu.
+ const fallback=()=>render('player',false);
+ if(!window.supabase||!window.supabase.createClient){fallback();return}
+ const url='https://apsarswjmsrmffoyxsgr.supabase.co';
+ const key='sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj';
+ try{
+   const client=window.__platformNavClient||(window.__platformNavClient=window.supabase.createClient(url,key));
+   client.auth.getUser().then(async ({data,error})=>{
+     if(error||!data.user){fallback();return}
+     let role='player';
+     const {data:profile}=await client.from('profiles').select('role').eq('id',data.user.id).maybeSingle();
+     if(profile&&profile.role)role=String(profile.role).toLowerCase();
+     const {data:members}=await client.from('club_memberships').select('club_role,status').eq('user_id',data.user.id).eq('status','active');
+     const roles=(members||[]).map(x=>String(x.club_role||'').toLowerCase());
+     if(role!=='admin'&&roles.length){
+       if(roles.includes('team_manager'))role='team_manager';
+       else if(roles.includes('moderator'))role='moderator';
+       else if(roles.includes('board'))role='board';
+       else if(roles.includes('advisory'))role='advisory';
+     }
+     render(role,true);
+   }).catch(fallback);
+ }catch(e){fallback()}
+})();
+</script>
+</body></html>

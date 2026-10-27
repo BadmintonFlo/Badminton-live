@@ -1,0 +1,391 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Badminton – Spielbericht</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17202a;background:#f3f6f8}*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#eef4f8,#f8fafb)}.wrap{max-width:900px;margin:auto;padding:12px}.card{background:#fff;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 7px 25px #00000012}h1{margin:0;font-size:24px}h2{margin:0 0 12px;font-size:19px}.sub,.small{color:#64748b;font-size:13px;line-height:1.45}label{display:block;font-size:13px;font-weight:750;margin:10px 0 5px}input,textarea,select{width:100%;padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;font:inherit}textarea{min-height:90px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{border:0;border-radius:11px;padding:12px 15px;font:inherit;font-weight:800;cursor:pointer}.primary{background:#0f766e;color:#fff}.secondary{background:#e2e8f0}.full{width:100%}.hidden{display:none!important}.status{padding:11px 13px;border-radius:11px;background:#eef2ff;color:#3730a3;font-size:13px;margin-top:10px}.ok{background:#ecfdf5;color:#166534}.bad{background:#fef2f2;color:#991b1b}.warn{background:#fff7ed;color:#9a3412}.match-list{display:grid;gap:10px}.match{border:1px solid #dbe3ea;border-radius:14px;padding:14px;background:#fff;text-align:left;width:100%}.match-title{font-size:17px;font-weight:850}.match-meta{font-size:13px;color:#64748b;margin-top:4px}.report-head{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;text-align:center}.team{font-weight:850;font-size:18px}.big{font-size:30px;font-weight:900}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12px;min-width:1120px}th,td{border:1px solid #cbd5e1;padding:7px 6px;text-align:center;vertical-align:middle}th{background:#f1f5f9;font-weight:850}td.name{text-align:left;min-width:155px}.result-row{font-weight:850;background:#f8fafc}.signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.sig-box{border:1px solid #cbd5e1;border-radius:13px;padding:10px}canvas{width:100%;height:170px;border:1px dashed #94a3b8;border-radius:10px;background:#fff;touch-action:none}.sig-actions{display:flex;gap:7px;margin-top:7px}.sig-actions button{flex:1;padding:9px}.toolbar{display:flex;gap:8px;flex-wrap:wrap}.toolbar button{flex:1;min-width:150px}.summary-stack{display:grid;gap:0;margin-top:12px;border:2px solid #64748b;border-radius:10px;overflow:hidden}.summary-line{display:grid;grid-template-columns:minmax(0,1fr) 90px 90px;gap:12px;padding:10px 12px;border-bottom:1px solid #94a3b8;font-weight:800}.summary-line span:nth-child(2),.summary-line span:nth-child(3){text-align:center;font-variant-numeric:tabular-nums}.summary-head{background:#e2e8f0;font-size:12px;text-transform:uppercase}.summary-line strong{display:none}.summary-line:last-child{border-bottom:0}.summary-line strong{font-variant-numeric:tabular-nums}.results-table th,.results-table td{border:1px solid #64748b}.results-table thead th{background:#dbeafe;border-bottom:3px solid #334155}.results-table tbody tr:nth-child(even){background:#f1f5f9}.results-table tbody tr td:first-child{border-left:3px solid #334155;font-weight:850}.results-table tbody tr td:last-child{border-right:3px solid #334155}.results-table tfoot{display:table-footer-group}.results-table .total-row{font-weight:900;background:#dbeafe;border-top:3px solid #334155}.results-table .total-row th{background:#dbeafe}.results-table .set-score{white-space:nowrap;min-width:58px}.results-table .numeric-score{min-width:38px;font-variant-numeric:tabular-nums}.results-table .player-home,.results-table .player-away{text-align:left;min-width:125px}.results-table .group-start{border-left:3px solid #334155}.results-table td.player-home,.results-table td.player-away{text-align:left;min-width:125px}.results-table .set-score,.results-table .score-cell{white-space:nowrap}.results-table tbody td{padding-top:4px;padding-bottom:4px}.results-table{min-width:700px}.sig-preview{cursor:pointer;display:block;width:100%;height:95px;border:2px dashed #94a3b8;border-radius:10px;background:#fff;touch-action:manipulation}.sig-preview:after{content:"Zum Unterschreiben antippen"}.sig-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.sig-tools button{flex:1}.modal{position:fixed;inset:0;background:rgba(15,23,42,.78);z-index:1000;display:none;align-items:center;justify-content:center;padding:12px}.modal.open{display:flex}.modal-panel{background:#fff;color:#17202a;width:min(100%,1000px);max-height:96dvh;overflow:auto;border-radius:18px;padding:16px;box-shadow:0 20px 70px #0006}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.sig-large{display:block;width:100%;height:min(52vh,440px);border:2px solid #64748b;border-radius:12px;background:#fff;touch-action:none;margin:12px 0}.sig-modal-actions{display:flex;gap:8px;flex-wrap:wrap}.sig-modal-actions button{flex:1;min-width:120px}.freeze-on{background:#b91c1c!important;color:#fff!important}.sig-locked{opacity:.8;cursor:not-allowed}@media(max-width:600px){.summary-line{font-size:13px}.modal-panel{padding:12px}.sig-large{height:48vh}}.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#dcfce7;color:#166534;font-size:12px;font-weight:800}@media(max-width:600px){.grid,.signature-grid,.report-head{grid-template-columns:1fr}.big{font-size:26px}.card{padding:14px}}
+
+/* Darkmode-Kontrastkorrektur: überschreibt auch helle Inline-Hintergründe */
+html[data-theme="dark"] body{background:#101722!important;color:#e8eef7!important}
+html[data-theme="dark"] body :is(header,nav,main,section,article,aside,.card,.panel,.box,.modal,.wrap,.container,.stat,.tile,.dashboard-card,.welcome,.welcome-box,.quick-card,.content-card,[class*="card"],[class*="panel"]){background-color:#182332!important;color:#e8eef7!important;border-color:#344357!important}
+html[data-theme="dark"] body :is(h1,h2,h3,h4,h5,h6,p,span,label,li,dt,dd,strong,b,legend,summary,figcaption){color:inherit}
+html[data-theme="dark"] body :is(p,label,small,.muted,.hint,.description,.subtitle,.text-muted){color:#b8c4d4!important}
+html[data-theme="dark"] body :is(input,select,textarea){background:#111b28!important;color:#e8eef7!important;border-color:#46566c!important}
+html[data-theme="dark"] body :is(input,select,textarea)::placeholder{color:#9baabd!important;opacity:1}
+html[data-theme="dark"] body :is(table,tbody,tfoot){color:#e8eef7!important}
+html[data-theme="dark"] body th{background:#26364a!important;color:#f1f5fb!important}
+html[data-theme="dark"] body td{background-color:transparent!important;color:#e8eef7!important;border-color:#344357!important}
+html[data-theme="dark"] body tr:nth-child(even){background:#1c2939!important}
+html[data-theme="dark"] body a:not(.button):not(.btn){color:#8dccff!important}
+html[data-theme="dark"] body :is(button,.button,.btn,[role="button"]){color:#f7fbff}
+html[data-theme="dark"] body :is(.secondary,.profile-option){background:#26364a!important;color:#e8eef7!important;border-color:#46566c!important}
+html[data-theme="dark"] body :is(.success,.status-success){background:#153d32!important;color:#a8f0d0!important}
+html[data-theme="dark"] body :is(.error,.danger,.status-error){background:#482729!important;color:#ffd1d1!important}
+/* Feinschliff Darkmode: Kopfzeilen-Buttons, Begruessung und Dashboard-Kacheln */
+html[data-theme="dark"] .profile-btn,
+html[data-theme="dark"] .logout-btn,
+html[data-theme="dark"] .quick-edit,
+html[data-theme="dark"] .close,
+html[data-theme="dark"] .dashboard-head > button {
+  background:#26364a !important; color:#f1f5fb !important; border:1px solid #46566c !important;
+}
+html[data-theme="dark"] #profileBtn {
+  background:#263b53 !important; color:#ffffff !important; border:1px solid #5b7592 !important;
+  opacity:1 !important; text-shadow:none !important; box-shadow:0 1px 2px rgba(0,0,0,.18);
+}
+html[data-theme="dark"] #profileBtn:hover { background:#34516f !important; }
+html[data-theme="dark"] .profile-btn:hover,
+html[data-theme="dark"] .logout-btn:hover,
+html[data-theme="dark"] .quick-edit:hover,
+html[data-theme="dark"] .close:hover,
+html[data-theme="dark"] .dashboard-head > button:hover { background:#344a63 !important; color:#ffffff !important; }
+html[data-theme="dark"] .statusbar {
+  background:#1c3148 !important; color:#f1f5fb !important; border:1px solid #426486 !important;
+}
+html[data-theme="dark"] .statusbar strong,
+html[data-theme="dark"] #welcome,
+html[data-theme="dark"] #roleInfo { color:#f1f5fb !important; }
+html[data-theme="dark"] .dash-card {
+  background:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important;
+}
+html[data-theme="dark"] .dash-card h3,
+html[data-theme="dark"] .dash-value { color:#f1f5fb !important; }
+html[data-theme="dark"] .dash-muted,
+html[data-theme="dark"] .dashboard-note,
+html[data-theme="dark"] .area-desc { color:#bdc9d9 !important; }
+html[data-theme="dark"] .dash-actions a {
+  background:#21496b !important; color:#eaf5ff !important; border:1px solid #3d719a !important;
+}
+html[data-theme="dark"] .dash-actions a:hover { background:#2a5b83 !important; color:#fff !important; }
+html[data-theme="dark"] .hero p { color:#bdc9d9 !important; }
+
+
+/* Darkmode-Nachbesserung für seitenindividuelle Inhaltsflächen und Auswertungen */
+html[data-theme="dark"] body { background:#101722 !important; color:#e8eef7 !important; }
+html[data-theme="dark"] body :is(.card,.panel,.box,.match,.game,.stat,.tile,.kpi,.statline,.tablewrap,.controls,.login,.result,.encounter,.meeting,.player-card,.chart-card,.summary,.detail,.list-item,.item-card) { background-color:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body :is(h1,h2,h3,h4,strong,b,th,.value,.label,.title) { color:#f1f5fb; }
+html[data-theme="dark"] body :is(p,small,label,.muted,.small,.hint,.description,.subtitle) { color:#bdc9d9; }
+html[data-theme="dark"] body :is(input,select,textarea) { background:#111b28 !important; color:#e8eef7 !important; border-color:#46566c !important; }
+html[data-theme="dark"] body table { color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body th { background:#26364a !important; color:#f1f5fb !important; }
+html[data-theme="dark"] body td { background-color:transparent !important; color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body tr:nth-child(even) { background:#1c2939 !important; }
+html[data-theme="dark"] body :is(.secondary,.pill,.role,.stepper .minus,.set-action .secondary) { background:#26364a !important; color:#e8eef7 !important; border-color:#46566c !important; }
+html[data-theme="dark"] body :is(.status,.msg) { background:#223248 !important; color:#e8eef7 !important; }
+html[data-theme="dark"] body :is(.ok,.success,.status-success,.game.finished) { background:#153d32 !important; color:#b9f4d8 !important; }
+html[data-theme="dark"] body :is(.bad,.danger,.error,.status-error) { background:#482729 !important; color:#ffd1d1 !important; }
+html[data-theme="dark"] body :is(.warn,.game.live,.special-game.forfeit) { background:#443321 !important; color:#ffe0b3 !important; }
+html[data-theme="dark"] body :is(.match.selected,.selected) { background:#173b3a !important; border-color:#2b9c91 !important; }
+html[data-theme="dark"] body :is(.progress,.bar) { background:#2a3748 !important; }
+html[data-theme="dark"] body a:not(.button) { color:#83c7ff; }
+html[data-theme="dark"] body button { color:#f1f5fb; }
+html[data-theme="dark"] body .footer a { background:#26364a !important; color:#f1f5fb !important; border-color:#46566c !important; }
+
+
+/* Gezielte Korrektur Spielbericht: Seitenhintergrund und Hauptmenü-Link */
+html[data-theme="dark"] { min-height:100%; background:#101722 !important; color-scheme:dark; }
+html[data-theme="dark"] body { min-height:100vh; min-height:100dvh; background:#101722 !important; color:#e8eef7 !important; }
+html[data-theme="dark"] .home-menu-button,
+html[data-theme="dark"] a.home-menu-button,
+html[data-theme="dark"] body > a.home-menu-button {
+  display:block; background:#263b53 !important; color:#f1f5fb !important;
+  border:1px solid #5b7592 !important; border-radius:16px; padding:16px 18px;
+  text-align:center; text-decoration:none; font-weight:800; box-shadow:none !important;
+}
+html[data-theme="dark"] .home-menu-button:visited { color:#f1f5fb !important; }
+html[data-theme="dark"] .home-menu-button:hover,
+html[data-theme="dark"] .home-menu-button:focus { background:#34516f !important; color:#fff !important; }
+html[data-theme="dark"] .secondary { background:#26364a !important; color:#f1f5fb !important; border:1px solid #46566c !important; }
+/* Gemeinsame responsive Plattformnavigation */
+#platformNav{position:sticky;top:0;z-index:900;background:#102f4b;color:#f7fbff;box-shadow:0 3px 14px #0b1b2b22}
+#platformNav *{box-sizing:border-box}
+#platformNav .pn-inner{max-width:1200px;margin:auto;padding:9px 14px;display:flex;align-items:center;gap:12px}
+#platformNav .pn-brand{font-weight:850;white-space:nowrap;font-size:14px;color:#fff;text-decoration:none}
+#platformNav .pn-links{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
+#platformNav a{display:inline-flex;align-items:center;justify-content:center;color:#dcecff;text-decoration:none;border-radius:9px;padding:10px 11px;font-size:13px;font-weight:750;white-space:nowrap}
+#platformNav a:hover{background:#214d70;color:#fff}
+#platformNav a[aria-current="page"]{background:#fff;color:#12395b}
+#platformNav .pn-more{position:relative}
+#platformNav .pn-more summary{cursor:pointer;list-style:none;padding:10px 11px;border-radius:9px;font-size:13px;font-weight:750;color:#dcecff;white-space:nowrap}
+#platformNav .pn-more summary::-webkit-details-marker{display:none}
+#platformNav .pn-more[open] summary,#platformNav .pn-more summary:hover{background:#214d70;color:#fff}
+#platformNav .pn-menu{position:absolute;right:0;top:100%;min-width:210px;padding:7px;background:#102f4b;border:1px solid #315572;border-radius:12px;box-shadow:0 12px 30px #0003;display:grid;gap:3px}
+#platformNav .pn-menu a{justify-content:flex-start;white-space:normal}
+#platformNav .pn-user{font-size:12px;color:#c4d8e8;white-space:nowrap}
+#platformNav .pn-toggle{display:none;border:1px solid #45657e;background:#214d70;color:#fff;border-radius:9px;padding:9px 11px;font-weight:800}
+@media(max-width:760px){
+ #platformNav .pn-inner{flex-wrap:wrap;gap:8px;padding:8px 10px}
+ #platformNav .pn-brand{flex:1;min-width:0}
+ #platformNav .pn-toggle{display:inline-flex}
+ #platformNav .pn-links{display:none;flex:0 0 100%;width:100%;align-items:stretch;flex-direction:column;gap:4px;padding-top:5px}
+ #platformNav .pn-links.pn-open{display:flex}
+ #platformNav .pn-links>a,#platformNav .pn-more summary{justify-content:flex-start;width:100%;padding:12px}
+ #platformNav .pn-more{width:100%}
+ #platformNav .pn-menu{position:static;box-shadow:none;border:0;background:#0c263c;margin:4px 0 0;padding:5px}
+ #platformNav .pn-user{display:none}
+}
+
+</style><style>
+/* Einheitlicher Darkmode: Systemeinstellung als Standard, manuell überschreibbar */
+:root{color-scheme:light dark}
+html[data-theme="dark"]{color-scheme:dark;--bg:#101722;--card:#182332;--text:#e8eef7;--muted:#aab7c8;--primary:#3186c8;--primary2:#246da7;--border:#344357;--danger:#ff8f86;--success:#62d9a0}
+html[data-theme="dark"] body{background:var(--bg)!important;color:var(--text)!important}
+html[data-theme="dark"] header,html[data-theme="dark"] nav,html[data-theme="dark"] .card,html[data-theme="dark"] .panel,html[data-theme="dark"] .box,html[data-theme="dark"] .modal,html[data-theme="dark"] .wrap,html[data-theme="dark"] section,html[data-theme="dark"] .stat,html[data-theme="dark"] .tile{background-color:var(--card);color:var(--text);border-color:var(--border)}
+html[data-theme="dark"] p,html[data-theme="dark"] label,html[data-theme="dark"] small,html[data-theme="dark"] .muted{color:var(--muted)}
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:#111b28!important;color:var(--text)!important;border-color:var(--border)!important}
+html[data-theme="dark"] table{color:var(--text)}html[data-theme="dark"] th{background:#223248!important;color:var(--text)!important}html[data-theme="dark"] td{border-color:var(--border)!important}html[data-theme="dark"] tr:nth-child(even){background:#1c2939}
+html[data-theme="dark"] a:not(.button){color:#83c7ff}html[data-theme="dark"] .secondary,html[data-theme="dark"] .profile-option{background:#26364a!important;color:var(--text)!important;border-color:var(--border)!important}
+@media print{}
+</style>
+<style>
+.home-menu-button{display:block;width:100%;box-sizing:border-box;margin:28px 0 8px;padding:15px 18px;border-radius:14px;background:#e8eef5;color:#1f3348;text-decoration:none;text-align:center;font-weight:700;font-size:16px;border:1px solid #d4dee9;}
+.home-menu-button:active{transform:scale(.99);}
+</style>
+
+<style id="darkmode-page-fixes">
+html[data-theme="dark"] body .slot,
+html[data-theme="dark"] body .modal-box,
+html[data-theme="dark"] body .modal-actions,
+html[data-theme="dark"] body .opp-row,
+html[data-theme="dark"] body .opp-player,
+html[data-theme="dark"] body .validation,
+html[data-theme="dark"] body .playerlist,
+html[data-theme="dark"] body .playerlist tr,
+html[data-theme="dark"] body .playerlist td { background-color:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body .slot h3,
+html[data-theme="dark"] body .opp-row h3,
+html[data-theme="dark"] body .modal-box h2,
+html[data-theme="dark"] body .opp-side-title,
+html[data-theme="dark"] body .opponent-label,
+html[data-theme="dark"] body .opp-none-label { color:#e8eef7 !important; }
+html[data-theme="dark"] body .slot .sub,
+html[data-theme="dark"] body .modal-box p { color:#b8c4d4 !important; }
+html[data-theme="dark"] body .modal-box .modal-actions { background:#182332 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body .opp-player { background:#20364d !important; color:#e8eef7 !important; border-color:#3a5876 !important; }
+html[data-theme="dark"] body .slot select, html[data-theme="dark"] body .slot input { background:#111b28 !important; color:#e8eef7 !important; border-color:#46566c !important; }
+html[data-theme="dark"] body .slot select option { background:#182332 !important; color:#e8eef7 !important; }
+</style>
+
+<style id="darkmode-final-contrast-fix">
+html[data-theme="dark"] body :is(.user-row,.match-card,.encounter-card,.stat-card,.statistic-card,.player-card,.game-card,.game,.match,.fixture,.lineup-card,.discipline-card,.report-card,.admin-card,.section-card,.result-card,.ranking-card,.team-card,.player-stat,.stat-box,.metric-card,.info-card,.form-card,.list-card,.accordion-item,.modal-content,.modal-box,.slot,.pair-card,.set-card,.score-card,.table-wrap,.table-container,.chart-card,.chart-container,[class*="match"],[class*="encounter"],[class*="stat"],[class*="player"],[class*="lineup"],[class*="admin"],[class*="report"],[class*="result"],[class*="ranking"],[class*="fixture"],[class*="score"],[class*="chart"],[class*="team"]){background-color:#182332 !important;color:#e8eef7 !important;border-color:#344357 !important}
+html[data-theme="dark"] body :is(.user-row,.match-card,.encounter-card,.stat-card,.statistic-card,.player-card,.game-card,.game,.match,.fixture,.lineup-card,.discipline-card,.report-card,.admin-card,.section-card,.result-card,.ranking-card,.team-card,.player-stat,.stat-box,.metric-card,.info-card,.form-card,.list-card,.accordion-item,.modal-content,.modal-box,.slot,.pair-card,.set-card,.score-card,.table-wrap,.table-container,.chart-card,.chart-container,[class*="match"],[class*="encounter"],[class*="stat"],[class*="player"],[class*="lineup"],[class*="admin"],[class*="report"],[class*="result"],[class*="ranking"],[class*="fixture"],[class*="score"],[class*="chart"],[class*="team"]) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,b,div,td,th,li){color:inherit}
+html[data-theme="dark"] body :is(.user-row,.match-card,.encounter-card,.stat-card,.statistic-card,.player-card,.game-card,.game,.match,.fixture,.lineup-card,.discipline-card,.report-card,.admin-card,.section-card,.result-card,.ranking-card,.team-card,.player-stat,.stat-box,.metric-card,.info-card,.form-card,.list-card,.accordion-item,.modal-content,.modal-box,.slot,.pair-card,.set-card,.score-card,.table-wrap,.table-container,.chart-card,.chart-container) :is(input,select,textarea){background:#111b28 !important;color:#e8eef7 !important;border-color:#46566c !important}
+html[data-theme="dark"] body select option{background:#182332 !important;color:#e8eef7 !important}
+html[data-theme="dark"] body :is(.card,.user-row,.match-card,.encounter-card,.stat-card,.player-card,.game-card,.section-card,.result-card,.team-card,.modal-box,.slot) [style*="background: white"],html[data-theme="dark"] body :is(.card,.user-row,.match-card,.encounter-card,.stat-card,.player-card,.game-card,.section-card,.result-card,.team-card,.modal-box,.slot) [style*="background-color: white"]{background:#182332 !important;color:#e8eef7 !important}
+</style>
+</head><body>
+
+<nav id="platformNav" aria-label="Hauptnavigation">
+ <div class="pn-inner">
+  <a class="pn-brand" href="index.html">🏸 Badminton-Plattform</a>
+  <button class="pn-toggle" type="button" aria-expanded="false" aria-controls="pnLinks">☰ Menü</button>
+  <div class="pn-links" id="pnLinks"><a href="index.html">Dashboard</a><a href="vereine.html">Vereine</a><a href="mannschaft.html">Mannschaften</a><a href="spielplan.html">Spielplan</a><a href="aufstellung.html">Aufstellung</a><a href="live.html">Live</a></div>
+  <span class="pn-user">Navigation wird geladen …</span>
+ </div>
+</nav>
+<div class="wrap">
+<div id="loginCard" class="card"><h1>📋 Spielbericht</h1><div class="sub">Geschützter Bereich für Moderator/Admin.</div><label>E-Mail</label><input id="email" type="email" autocomplete="username"><label>Passwort</label><input id="password" type="password" autocomplete="current-password"><button id="loginBtn" class="primary full" style="margin-top:15px">Anmelden</button><div id="loginStatus" class="status hidden"></div></div>
+<div id="app" class="hidden"><div class="card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><h1>📋 Spielbericht</h1><div id="userInfo" class="sub"></div></div><button id="logoutBtn" class="secondary">Abmelden</button></div></div>
+<div id="selectCard" class="card"><h2>Begegnung auswählen</h2><div class="sub">Ergebnisse und Paarungen werden automatisch aus Supabase übernommen.</div><div id="matches" class="match-list"></div><div id="appStatus" class="status hidden"></div></div>
+<div id="reportCard" class="hidden">
+<div class="card"><div id="reportHeader"></div></div>
+<div class="card"><h2>Angaben zum Spielbericht</h2><div class="grid"><div><label>Bezeichnung der Staffel</label><input id="staffel"></div><div><label>Staffel-Nr.</label><input id="staffelNr"></div><div><label>Datum</label><input id="reportDate" type="date"></div><div><label>Uhrzeit Spielbeginn</label><input id="reportTime" type="time"></div><div><label>Ort / Hallenbezeichnung</label><input id="venue"></div><div><label>Spieltag</label><input id="matchday"></div></div></div>
+<div class="card"><h2>Spielergebnisse</h2><div class="sub">Schreibgeschützt aus dem Moderatorbereich.</div><div class="table-wrap"><table id="resultsTable" class="results-table"></table></div></div>
+<div class="card"><h2>Bemerkungen / besondere Vorkommnisse</h2><textarea id="incidents"></textarea><label>Protestvorbehalt gem. SpO</label><select id="protest"><option value="nein">Nein</option><option value="ja">Ja</option></select><label>Protestgrund</label><textarea id="protestReason"></textarea><label>Eingesetzte Ersatzspieler</label><textarea id="substitutes" placeholder="Namen der eingesetzten Ersatzspieler eintragen"></textarea></div>
+<div class="card"><h2>Mannschaftsführer</h2><div class="signature-grid"><div class="sig-box"><h3>Heimmannschaft</h3><input id="captainHome" placeholder="Vor- und Nachname"><label>Unterschrift</label><canvas id="sigHome" class="sig-preview" onclick="openSignature('home')"></canvas><div class="sig-tools"><button class="secondary" onclick="openSignature('home')">✍️ Unterschreiben / bearbeiten</button><button class="secondary" id="freezeHome" onclick="toggleFreeze('home')">🔒 Feld sperren</button><button class="secondary" onclick="clearSig('home')">Löschen</button></div></div><div class="sig-box"><h3>Gastmannschaft</h3><input id="captainAway" placeholder="Vor- und Nachname"><label>Unterschrift</label><canvas id="sigAway" class="sig-preview" onclick="openSignature('away')"></canvas><div class="sig-tools"><button class="secondary" onclick="openSignature('away')">✍️ Unterschreiben / bearbeiten</button><button class="secondary" id="freezeAway" onclick="toggleFreeze('away')">🔒 Feld sperren</button><button class="secondary" onclick="clearSig('away')">Löschen</button></div></div></div><label style="display:flex;gap:8px;align-items:flex-start"><input id="confirmData" type="checkbox" style="width:auto"> <span>Beide Mannschaftsführer bestätigen die Richtigkeit der Angaben und dass das Spiel unter Beachtung der Spielordnung stattgefunden hat.</span></label><div id="confirmedAt" class="small"></div></div>
+<div class="card"><div class="toolbar"><button class="secondary" onclick="saveReport()">💾 Spielbericht speichern</button><button class="primary" onclick="generatePDF()">📄 PDF erzeugen</button><button class="secondary" onclick="backToMatches()">← Andere Begegnung</button></div><div id="reportStatus" class="status hidden"></div></div>
+</div></div></div>
+<div id="signatureModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="signatureTitle"><div class="modal-panel"><div class="modal-head"><div><h2 id="signatureTitle">Unterschrift</h2><div class="small">Mit Finger oder Stift im großen Feld unterschreiben.</div></div><button class="secondary" onclick="closeSignature(false)">✕ Schließen</button></div><canvas id="signaturePad" class="sig-large"></canvas><div class="sig-modal-actions"><button class="secondary" onclick="clearPad()">🧹 Neu beginnen</button><button class="secondary" id="freezePadBtn" onclick="togglePadFreeze()">🔒 Feld sperren</button><button class="primary" onclick="closeSignature(true)">✓ Unterschrift übernehmen</button></div><div id="signatureHint" class="small" style="margin-top:8px">Feld ist entsperrt.</div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script>
+const SUPABASE_URL="https://apsarswjmsrmffoyxsgr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const ORDER=["HD1","HD2","DD","HE1","HE2","HE3","DE","GD"],LABELS={HD1:"1. HD",HD2:"2. HD",DD:"DD",HE1:"1. HE",HE2:"2. HE",HE3:"3. HE",DE:"DE",GD:"GD"};let user,profile,matches=[],selected,games=[];
+const $=id=>document.getElementById(id),esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));function msg(e,t,c=""){e.textContent=t;e.className="status "+c}function dateDE(v){return v?new Date(v+"T00:00:00").toLocaleDateString("de-DE"):""}function completedSetScore(x,y){if(x==null||y==null)return false;x=Number(x);y=Number(y);if(!Number.isInteger(x)||!Number.isInteger(y)||x<0||y<0||x>30||y>30||x===y)return false;let hi=Math.max(x,y),lo=Math.min(x,y);return(hi===21&&lo<=19)||(hi>=22&&hi<=29&&hi-lo===2)||(hi===30&&lo>=28)}function wins(g){let h=0,a=0;for(let n=1;n<=3;n++){let x=g["set"+n+"_home"],y=g["set"+n+"_away"];if(!completedSetScore(x,y))continue;if(+x>+y)h++;if(+y>+x)a++}return{h,a}}function winner(g){let s=wins(g);return s.h>=2?"home":s.a>=2?"away":null}function gamePoints(g){let h=0,a=0;for(let n=1;n<=3;n++){let x=g["set"+n+"_home"],y=g["set"+n+"_away"];if(x==null||y==null)continue;h+=Number(x);a+=Number(y)}return{h,a}}function total(){let h=0,a=0,sh=0,sa=0,ph=0,pa=0;games.forEach(g=>{let w=winner(g),s=wins(g),p=gamePoints(g);if(w=="home")h++;if(w=="away")a++;sh+=s.h;sa+=s.a;ph+=p.h;pa+=p.a});return{h,a,sh,sa,ph,pa}}
+let activeSignatureSide=null;const signatureFrozen={home:false,away:false,pad:false};
+function initCanvas(id){let c=$(id),x=c.getContext("2d"),down=false,last;c.width=900;c.height=500;function p(e){let r=c.getBoundingClientRect(),q=e;return{x:(q.clientX-r.left)*c.width/r.width,y:(q.clientY-r.top)*c.height/r.height}}function d(e){if(c.dataset.readonly==="true"||c.classList.contains("sig-preview"))return;e.preventDefault();down=true;last=p(e);try{c.setPointerCapture(e.pointerId)}catch(_){}}function m(e){if(!down)return;e.preventDefault();let q=p(e);x.beginPath();x.moveTo(last.x,last.y);x.lineTo(q.x,q.y);x.lineWidth=4;x.lineCap="round";x.lineJoin="round";x.stroke();last=q}function u(){down=false;last=null}c.addEventListener("pointerdown",d);c.addEventListener("pointermove",m);c.addEventListener("pointerup",u);c.addEventListener("pointercancel",u)}
+function openSignature(side){if(signatureFrozen[side])return msg($("reportStatus"),"Dieses Unterschriftenfeld ist gesperrt. Bitte zuerst entsperren.","warn");activeSignatureSide=side;const src=$(side==="home"?"sigHome":"sigAway"),pad=$("signaturePad");pad.width=1200;pad.height=600;pad.getContext("2d").clearRect(0,0,pad.width,pad.height);if(hasInk(side)){const im=new Image();im.onload=()=>pad.getContext("2d").drawImage(im,0,0,pad.width,pad.height);im.src=src.toDataURL("image/png")}signatureFrozen.pad=false;updatePadFreeze();$("signatureTitle").textContent="Unterschrift – "+(side==="home"?selected.home_team:selected.away_team);$("signatureModal").classList.add("open");}
+function closeSignature(save){if(save&&activeSignatureSide){const pad=$("signaturePad"),dest=$(activeSignatureSide==="home"?"sigHome":"sigAway"),ctx=dest.getContext("2d");ctx.clearRect(0,0,dest.width,dest.height);ctx.drawImage(pad,0,0,dest.width,dest.height)}$("signatureModal").classList.remove("open");activeSignatureSide=null;}
+function clearPad(){if(signatureFrozen.pad)return;const c=$("signaturePad");c.getContext("2d").clearRect(0,0,c.width,c.height)}
+function togglePadFreeze(){signatureFrozen.pad=!signatureFrozen.pad;updatePadFreeze()}
+function updatePadFreeze(){const c=$("signaturePad"),b=$("freezePadBtn");c.dataset.readonly=signatureFrozen.pad?"true":"false";c.classList.toggle("sig-locked",signatureFrozen.pad);b.textContent=signatureFrozen.pad?"🔓 Feld entsperren":"🔒 Feld sperren";b.classList.toggle("freeze-on",signatureFrozen.pad);$("signatureHint").textContent=signatureFrozen.pad?"Feld ist gesperrt. Zum Weiterzeichnen entsperren.":"Feld ist entsperrt."}
+function toggleFreeze(side){signatureFrozen[side]=!signatureFrozen[side];const b=$(side==="home"?"freezeHome":"freezeAway"),c=$(side==="home"?"sigHome":"sigAway");b.textContent=signatureFrozen[side]?"🔓 Feld entsperren":"🔒 Feld sperren";b.classList.toggle("freeze-on",signatureFrozen[side]);c.classList.toggle("sig-locked",signatureFrozen[side]);c.dataset.readonly=signatureFrozen[side]?"true":"false"}
+function clearSig(side){if(signatureFrozen[side])return msg($("reportStatus"),"Das Unterschriftenfeld ist gesperrt. Bitte zuerst entsperren.","warn");let c=$(side==="home"?"sigHome":"sigAway");c.getContext("2d").clearRect(0,0,c.width,c.height)}
+function sig(side){return $(side==="home"?"sigHome":"sigAway").toDataURL("image/png")}
+
+async function enter(u){
+  try{
+    user=u;
+    let q=await sb.from("profiles").select("id,display_name,role").eq("id",u.id).single();
+    if(q.error)throw q.error;
+    profile=q.data;
+    if(!profile || !["moderator","admin"].includes(profile.role)){
+      await sb.auth.signOut();
+      throw new Error("Dieser Benutzer hat keine Moderator-Berechtigung.");
+    }
+    $("loginCard").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    $("userInfo").textContent=(profile.display_name||u.email)+" · "+profile.role;
+    await loadMatches();
+  }catch(e){
+    $("app").classList.add("hidden");
+    $("loginCard").classList.remove("hidden");
+    msg($("loginStatus"),e?.message||"Anmeldung fehlgeschlagen.","bad");
+  }
+}
+async function login(){
+  const email=$("email").value.trim(),password=$("password").value;
+  if(!email||!password)return msg($("loginStatus"),"Bitte E-Mail und Passwort eingeben.","bad");
+  $("loginBtn").disabled=true;
+  msg($("loginStatus"),"Anmeldung läuft …");
+  try{
+    const q=await sb.auth.signInWithPassword({email,password});
+    if(q.error){msg($("loginStatus"),"Login fehlgeschlagen: "+q.error.message,"bad");return;}
+    await enter(q.data.user);
+  }catch(e){
+    msg($("loginStatus"),e?.message||"Anmeldung fehlgeschlagen.","bad");
+  }finally{
+    $("loginBtn").disabled=false;
+  }
+}
+async function loadMatches(){let q=await sb.from("matches").select("*").eq("status","finished").order("match_date",{ascending:false}).limit(50);if(q.error)return msg($("appStatus"),q.error.message,"bad");matches=q.data||[];$("matches").innerHTML=matches.map(m=>`<button class="match" onclick="selectMatch(\'${esc(m.id)}\')"><div class="match-title">${esc(m.home_team)} – ${esc(m.away_team)}</div><div class="match-meta">${dateDE(m.match_date)}${m.match_time?" · "+String(m.match_time).slice(0,5)+" Uhr":""} · beendet</div></button>`).join("")||"<div class=small>Keine beendeten Begegnungen.</div>"}
+async function selectMatch(id){selected=matches.find(m=>m.id===id);if(!selected)return;let q=await sb.from("match_games").select("*").eq("match_id",id);if(q.error)return msg($("appStatus"),q.error.message,"bad");games=(q.data||[]).sort((a,b)=>ORDER.indexOf(a.position)-ORDER.indexOf(b.position));$("staffel").value="";$("staffelNr").value="";render();await loadSavedReport();}
+function render(){
+ let r=total();
+ $("selectCard").classList.add("hidden");$("reportCard").classList.remove("hidden");
+ $("reportHeader").innerHTML=`<div class=report-head><div class=team>${esc(selected.home_team)}</div><div><div class=big>${r.h} : ${r.a}</div><span class=badge>${r.h>r.a?"Sieger: "+esc(selected.home_team):r.a>r.h?"Sieger: "+esc(selected.away_team):"Ergebnis: Unentschieden"}</span></div><div class=team>${esc(selected.away_team)}</div></div>`;
+ $("reportDate").value=selected.match_date||"";$("reportTime").value=selected.match_time?String(selected.match_time).slice(0,5):"";
+ let rows=games.map(g=>{
+   let st=wins(g),w=winner(g),p=gamePoints(g),gamesHome=w==="home"?1:0,gamesAway=w==="away"?1:0;
+   const score=(a,b)=>`${a??"–"} : ${b??"–"}`;
+   return `<tr><td>${LABELS[g.position]||esc(g.position)}</td><td class="player-home">${esc((g.player1||"–")+(g.player2?" / "+g.player2:""))}</td><td class="player-away">${esc((g.opponent_player1||"–")+(g.opponent_player2?" / "+g.opponent_player2:""))}</td><td class="set-score">${score(g.set1_home,g.set1_away)}</td><td class="set-score">${score(g.set2_home,g.set2_away)}</td><td class="set-score">${score(g.set3_home,g.set3_away)}</td><td class="numeric-score group-start">${p.h}</td><td class="numeric-score">${p.a}</td><td class="numeric-score group-start">${st.h}</td><td class="numeric-score">${st.a}</td><td class="numeric-score group-start">${gamesHome}</td><td class="numeric-score">${gamesAway}</td></tr>`
+ }).join("");
+ $("resultsTable").innerHTML=`<thead><tr><th rowspan="2">Spiel</th><th rowspan="2">Heimspieler</th><th rowspan="2">Gastspieler</th><th rowspan="2">1. Satz</th><th rowspan="2">2. Satz</th><th rowspan="2">3. Satz</th><th colspan="2">Satzpunkte</th><th colspan="2">Satzergebnis</th><th colspan="2">Spielergebnis</th></tr><tr><th>Heim</th><th>Gast</th><th>Heim</th><th>Gast</th><th>Heim</th><th>Gast</th></tr></thead><tbody>${rows}</tbody><tfoot><tr class="total-row"><th colspan="6">Gesamtsumme</th><th>${r.ph}</th><th>${r.pa}</th><th>${r.sh}</th><th>${r.sa}</th><th>${r.h}</th><th>${r.a}</th></tr></tfoot>`;
+}
+
+function payload(){return{match_id:selected.id,staffel:$("staffel").value.trim()||null,staffel_nr:$("staffelNr").value.trim()||null,report_date:$("reportDate").value||null,report_time:$("reportTime").value||null,venue:$("venue").value.trim()||null,matchday:$("matchday").value.trim()||null,incidents:$("incidents").value.trim()||null,protest:$("protest").value||"nein",protest_reason:$("protestReason").value.trim()||null,captain_home:$("captainHome").value.trim()||null,captain_away:$("captainAway").value.trim()||null,signature_home:sig("home"),signature_away:sig("away"),confirmed:true,confirmed_at:new Date().toISOString(),updated_by:user.id}}
+async function loadTeamSettings(onlyMissing=false){
+  if(!selected)return;
+  const names=[selected.home_team,selected.away_team].filter(Boolean);
+  const {data,error}=await sb.from("team_competition_settings").select("team,staffel,staffel_nr").in("team",names);
+  if(error){console.warn("Staffel-Einstellungen konnten nicht geladen werden:",error.message);return}
+  const rows=data||[];const cfg=rows.find(x=>x.team===selected.home_team)||rows.find(x=>x.team===selected.away_team);
+  if(!cfg)return;
+  if(!onlyMissing||!$("staffel").value)$("staffel").value=cfg.staffel||"";
+  if(!onlyMissing||!$("staffelNr").value)$("staffelNr").value=cfg.staffel_nr||"";
+}
+async function loadSavedReport(){
+  const {data,error}=await sb.from("match_reports").select("*").eq("match_id",selected.id).maybeSingle();
+  if(error){msg($("reportStatus"),"Gespeicherter Spielbericht konnte nicht geladen werden: "+error.message,"bad");return;}
+  if(!data){await loadTeamSettings();return;}
+  $("staffel").value=data.staffel||"";$("staffelNr").value=data.staffel_nr||"";$("reportDate").value=data.report_date||selected.match_date||"";$("reportTime").value=data.report_time?String(data.report_time).slice(0,5):(selected.match_time?String(selected.match_time).slice(0,5):"");$("venue").value=data.venue||selected.venue||"";$("matchday").value=data.matchday||"";$("incidents").value=data.incidents||"";$("protest").value=data.protest||"nein";$("protestReason").value=data.protest_reason||"";$("substitutes").value=data.substitutes||"";$("captainHome").value=data.captain_home||"";$("captainAway").value=data.captain_away||"";$("confirmData").checked=!!data.confirmed;$("confirmedAt").textContent=data.confirmed_at?"Bestätigt am: "+new Date(data.confirmed_at).toLocaleString("de-DE"):"";
+  if(!$("staffel").value || !$("staffelNr").value) await loadTeamSettings(true);
+  setTimeout(()=>{loadSig("home",data.signature_home);loadSig("away",data.signature_away)},50);
+  if(data.pdf_path)msg($("reportStatus"),"Spielbericht gespeichert. PDF ist im Spielplan verfügbar.","ok");
+}
+function loadSig(side,data){if(!data)return;const img=new Image();img.onload=()=>{const c=$(side==="home"?"sigHome":"sigAway"),x=c.getContext("2d");x.clearRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height)};img.src=data}
+async function saveReport(){
+  if(selected.status!=="finished")return msg($("reportStatus"),"Ein Spielbericht kann erst nach Beendigung der Begegnung erstellt werden.","warn");
+  if(!$("confirmData").checked)return msg($("reportStatus"),"Bitte die Richtigkeitsbestätigung aktivieren.","warn");
+  if(!$("captainHome").value.trim()||!$("captainAway").value.trim())return msg($("reportStatus"),"Bitte beide Mannschaftsführer eintragen.","warn");
+  if(!hasInk("home")||!hasInk("away"))return msg($("reportStatus"),"Bitte beide Mannschaftsführer unterschreiben.","warn");
+  let q=await sb.from("match_reports").upsert(payload(),{onConflict:"match_id"}).select().single();
+  if(q.error)return msg($("reportStatus"),"Speichern fehlgeschlagen: "+q.error.message,"bad");
+  msg($("reportStatus"),"Spielbericht gespeichert. Jetzt PDF erzeugen.","ok");$("confirmedAt").textContent="Bestätigt am: "+new Date().toLocaleString("de-DE");
+}
+function hasInk(s){const c=$(s==="home"?"sigHome":"sigAway"),x=c.getContext("2d"),d=x.getImageData(0,0,c.width,c.height).data;for(let i=3;i<d.length;i+=4)if(d[i]>0)return true;return false}
+function backToMatches(){$("reportCard").classList.add("hidden");$("selectCard").classList.remove("hidden")}
+async function generatePDF(){
+  if(selected.status!=="finished")return msg($("reportStatus"),"Ein Spielbericht kann erst nach Beendigung der Begegnung erstellt werden.","warn");
+  if(!$("confirmData").checked)return msg($("reportStatus"),"Bitte zuerst bestätigen.","warn");
+  if(!$("captainHome").value.trim()||!$("captainAway").value.trim()||!hasInk("home")||!hasInk("away"))return msg($("reportStatus"),"Bitte beide Mannschaftsführer eintragen und unterschreiben.","warn");
+  let {jsPDF}=window.jspdf,doc=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"}),r=total();
+  doc.setFontSize(17);doc.text("Badminton-Spielbericht",148,14,{align:"center"});doc.setFontSize(9);doc.text("Staffel: "+($('staffel').value||"—"),10,23);doc.text("Staffel-Nr.: "+($('staffelNr').value||"—"),10,29);doc.text("Heim: "+selected.home_team,90,23);doc.text("Gast: "+selected.away_team,190,23);doc.text("Datum: "+($('reportDate').value||"—")+"   Beginn: "+($('reportTime').value||"—"),90,29);doc.text("Ort/Halle: "+($('venue').value||"—"),190,29);
+  let body=games.map(g=>{
+    const st=wins(g), win=winner(g), pts=gamePoints(g);
+    const gh=win==="home"?1:0, ga=win==="away"?1:0;
+    const homePlayers=(g.player1||"–")+(g.player2 ? " / "+g.player2 : "");
+    const awayPlayers=(g.opponent_player1||"–")+(g.opponent_player2 ? " / "+g.opponent_player2 : "");
+    return [LABELS[g.position]||g.position,homePlayers,awayPlayers,
+      (g.set1_home??"–")+" : "+(g.set1_away??"–"),(g.set2_home??"–")+" : "+(g.set2_away??"–"),
+      (g.set3_home??"–")+" : "+(g.set3_away??"–"),pts.h,pts.a,
+      st.h,st.a,gh,ga];
+  });
+  body.push(["Gesamtsumme","","","","","",r.ph,r.pa,r.sh,r.sa,r.h,r.a]);
+  doc.autoTable({startY:35,head:[[{content:"Spiel",rowSpan:2},{content:"Heimspieler",rowSpan:2},{content:"Gastspieler",rowSpan:2},{content:"1. Satz",rowSpan:2},{content:"2. Satz",rowSpan:2},{content:"3. Satz",rowSpan:2},{content:"Satzpunkte",colSpan:2},{content:"Satzergebnis",colSpan:2},{content:"Spielergebnis",colSpan:2}],["Heim","Gast","Heim","Gast","Heim","Gast"]],body,styles:{fontSize:6.3,cellPadding:1.4,lineColor:[71,85,105],lineWidth:.3,halign:"center"},headStyles:{fillColor:[219,234,254],textColor:[15,23,42],lineWidth:.5},alternateRowStyles:{fillColor:[241,245,249]},columnStyles:{1:{cellWidth:32,halign:"left"},2:{cellWidth:32,halign:"left"},3:{cellWidth:16},4:{cellWidth:16},5:{cellWidth:16}},didParseCell:function(data){if(data.section==="body"&&data.row.index===body.length-1){data.cell.styles.fontStyle="bold";data.cell.styles.fillColor=[219,234,254];}}});let y=doc.lastAutoTable.finalY+6;doc.setFontSize(11);const outcome=r.h>r.a?"Sieger der Begegnung: "+selected.home_team:r.a>r.h?"Sieger der Begegnung: "+selected.away_team:"Ergebnis der Begegnung: Unentschieden";doc.setFont(undefined,"bold");doc.text(outcome,10,y);doc.setFont(undefined,"normal");y+=8;doc.setFontSize(9);
+  doc.text("Besondere Vorkommnisse: "+($('incidents').value||"Keine."),10,y);y+=7;doc.text("Protestvorbehalt: "+$('protest').value,10,y);if($('protest').value=="ja")doc.text("Grund: "+($('protestReason').value||"—"),80,y);y+=7;doc.text("Eingesetzte Ersatzspieler:",10,y);y+=5;const subLines=doc.splitTextToSize($('substitutes').value||"—",270);doc.text(subLines,10,y);y+=Math.max(6,subLines.length*4)+2;doc.text("Mannschaftsführer Heim: "+$('captainHome').value,10,y);doc.text("Mannschaftsführer Gast: "+$('captainAway').value,150,y);y+=3;try{doc.addImage(sig("home"),"PNG",10,y,55,30);doc.addImage(sig("away"),"PNG",150,y,55,30)}catch(e){}y+=34;doc.text("Bestätigt: "+new Date().toLocaleString("de-DE"),10,y);
+  const blob=doc.output("blob");const path=selected.id+"/Spielbericht_"+selected.id+".pdf";
+  const up=await sb.storage.from("match-reports").upload(path,blob,{contentType:"application/pdf",upsert:true});
+  if(up.error)return msg($("reportStatus"),"PDF konnte nicht gespeichert werden: "+up.error.message,"bad");
+  const row=await sb.from("match_reports").upsert({...payload(),pdf_path:path,pdf_generated_at:new Date().toISOString()},{onConflict:"match_id"}).select().single();
+  if(row.error)return msg($("reportStatus"),"Bericht gespeichert, aber Datenbankaktualisierung fehlgeschlagen: "+row.error.message,"bad");
+  doc.save("Spielbericht_"+selected.home_team+"_"+selected.away_team+".pdf");msg($("reportStatus"),"PDF erzeugt und im Spielplan gespeichert.","ok");
+}
+$("loginBtn").onclick=login;$("password").onkeydown=e=>{if(e.key=="Enter")login()};$("logoutBtn").onclick=()=>sb.auth.signOut().then(()=>location.reload());$("confirmData").onchange=e=>$("confirmedAt").textContent=e.target.checked?"Bestätigt am: "+new Date().toLocaleString("de-DE"):"";initCanvas("sigHome");initCanvas("sigAway");initCanvas("signaturePad");(async()=>{let q=await sb.auth.getSession();if(q.data.session)enter(q.data.session.user).catch(e=>msg($("loginStatus"),e.message,"bad"))})();
+</script>
+<a class="home-menu-button" href="index.html">🏠 Zurück zum Hauptmenü</a>
+
+<script>(function(){const key='badminton-theme';function systemTheme(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}let saved=null;try{saved=localStorage.getItem(key)}catch(e){}document.documentElement.dataset.theme=saved==='dark'||saved==='light'?saved:systemTheme();if(window.matchMedia){const mq=window.matchMedia('(prefers-color-scheme: dark)');const changed=()=>{let v=null;try{v=localStorage.getItem(key)}catch(e){}if(v!=='dark'&&v!=='light')document.documentElement.dataset.theme=systemTheme()};if(mq.addEventListener)mq.addEventListener('change',changed);else if(mq.addListener)mq.addListener(changed)}})();</script>
+<script>
+(function(){const key='badminton-theme';function sys(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}function apply(t){document.documentElement.dataset.theme=t;const p=document.getElementById('profileThemeButton');if(p)p.textContent=t==='dark'?'☀️ Helles Design':'🌙 Dark Mode'}function saved(){try{return localStorage.getItem(key)}catch(e){return null}}apply(saved()==='dark'||saved()==='light'?saved():sys());window.toggleTheme=function(){const t=document.documentElement.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem(key,t)}catch(e){}apply(t)};if(window.matchMedia){const m=window.matchMedia('(prefers-color-scheme: dark)');const f=()=>{const v=saved();if(v!=='dark'&&v!=='light')apply(sys())};m.addEventListener?m.addEventListener('change',f):m.addListener(f)}document.addEventListener('DOMContentLoaded',()=>apply(document.documentElement.dataset.theme||sys()))})();
+</script>
+<script>
+
+(function(){
+ const root=document.getElementById('platformNav'); if(!root) return;
+ const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+ const items=[
+  {label:'Dashboard',href:'index.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Vereine',href:'vereine.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Mannschaften',href:'mannschaft.html',roles:['team_manager','moderator','admin','board','advisory']},
+  {label:'Spielplan',href:'spielplan.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Aufstellung',href:'aufstellung.html',roles:['team_manager','moderator','admin']},
+  {label:'Live',href:'live.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Moderator',href:'moderator.html',roles:['moderator','scorer','admin']},
+  {label:'Spielbericht',href:'spielbericht.html',roles:['moderator','admin']},
+  {label:'Spielerstatistik',href:'spielerstatistik.html',roles:['player','team_manager','moderator','admin','board','advisory']},
+  {label:'Rangliste',href:'Rangliste.html',roles:['player','team_manager','moderator','admin','board','advisory']},
+  {label:'Administration',href:'admin.html',roles:['admin']}
+ ];
+ const primary=['Dashboard','Vereine','Mannschaften','Spielplan','Aufstellung','Live'];
+ const labels=new Set(primary);
+ function link(it){const a=document.createElement('a');a.href=it.href;a.textContent=it.label;if(current===it.href.toLowerCase())a.setAttribute('aria-current','page');return a}
+ const links=root.querySelector('.pn-links'); if(!links)return;
+ function render(role,loggedIn){
+   links.innerHTML='';
+   const allowed=items.filter(it=>it.roles.includes(role));
+   allowed.filter(it=>labels.has(it.label)).forEach(it=>links.appendChild(link(it)));
+   const more=allowed.filter(it=>!labels.has(it.label));
+   if(more.length){
+     const d=document.createElement('details');d.className='pn-more';
+     const s=document.createElement('summary');s.textContent='Mehr ▾';d.appendChild(s);
+     const menu=document.createElement('div');menu.className='pn-menu';more.forEach(it=>menu.appendChild(link(it)));d.appendChild(menu);links.appendChild(d);
+   }
+   const u=root.querySelector('.pn-user'); if(u)u.textContent=loggedIn?'Angemeldet':'Öffentlicher Bereich';
+ }
+ const toggle=root.querySelector('.pn-toggle');
+ if(toggle)toggle.addEventListener('click',()=>{const open=links.classList.toggle('pn-open');toggle.setAttribute('aria-expanded',String(open));toggle.textContent=open?'✕ Schließen':'☰ Menü';});
+ // Keep public access functional; logged-in roles receive a tailored menu.
+ const fallback=()=>render('player',false);
+ if(!window.supabase||!window.supabase.createClient){fallback();return}
+ const url='https://apsarswjmsrmffoyxsgr.supabase.co';
+ const key='sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj';
+ try{
+   const client=window.__platformNavClient||(window.__platformNavClient=window.supabase.createClient(url,key));
+   client.auth.getUser().then(async ({data,error})=>{
+     if(error||!data.user){fallback();return}
+     let role='player';
+     const {data:profile}=await client.from('profiles').select('role').eq('id',data.user.id).maybeSingle();
+     if(profile&&profile.role)role=String(profile.role).toLowerCase();
+     const {data:members}=await client.from('club_memberships').select('club_role,status').eq('user_id',data.user.id).eq('status','active');
+     const roles=(members||[]).map(x=>String(x.club_role||'').toLowerCase());
+     if(role!=='admin'&&roles.length){
+       if(roles.includes('team_manager'))role='team_manager';
+       else if(roles.includes('moderator'))role='moderator';
+       else if(roles.includes('board'))role='board';
+       else if(roles.includes('advisory'))role='advisory';
+     }
+     render(role,true);
+   }).catch(fallback);
+ }catch(e){fallback()}
+})();
+</script>
+</body></html>

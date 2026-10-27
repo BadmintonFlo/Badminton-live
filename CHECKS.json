@@ -1,0 +1,175 @@
+[
+  {
+    "file": "index.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1
+  },
+  {
+    "file": "vereine.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1
+  },
+  {
+    "file": "mannschaft.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1
+  },
+  {
+    "file": "spielplan.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1
+  },
+  {
+    "file": "aufstellung.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1
+  },
+  {
+    "file": "live.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1
+  },
+  {
+    "file": "passwort.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1
+  },
+  {
+    "file": "spielbericht.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1
+  },
+  {
+    "file": "admin.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1
+  },
+  {
+    "file": "spielerstatistik.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1
+  },
+  {
+    "file": "moderator.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1
+  },
+  {
+    "file": "Rangliste.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1,
+    "script_tags_balanced": true
+  },
+  {
+    "file": "admin.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1,
+    "script_tags_balanced": true
+  },
+  {
+    "file": "aufstellung.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1,
+    "script_tags_balanced": true
+  },
+  {
+    "file": "index.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1,
+    "script_tags_balanced": true
+  },
+  {
+    "file": "live.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1,
+    "script_tags_balanced": true
+  },
+  {
+    "file": "mannschaft.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1,
+    "script_tags_balanced": true
+  },
+  {
+    "file": "moderator.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1,
+    "script_tags_balanced": true
+  },
+  {
+    "file": "passwort.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1,
+    "script_tags_balanced": true
+  },
+  {
+    "file": "spielbericht.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1,
+    "script_tags_balanced": true
+  },
+  {
+    "file": "spielerstatistik.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1,
+    "script_tags_balanced": true
+  },
+  {
+    "file": "spielplan.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1,
+    "script_tags_balanced": true
+  },
+  {
+    "file": "vereine.html",
+    "nav": true,
+    "nav_script": true,
+    "html_end": 1,
+    "body_end": 1,
+    "script_tags_balanced": true
+  }
+]

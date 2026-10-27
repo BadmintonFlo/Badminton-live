@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Badminton Mannschaftsverwaltung</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#667085;--primary:#1769aa;--primary2:#0d4f83;--border:#dbe3ee;--danger:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--border)}
+.header-inner{max-width:1050px;margin:auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:800;font-size:18px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+button,a.button{border:0;border-radius:10px;padding:11px 15px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.login-btn{background:var(--primary);color:#fff}.logout-btn{background:#eef2f7;color:#26364d}.profile-btn{background:#eef2f7;color:#26364d}
+@media (max-width:700px){.header-inner{padding:10px 12px;gap:8px}.brand{font-size:15px;flex:1}#userLabel{display:none!important}button,a.button{padding:10px 13px}}
+@media (max-width:420px){.brand{max-width:155px}.login-btn,.logout-btn,.profile-btn{font-size:14px;padding:9px 10px}}
+main{max-width:1050px;margin:auto;padding:28px 16px 45px}.hero{text-align:center;padding:12px 0 25px}
+.hero h1{margin:0 0 8px;font-size:clamp(25px,5vw,38px)}.hero p{margin:0;color:var(--muted)}
+.statusbar{display:none;margin:0 auto 20px;max-width:900px;background:#eaf4ff;border:1px solid #c8e0f6;border-radius:12px;padding:12px 14px}
+.statusbar strong{display:block}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 3px 12px rgba(20,40,70,.05)}
+.card h2{margin:0 0 7px;font-size:19px}.card p{margin:0 0 15px;color:var(--muted);line-height:1.45}
+.card .button{width:100%;background:var(--primary);color:#fff}.card .button:hover,.login-btn:hover{background:var(--primary2)}
+.public-card{border-color:#b9d7ef}.role-section{display:none;margin-top:25px}.role-title{font-size:21px;font-weight:800;margin:0 0 12px}
+.empty{color:var(--muted);text-align:center;padding:18px}footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30px}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.52);z-index:100;padding:18px;align-items:center;justify-content:center}
+.modal{width:min(430px,100%);background:#fff;border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.modal h2{margin:0;font-size:22px}.close{background:#eef2f7;color:#344054;padding:7px 10px;border-radius:9px}
+label{display:block;font-weight:700;margin:14px 0 6px}input{width:100%;padding:12px;border:1px solid #cfd8e3;border-radius:10px;font:inherit;background:#fff}
+.submit{width:100%;margin-top:18px;background:var(--primary);color:#fff}.error{display:none;margin-top:12px;color:var(--danger);background:#fff0ee;border:1px solid #ffd1cc;padding:10px;border-radius:10px}
+.password-wrap{position:relative;display:flex;align-items:center}.password-wrap input{padding-right:52px}.password-toggle{position:absolute;right:7px;top:50%;transform:translateY(-50%);padding:7px 9px;border-radius:8px;background:#eef2f7;color:#26364d;font-size:18px;line-height:1;border:1px solid var(--border)}html[data-theme="dark"] .password-toggle{background:#26364a!important;color:#f1f5fb!important;border-color:#46566c!important}.help{font-size:13px;color:var(--muted);margin-top:12px;line-height:1.4}.link-btn{display:block;background:none;border:0;color:var(--primary);padding:10px 0 0;font:inherit;font-weight:700;cursor:pointer}.profile-list{display:grid;gap:10px;margin-top:16px}.profile-option{width:100%;justify-content:flex-start;background:#f6f8fb;color:#172033;border:1px solid var(--border);padding:14px}.profile-option:hover{background:#eef4fa}.profile-muted{color:var(--muted);font-size:13px;font-weight:500;margin-left:4px}
+.dashboard{display:none;margin-top:22px}.dashboard-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:12px;flex-wrap:wrap}.dashboard-title{font-size:21px;font-weight:800;margin:0}.dashboard-note{font-size:13px;color:var(--muted)}.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.dash-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:17px;box-shadow:0 3px 12px rgba(20,40,70,.05);min-width:0}.dash-card h3{margin:0 0 9px;font-size:16px}.dash-value{font-size:24px;font-weight:800;line-height:1.25;margin:4px 0 7px;overflow-wrap:anywhere}.dash-muted{color:var(--muted);font-size:13px;line-height:1.45}.dash-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.dash-actions a{background:#eaf4ff;color:#13558a;border-radius:9px;padding:9px 11px;text-decoration:none;font-weight:700;font-size:13px}.dash-list{margin:0;padding:0;list-style:none}.dash-list li{padding:9px 0;border-top:1px solid var(--border);font-size:14px}.dash-list li:first-child{border-top:0}.dash-error{color:var(--danger)}.player-name-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.player-name-row input{flex:1;min-width:150px;padding:10px;border:1px solid var(--border);border-radius:9px;font:inherit}.player-name-row button{background:var(--primary);color:#fff;padding:10px 12px;border-radius:9px;font-weight:700}.name-status{font-size:12px;color:var(--muted);margin-top:6px}
+.quick-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.quick-head h3{margin:0 0 9px}.quick-edit{background:#eef2f7;color:#26364d;padding:7px 9px;font-size:12px;white-space:nowrap}.quick-option{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:10px;background:#f8fafc}.quick-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.quick-buttons a{background:var(--primary);color:#fff;border-radius:9px;padding:10px 12px;text-decoration:none;font-size:13px;font-weight:700}.area-select-row{display:flex;gap:10px;align-items:center;max-width:650px}.area-select-row select{flex:1;min-width:0;padding:12px;border:1px solid var(--border);border-radius:10px;background:#fff;font:inherit;color:var(--text)}.area-select-row button{background:var(--primary);color:#fff}.area-desc{font-size:13px;color:var(--muted);margin-top:8px}.quick-select{width:100%;min-width:0;padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);font:inherit;margin-top:10px}.quick-open{margin-top:8px;background:var(--primary);color:#fff;width:100%;padding:10px 12px;border-radius:10px;font:inherit;font-weight:700;cursor:pointer}.quick-option input{width:auto;margin:0}.quick-option span{font-weight:600}.quick-option small{display:block;color:var(--muted);font-weight:400}
+:root{color-scheme:light dark}
+html[data-theme="dark"]{color-scheme:dark;--bg:#101722;--card:#182332;--text:#e8eef7;--muted:#aab7c8;--primary:#3186c8;--primary2:#246da7;--border:#344357;--danger:#ff8f86;--success:#62d9a0}
+html[data-theme="dark"] body{background:var(--bg)!important;color:var(--text)!important}
+html[data-theme="dark"] header,html[data-theme="dark"] nav,html[data-theme="dark"] .card,html[data-theme="dark"] .panel,html[data-theme="dark"] .box,html[data-theme="dark"] .modal,html[data-theme="dark"] .wrap,html[data-theme="dark"] section,html[data-theme="dark"] .stat,html[data-theme="dark"] .tile{background-color:var(--card);color:var(--text);border-color:var(--border)}
+html[data-theme="dark"] p,html[data-theme="dark"] label,html[data-theme="dark"] small,html[data-theme="dark"] .muted{color:var(--muted)}
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:#111b28!important;color:var(--text)!important;border-color:var(--border)!important}
+html[data-theme="dark"] table{color:var(--text)}html[data-theme="dark"] th{background:#223248!important;color:var(--text)!important}html[data-theme="dark"] td{border-color:var(--border)!important}html[data-theme="dark"] tr:nth-child(even){background:#1c2939}
+html[data-theme="dark"] a:not(.button){color:#83c7ff}html[data-theme="dark"] .secondary,html[data-theme="dark"] .profile-option{background:#26364a!important;color:var(--text)!important;border-color:var(--border)!important}
+@media print{}
+html[data-theme="dark"] body{background:#101722!important;color:#e8eef7!important}
+html[data-theme="dark"] body :is(header,nav,main,section,article,aside,.card,.panel,.box,.modal,.wrap,.container,.stat,.tile,.dashboard-card,.welcome,.welcome-box,.quick-card,.content-card,[class*="card"],[class*="panel"]){background-color:#182332!important;color:#e8eef7!important;border-color:#344357!important}
+html[data-theme="dark"] body :is(h1,h2,h3,h4,h5,h6,p,span,label,li,dt,dd,strong,b,legend,summary,figcaption){color:inherit}
+html[data-theme="dark"] body :is(p,label,small,.muted,.hint,.description,.subtitle,.text-muted){color:#b8c4d4!important}
+html[data-theme="dark"] body :is(input,select,textarea){background:#111b28!important;color:#e8eef7!important;border-color:#46566c!important}
+html[data-theme="dark"] body :is(input,select,textarea)::placeholder{color:#9baabd!important;opacity:1}
+html[data-theme="dark"] body :is(table,tbody,tfoot){color:#e8eef7!important}html[data-theme="dark"] body th{background:#26364a!important;color:#f1f5fb!important}
+html[data-theme="dark"] body td{background-color:transparent!important;color:#e8eef7!important;border-color:#344357!important}html[data-theme="dark"] body tr:nth-child(even){background:#1c2939!important}
+html[data-theme="dark"] body a:not(.button):not(.btn){color:#8dccff!important}html[data-theme="dark"] body :is(button,.button,.btn,[role="button"]){color:#f7fbff}
+html[data-theme="dark"] body :is(.secondary,.profile-option){background:#26364a!important;color:#e8eef7!important;border-color:#46566c!important}
+html[data-theme="dark"] body :is(.success,.status-success){background:#153d32!important;color:#a8f0d0!important}html[data-theme="dark"] body :is(.error,.danger,.status-error){background:#482729!important;color:#ffd1d1!important}
+html[data-theme="dark"] .profile-btn,html[data-theme="dark"] .logout-btn,html[data-theme="dark"] .quick-edit,html[data-theme="dark"] .close,html[data-theme="dark"] .dashboard-head > button{background:#26364a!important;color:#f1f5fb!important;border:1px solid #46566c!important}
+html[data-theme="dark"] #profileBtn{background:#263b53!important;color:#fff!important;border:1px solid #5b7592!important;opacity:1!important;text-shadow:none!important;box-shadow:0 1px 2px rgba(0,0,0,.18)}
+html[data-theme="dark"] #profileBtn:hover{background:#34516f!important}html[data-theme="dark"] .profile-btn:hover,html[data-theme="dark"] .logout-btn:hover,html[data-theme="dark"] .quick-edit:hover,html[data-theme="dark"] .close:hover,html[data-theme="dark"] .dashboard-head > button:hover{background:#344a63!important;color:#fff!important}
+html[data-theme="dark"] .statusbar{background:#1c3148!important;color:#f1f5fb!important;border:1px solid #426486!important}html[data-theme="dark"] .statusbar strong,html[data-theme="dark"] #welcome,html[data-theme="dark"] #roleInfo{color:#f1f5fb!important}
+html[data-theme="dark"] .dash-card{background:#182332!important;color:#e8eef7!important;border-color:#344357!important}html[data-theme="dark"] .dash-card h3,html[data-theme="dark"] .dash-value{color:#f1f5fb!important}
+html[data-theme="dark"] .dash-muted,html[data-theme="dark"] .dashboard-note,html[data-theme="dark"] .area-desc{color:#bdc9d9!important}
+html[data-theme="dark"] .dash-actions a{background:#21496b!important;color:#eaf5ff!important;border:1px solid #3d719a!important}html[data-theme="dark"] .dash-actions a:hover{background:#2a5b83!important;color:#fff!important}html[data-theme="dark"] .hero p{color:#bdc9d9!important}
+
+/* Gemeinsame responsive Plattformnavigation */
+#platformNav{position:sticky;top:0;z-index:900;background:#102f4b;color:#f7fbff;box-shadow:0 3px 14px #0b1b2b22}
+#platformNav *{box-sizing:border-box}
+#platformNav .pn-inner{max-width:1200px;margin:auto;padding:9px 14px;display:flex;align-items:center;gap:12px}
+#platformNav .pn-brand{font-weight:850;white-space:nowrap;font-size:14px;color:#fff;text-decoration:none}
+#platformNav .pn-links{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
+#platformNav a{display:inline-flex;align-items:center;justify-content:center;color:#dcecff;text-decoration:none;border-radius:9px;padding:10px 11px;font-size:13px;font-weight:750;white-space:nowrap}
+#platformNav a:hover{background:#214d70;color:#fff}
+#platformNav a[aria-current="page"]{background:#fff;color:#12395b}
+#platformNav .pn-more{position:relative}
+#platformNav .pn-more summary{cursor:pointer;list-style:none;padding:10px 11px;border-radius:9px;font-size:13px;font-weight:750;color:#dcecff;white-space:nowrap}
+#platformNav .pn-more summary::-webkit-details-marker{display:none}
+#platformNav .pn-more[open] summary,#platformNav .pn-more summary:hover{background:#214d70;color:#fff}
+#platformNav .pn-menu{position:absolute;right:0;top:100%;min-width:210px;padding:7px;background:#102f4b;border:1px solid #315572;border-radius:12px;box-shadow:0 12px 30px #0003;display:grid;gap:3px}
+#platformNav .pn-menu a{justify-content:flex-start;white-space:normal}
+#platformNav .pn-user{font-size:12px;color:#c4d8e8;white-space:nowrap}
+#platformNav .pn-toggle{display:none;border:1px solid #45657e;background:#214d70;color:#fff;border-radius:9px;padding:9px 11px;font-weight:800}
+@media(max-width:760px){
+ #platformNav .pn-inner{flex-wrap:wrap;gap:8px;padding:8px 10px}
+ #platformNav .pn-brand{flex:1;min-width:0}
+ #platformNav .pn-toggle{display:inline-flex}
+ #platformNav .pn-links{display:none;flex:0 0 100%;width:100%;align-items:stretch;flex-direction:column;gap:4px;padding-top:5px}
+ #platformNav .pn-links.pn-open{display:flex}
+ #platformNav .pn-links>a,#platformNav .pn-more summary{justify-content:flex-start;width:100%;padding:12px}
+ #platformNav .pn-more{width:100%}
+ #platformNav .pn-menu{position:static;box-shadow:none;border:0;background:#0c263c;margin:4px 0 0;padding:5px}
+ #platformNav .pn-user{display:none}
+}
+
+
+
+/* Dashboard-Redesign nach der abgestimmten mobilen Referenz */
+#platformNav{display:none!important}
+:root{--bg:#101722;--card:#182332;--text:#e8eef7;--muted:#b8c4d4;--primary:#3186c8;--primary2:#246da7;--border:#344357;color-scheme:dark}
+html,body{min-height:100%;background:#101722!important;color:#e8eef7!important}
+body{font-size:16px}
+header{position:relative;background:#182332!important;border-bottom:1px solid #344357!important;color:#e8eef7}
+.header-inner{max-width:1200px;padding:13px 20px;min-height:68px}
+.brand{color:#8dccff;font-size:19px}
+.header-actions{gap:8px}
+.profile-btn,.logout-btn{background:#26364a!important;color:#f1f5fb!important;border:1px solid #46566c!important;border-radius:13px}
+.login-btn{background:#21496b!important;color:#fff!important;border:1px solid #3d719a}
+#dashboardTabs{position:sticky;top:0;z-index:80;display:flex;align-items:stretch;justify-content:center;gap:5px;padding:7px 12px;background:#142131;border-bottom:1px solid #344357;overflow:visible}
+#dashboardTabs .tab{min-width:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:7px 10px;border-radius:10px;text-decoration:none;color:#b8c4d4;font-weight:750}
+#dashboardTabs .tab span{font-size:21px;line-height:1.1}
+#dashboardTabs .tab small{font-size:11px;color:inherit}
+#dashboardTabs .tab.active,#dashboardTabs .tab:hover{background:#123b5c;color:#8dccff}
+#dashboardTabs .tab-more{position:relative;min-width:80px;text-align:center;color:#b8c4d4}
+#dashboardTabs .tab-more summary{height:100%;list-style:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:7px 10px;border-radius:10px;font-weight:750}
+#dashboardTabs .tab-more summary::-webkit-details-marker{display:none}
+#dashboardTabs .tab-more summary span{font-size:21px;line-height:1.1}
+#dashboardTabs .tab-more summary small{font-size:11px}
+#dashboardTabs .tab-more[open] summary,#dashboardTabs .tab-more summary:hover{background:#123b5c;color:#8dccff}
+#dashboardTabs .tab-menu{position:absolute;right:0;top:100%;width:230px;padding:7px;background:#182332;border:1px solid #344357;border-radius:12px;box-shadow:0 14px 35px #0005;display:grid;gap:3px}
+#dashboardTabs .tab-menu a{padding:11px;border-radius:8px;text-decoration:none;color:#e8eef7;font-weight:650}
+#dashboardTabs .tab-menu a:hover{background:#26364a}
+main{max-width:1200px;padding:22px 20px 42px}
+body.logged-in #publicLinks{display:none}
+.statusbar{display:block;max-width:none;margin:0 0 20px;background:#1c3148!important;border:1px solid #426486!important;border-radius:16px;padding:16px 18px;color:#f1f5fb}
+#statusbar strong{font-size:18px;margin-bottom:3px}
+#roleInfo{font-size:15px}
+.dashboard{margin-top:24px}
+.dashboard-head{align-items:center;margin-bottom:16px}
+.dashboard-title{font-size:clamp(23px,3vw,30px);color:#f1f5fb}
+.dashboard-note{font-size:15px;color:#bdc9d9}
+.dashboard-head>button{background:#26364a!important;color:#f1f5fb!important;border:1px solid #46566c!important;border-radius:13px}
+.dash-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.quick-access-section{margin-bottom:24px}.quick-access-grid{grid-template-columns:1fr}.quick-access-grid .dash-card{padding:18px 20px}.quick-access-grid .dash-card .dash-muted{max-width:760px}
+.dash-card{background:#182332!important;border:1px solid #344357!important;border-radius:18px;padding:20px;box-shadow:none;min-width:0}
+.dash-card h3{font-size:19px;color:#f1f5fb;margin-bottom:12px}
+.dash-value{font-size:clamp(24px,4vw,34px);color:#f1f5fb}
+.dash-muted{font-size:15px;color:#bdc9d9}
+.dash-actions a,.quick-buttons a{background:#3186c8!important;color:#fff!important;border:1px solid #3d719a;border-radius:11px;padding:12px 14px;font-size:14px}
+.dash-actions a{width:100%;justify-content:center;text-align:center}
+.quick-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.quick-buttons a{display:flex;align-items:center;gap:8px;min-height:56px}
+.quick-edit{background:#26364a!important;color:#f1f5fb!important;border:1px solid #46566c!important}
+.card,.dash-card{box-shadow:none}
+.role-section{margin-top:20px}
+.role-title{color:#f1f5fb}
+.area-select-row select{background:#111b28!important;color:#e8eef7!important;border-color:#46566c!important}
+.area-select-row button{background:#3186c8!important;color:white!important}
+.hero{padding:30px 0 12px}
+.hero h1{font-size:20px;text-align:left;color:#e8eef7}
+.hero p{text-align:left;color:#bdc9d9}
+footer{color:#93a4b8}
+@media(max-width:700px){
+ .header-inner{padding:12px 14px;gap:8px;min-height:64px}
+ .brand{font-size:16px;max-width:calc(100% - 145px)}
+ .header-actions{gap:6px}
+ .profile-btn,.logout-btn,.login-btn{font-size:13px;padding:9px 10px!important}
+ #userLabel{display:none!important}
+ #dashboardTabs{justify-content:space-between;gap:2px;padding:6px 5px}
+ #dashboardTabs .tab,#dashboardTabs .tab-more{min-width:0;flex:1}
+ #dashboardTabs .tab{padding:7px 2px}
+ #dashboardTabs .tab span,#dashboardTabs .tab-more summary span{font-size:20px}
+ #dashboardTabs .tab small,#dashboardTabs .tab-more summary small{font-size:10px}
+ main{padding:18px 14px 32px}
+ .dash-grid{grid-template-columns:1fr;gap:12px}.quick-access-section{margin-bottom:24px}
+ .dash-card{padding:17px;border-radius:17px}
+ .dash-card h3{font-size:18px}
+ .quick-buttons{grid-template-columns:1fr 1fr}
+ .statusbar{padding:14px 15px;margin-bottom:18px}
+ .dashboard-head{align-items:flex-start}
+ .dashboard-head>div{flex:1;min-width:0}
+ .dashboard-note{line-height:1.4}
+ .dashboard-head>button{padding:10px 11px;font-size:13px}
+ .area-select-row{flex-wrap:wrap}
+ .area-select-row select{flex:1 1 100%}
+ .area-select-row button{width:100%}
+}
+@media(max-width:390px){
+ .brand{font-size:14px;max-width:calc(100% - 130px)}
+ .profile-btn,.logout-btn,.login-btn{font-size:12px;padding:8px!important}
+ .quick-buttons{grid-template-columns:1fr}
+}
+
+</style>
+</head>
+<body>
+
+<nav id="platformNav" aria-label="Hauptnavigation">
+ <div class="pn-inner">
+  <a class="pn-brand" href="index.html">🏸 Badminton-Plattform</a>
+  <button class="pn-toggle" type="button" aria-expanded="false" aria-controls="pnLinks">☰ Menü</button>
+  <div class="pn-links" id="pnLinks"><a href="index.html">Dashboard</a><a href="vereine.html">Vereine</a><a href="mannschaft.html">Mannschaften</a><a href="spielplan.html">Spielplan</a><a href="aufstellung.html">Aufstellung</a><a href="live.html">Live</a></div>
+  <span class="pn-user">Navigation wird geladen …</span>
+ </div>
+</nav>
+
+<header><div class="header-inner">
+  <div class="brand">🏸 Badminton Mannschaftsverwaltung</div>
+  <div class="header-actions">
+    <span id="userLabel" style="display:none;color:#667085;font-size:13px"></span>
+    <button id="profileBtn" class="profile-btn" style="display:none" onclick="openProfile()">👤 Profil</button>
+    <button id="loginBtn" class="login-btn" onclick="openLogin()">🔐 Login</button>
+    <button id="registerBtn" class="profile-btn" onclick="openRegister()">📝 Registrieren</button>
+    <button id="logoutBtn" class="logout-btn" style="display:none" onclick="logout()">Abmelden</button>
+  </div>
+</div></header>
+<nav id="dashboardTabs" aria-label="Bereichsnavigation">
+  <a class="tab active" href="index.html"><span>⌂</span><small>Dashboard</small></a>
+  <a class="tab" href="vereine.html"><span>♜</span><small>Vereine</small></a>
+  <a class="tab" href="mannschaft.html"><span>♟</span><small>Mannschaften</small></a>
+  <a class="tab" href="spielerstatistik.html"><span>♙</span><small>Spieler</small></a>
+  <a class="tab" href="spielplan.html"><span>▦</span><small>Spielplan</small></a>
+  <details class="tab-more"><summary><span>•••</span><small>Mehr</small></summary><div class="tab-menu">
+    <a href="aufstellung.html">📝 Aufstellung</a><a href="moderator.html">🎮 Moderator</a><a href="spielbericht.html">📄 Spielberichte</a><a href="Rangliste.html">🏸 Rangliste</a><a href="live.html">🔴 Live-Ticker</a><a href="admin.html">⚙️ Administration</a>
+  </div></details>
+</nav>
+<main>
+<section id="publicLinks"><div class="grid">
+<article class="card public-card">
+  <h2>🔴 Live-Ticker</h2>
+  <p>Aktuelle Spiele und laufende Ergebnisse öffentlich ansehen.</p>
+  <a class="button" href="live.html">Live-Ticker öffnen</a>
+</article>
+<article class="card public-card">
+  <h2>🏸 Vereine</h2>
+  <p>Badmintonvereine entdecken, Trainingsorte ansehen und Informationen zu den Vereinen finden.</p>
+  <a class="button" href="vereine.html">Vereine entdecken</a>
+</article>
+</div></section>
+<div id="statusbar" class="statusbar"><strong id="welcome"></strong><span id="roleInfo"></span></div>
+<section id="dashboard" class="dashboard" aria-live="polite">
+  <section class="quick-access-section">
+    <div class="dashboard-head"><div><div class="dashboard-title">Schnellzugriff</div><div class="dashboard-note">Deine wichtigsten Bereiche direkt öffnen</div></div></div>
+    <div class="dash-grid quick-access-grid">    <article class="dash-card"><div class="quick-head"><h3>⚡ Mein Schnellzugriff</h3><button type="button" class="quick-edit" onclick="openQuickSettings()">✏️ Bearbeiten</button></div><div class="dash-muted">Deine persönlichen Schnellzugriffe als direkte Knöpfe. Über „Bearbeiten“ kannst du sie anpassen.</div><div id="quickButtons" class="quick-buttons"></div><div id="quickStatus" class="dash-muted" style="margin-top:8px"></div></article></div>
+  </section>
+  <div class="dashboard-head"><div><div class="dashboard-title">Dein Dashboard</div><div class="dashboard-note">Aktueller Überblick aus den vorhandenen Mannschaftsdaten</div></div><button class="logout-btn" onclick="loadDashboard()" style="background:#e8eef5;color:#26364d">↻ Aktualisieren</button></div>
+  <div class="dash-grid">
+    <article class="dash-card"><h3>📅 Nächste Begegnung</h3><div id="dashNext" class="dash-muted">Daten werden geladen …</div><div class="dash-actions"><a href="spielplan.html">Zum Spielplan →</a></div></article>
+    <article class="dash-card"><h3>🏸 Mannschaftsverwaltung</h3><div class="dash-muted">Vereinsmannschaften, Saisons und feste Kaderzuordnungen verwalten.</div><div class="dash-actions"><a href="mannschaftsverwaltung_modul.html">Mannschaften öffnen →</a></div></article>
+    <article class="dash-card"><h3>📝 Spielberichte</h3><div id="dashReports" class="dash-value">–</div><div id="dashReportsNote" class="dash-muted">Status wird geladen …</div><div class="dash-actions"><a href="spielbericht.html">Spielberichte öffnen →</a></div></article>
+
+  </div>
+</section>
+<section id="roleSection" class="role-section">
+  <div id="roleTitle" class="role-title">Bereiche öffnen</div>
+  <div class="area-select-row"><select id="areaSelect" aria-label="Bereich auswählen"></select><button type="button" class="button" onclick="openSelectedArea()">Öffnen →</button></div><div id="areaDesc" class="area-desc">Wähle einen Bereich aus der Liste.</div>
+</section>
+<section class="hero"><h1>Badminton Mannschaftsverwaltung</h1><p>Spielplan, Aufstellungen, Live-Ergebnisse und Statistiken an einem Ort.</p></section>
+</main>
+<footer>Badminton Mannschaftsverwaltung</footer>
+<div id="loginModal" class="modal-backdrop" onclick="backdropClose(event)"><div class="modal">
+<div class="modal-head"><h2>🔐 Anmelden</h2><button class="close" onclick="closeLogin()">✕</button></div>
+<form onsubmit="login(event)">
+<label for="email">E-Mail</label><input id="email" type="email" autocomplete="username" required>
+<label for="password">Passwort</label><div class="password-wrap"><input id="password" type="password" autocomplete="current-password" required><button class="password-toggle" type="button" aria-label="Passwort anzeigen" aria-pressed="false" onclick="togglePasswordVisibility('password',this)">👁</button></div>
+<button id="submitBtn" class="button submit" type="submit">Anmelden</button>
+<button type="button" class="link-btn" onclick="forgotPassword()">Passwort vergessen?</button>
+<button type="button" class="link-btn" onclick="closeLogin();openRegister()">Noch kein Konto? Jetzt registrieren</button>
+<div id="loginError" class="error"></div>
+<div class="help">Nach der Anmeldung werden automatisch nur die Bereiche angezeigt, für die dein Benutzerkonto berechtigt ist.</div>
+</form></div></div>
+<div id="registerModal" class="modal-backdrop" onclick="registerBackdrop(event)"><div class="modal">
+<div class="modal-head"><h2>📝 Konto erstellen</h2><button class="close" type="button" onclick="closeRegister()">✕</button></div>
+<form onsubmit="registerUser(event)">
+<label for="registerName">Vor- und Nachname</label><input id="registerName" type="text" autocomplete="name" maxlength="100" required>
+<label for="registerEmail">E-Mail</label><input id="registerEmail" type="email" autocomplete="email" maxlength="254" required>
+<label for="registerPassword">Passwort</label><div class="password-wrap"><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required><button class="password-toggle" type="button" aria-label="Passwort anzeigen" aria-pressed="false" onclick="togglePasswordVisibility('registerPassword',this)">👁</button></div>
+<label for="registerPasswordConfirm">Passwort wiederholen</label><div class="password-wrap"><input id="registerPasswordConfirm" type="password" autocomplete="new-password" minlength="8" required><button class="password-toggle" type="button" aria-label="Passwort anzeigen" aria-pressed="false" onclick="togglePasswordVisibility('registerPasswordConfirm',this)">👁</button></div>
+<button id="registerSubmitBtn" class="button submit" type="submit">Konto erstellen</button>
+<div id="registerMessage" class="error" role="status" aria-live="polite"></div>
+<div class="help">Verwende eine E-Mail-Adresse, auf die du Zugriff hast. Falls die E-Mail-Bestätigung in Supabase aktiviert ist, musst du dein Konto zuerst über den zugesandten Link bestätigen. Die Registrierung vergibt keine Manager- oder Adminrechte.</div>
+<button type="button" class="link-btn" onclick="closeRegister();openLogin()">Ich habe bereits ein Konto</button>
+</form></div></div>
+<div id="profileModal" class="modal-backdrop" onclick="profileBackdrop(event)"><div class="modal">
+<div class="modal-head"><h2>👤 Mein Profil</h2><button class="close" onclick="closeProfile()">✕</button></div>
+<div class="help">Konto-Einstellungen</div><div class="profile-list">
+<button class="button profile-option" onclick="openPasswordPage()">🔑 Passwort ändern</button>
+<button class="button profile-option" type="button" onclick="toggleTheme()" id="profileThemeButton">🌙 Dark Mode</button>
+<div class="button profile-option" style="cursor:default;opacity:.65">🖼️ Profilbild <span class="profile-muted">später verfügbar</span></div>
+</div></div></div>
+<div id="quickModal" class="modal-backdrop" onclick="quickBackdrop(event)"><div class="modal">
+<div class="modal-head"><h2>⚡ Schnellzugriff anpassen</h2><button class="close" onclick="closeQuickSettings()">✕</button></div>
+<p class="help">Wähle die Bereiche aus, die auf deinem Dashboard erscheinen sollen. Die Auswahl wird für dieses Benutzerkonto in diesem Browser gespeichert.</p>
+<div id="quickOptions" class="profile-list"></div><button class="button submit" onclick="saveQuickSettings()">Auswahl speichern</button><button class="link-btn" onclick="resetQuickSettings()">Standardauswahl wiederherstellen</button><div id="quickError" class="error"></div>
+</div></div>
+<script>
+const SUPABASE_URL='https://apsarswjmsrmffoyxsgr.supabase.co';
+const SUPABASE_KEY='sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=null,currentRole=null,isClubManager=false;
+const ROLE_LABELS={admin:'Administrator',team_manager:'Team Manager',moderator:'Moderator',player:'Spieler',scorer:'Scorer'};
+const LINKS={
+player:[['📅 Spielplan','Spielplan und eigene Spielteilnahme verwalten.','spielplan.html'],['📊 Spielerstatistik','Eigene Einsätze, Teilnahme und Spielübersicht.','spielerstatistik.html']],
+team_manager:[['📅 Spielplan','Spieltermine und Spielteilnahmen der Mannschaft.','spielplan.html'],['📝 Aufstellung','Mannschaft aufstellen und Begegnung vorbereiten.','aufstellung.html'],['📊 Spielerstatistik','Teilnahme und Einsätze der Spieler auswerten.','spielerstatistik.html']],
+moderator:[['📅 Spielplan','Begegnungen und Termine einsehen.','spielplan.html'],['🎮 Moderator','Live-Spiele begleiten und Punkte erfassen.','moderator.html'],['📄 Spielbericht','Spielberichte und Abschlussdaten bearbeiten.','spielbericht.html']],
+scorer:[['📅 Spielplan','Begegnungen und Termine einsehen.','spielplan.html'],['🎮 Moderator','Live-Spiele begleiten und Punkte erfassen.','moderator.html']],
+admin:[['📅 Spielplan','Spieltermine, Teilnahme und Mannschaften verwalten.','spielplan.html'],['📝 Aufstellung','Mannschaftsaufstellungen bearbeiten.','aufstellung.html'],['🎮 Moderator','Live-Spiele und Punkteingabe verwalten.','moderator.html'],['📄 Spielbericht','Spielberichte und Abschlussdaten verwalten.','spielbericht.html'],['📊 Spielerstatistik','Spieler- und Mannschaftsstatistiken auswerten.','spielerstatistik.html'],['🏸 Rangliste','Spielerreihenfolge und Mannschaftsgrenzen verwalten.','Rangliste.html'],['⚙️ Administration','Benutzer, Rollen, Mannschaften und Spieler verwalten.','admin.html']]
+};
+function $(id){return document.getElementById(id)}
+function openLogin(){$('loginError').style.display='none';$('loginModal').style.display='flex';setTimeout(()=>$('email').focus(),50)}
+function closeLogin(){$('loginModal').style.display='none'}
+function togglePasswordVisibility(inputId,button){const input=$(inputId);if(!input)return;const reveal=input.type==='password';input.type=reveal?'text':'password';button.textContent=reveal?'🙈':'👁';button.setAttribute('aria-label',reveal?'Passwort verbergen':'Passwort anzeigen');button.setAttribute('aria-pressed',String(reveal))}
+function openRegister(){$('registerMessage').style.display='none';$('registerModal').style.display='flex'}
+function closeRegister(){$('registerModal').style.display='none'}
+function registerBackdrop(e){if(e.target===$('registerModal'))closeRegister()}
+function openProfile(){$('profileModal').style.display='flex'}
+function closeProfile(){$('profileModal').style.display='none'}
+function profileBackdrop(e){if(e.target===$('profileModal'))closeProfile()}
+function openPasswordPage(){window.location.href='passwort.html'}
+async function forgotPassword(){
+ const email=$('email').value.trim();if(!email){$('loginError').textContent='Bitte zuerst deine E-Mail-Adresse eingeben.';$('loginError').style.display='block';return}
+ const redirectTo=new URL('passwort.html',window.location.href).href;$('loginError').textContent='Passwort-Reset wird angefordert …';$('loginError').style.display='block';
+ const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});if(error){$('loginError').textContent='Reset fehlgeschlagen: '+error.message;return}
+ $('loginError').style.color='#1769aa';$('loginError').style.background='#eef7ff';$('loginError').style.borderColor='#c8e0f6';$('loginError').textContent='Wenn für diese E-Mail ein Konto existiert, wurde eine Reset-Mail versendet.';
+}
+function backdropClose(e){if(e.target===$('loginModal'))closeLogin()}
+async function login(e){
+ e.preventDefault();$('submitBtn').disabled=true;$('submitBtn').textContent='Anmeldung läuft …';$('loginError').style.display='none';
+ const {error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});
+ $('submitBtn').disabled=false;$('submitBtn').textContent='Anmelden';if(error){$('loginError').textContent='Anmeldung fehlgeschlagen: '+error.message;$('loginError').style.display='block';return}closeLogin();
+}
+async function registerUser(e){
+ e.preventDefault();const name=$('registerName').value.trim(),email=$('registerEmail').value.trim().toLowerCase(),password=$('registerPassword').value,password2=$('registerPasswordConfirm').value,btn=$('registerSubmitBtn'),msg=$('registerMessage');
+ msg.style.display='none';msg.style.color='';msg.style.background='';msg.style.borderColor='';
+ if(name.length<2){msg.textContent='Bitte gib deinen vollständigen Namen ein.';msg.style.display='block';return}
+ if(password.length<8){msg.textContent='Das Passwort muss mindestens 8 Zeichen lang sein.';msg.style.display='block';return}
+ if(password!==password2){msg.textContent='Die Passwörter stimmen nicht überein.';msg.style.display='block';return}
+ btn.disabled=true;btn.textContent='Konto wird erstellt …';
+ try{
+  const redirectTo=new URL('index.html',window.location.href).href;
+  const {data,error}=await sb.auth.signUp({email,password,options:{data:{display_name:name,full_name:name,name:name},emailRedirectTo:redirectTo}});
+  if(error)throw error;
+  msg.style.display='block';msg.style.color='#1769aa';msg.style.background='#eef7ff';msg.style.borderColor='#c8e0f6';
+  if(data.session){msg.textContent='Konto erstellt und angemeldet. Du kannst jetzt zu „Vereine“ wechseln und eine Mitgliedschaft beantragen.';setTimeout(()=>closeRegister(),1800)}
+  else{msg.textContent='Registrierung gestartet. Prüfe dein E-Mail-Postfach und bestätige die Adresse, falls du eine Bestätigungsmail erhältst. Danach kannst du dich anmelden.'}
+ }catch(err){msg.style.display='block';msg.textContent='Registrierung fehlgeschlagen: '+(err?.message||'Unbekannter Fehler')}
+ finally{btn.disabled=false;btn.textContent='Konto erstellen'}
+}
+async function logout(){await sb.auth.signOut()}
+async function loadUser(){
+ const {data:{session}}=await sb.auth.getSession();currentUser=session?.user||null;
+ if(!currentUser){showLoggedOut();return}
+ const {data:profile,error}=await sb.from('profiles').select('role').eq('id',currentUser.id).maybeSingle();
+ if(error||!profile){showLoggedInWithoutRole();return}currentRole=profile.role;showLoggedIn();
+}
+const QUICK_ITEMS=[['spielplan.html','📅 Spielplan','Termine und Zu-/Absagen'],['aufstellung.html','📝 Aufstellung','Mannschaft aufstellen'],['moderator.html','🎮 Moderator','Live-Ergebnisse erfassen'],['spielbericht.html','📄 Spielberichte','Berichte verwalten'],['spielerstatistik.html','📊 Spielerstatistik','Einsätze und Auswertungen'],['Rangliste.html','🏸 Rangliste','Spielerreihenfolge'],['admin.html','⚙️ Administration','Benutzer und Mannschaften'],['live.html','🔴 Live-Ticker','Laufende Ergebnisse']];
+const QUICK_DEFAULTS={player:['spielplan.html','spielerstatistik.html','live.html'],team_manager:['spielplan.html','aufstellung.html','spielerstatistik.html','live.html'],moderator:['spielplan.html','moderator.html','spielbericht.html','live.html'],scorer:['spielplan.html','moderator.html','live.html'],admin:QUICK_ITEMS.map(x=>x[0])};
+let quickDraft=[];
+function quickStorageKey(){return currentUser?'badminton_quicklinks_'+currentUser.id:null}
+function getQuickSelection(){try{const raw=quickStorageKey()&&localStorage.getItem(quickStorageKey());if(raw){const parsed=JSON.parse(raw);if(Array.isArray(parsed))return parsed.filter(h=>QUICK_ITEMS.some(x=>x[0]===h))}}catch(e){}return [...(QUICK_DEFAULTS[currentRole]||['spielplan.html','live.html'])]}
+function renderQuickLinks(){const wrap=$('quickButtons');if(!wrap)return;const chosen=getQuickSelection();const allowed=QUICK_ITEMS.filter(x=>chosen.includes(x[0])&&((LINKS[currentRole]||[]).some(l=>l[2]===x[0])||x[0]==='live.html'));wrap.innerHTML=allowed.map(x=>`<a href="${escapeHtml(x[0])}">${escapeHtml(x[1])}</a>`).join('');$('quickStatus').textContent=allowed.length?'':'Keine Schnellzugriffe ausgewählt. Über „Bearbeiten“ Bereiche hinzufügen.'}
+function renderAreas(){
+  const select=$('areaSelect');if(!select)return;
+  const links=[...(LINKS[currentRole]||[])];
+  if(isClubManager && !links.some(l=>l[2]==='vereine.html'))links.unshift(['🏸 Vereinsverwaltung','Den eigenen Verein verwalten.','vereine.html']);
+  select.innerHTML=links.map(l=>`<option value="${escapeHtml(l[2])}">${escapeHtml(l[0])}</option>`).join('');updateAreaDesc()
+}
+function updateAreaDesc(){
+  const links=[...(LINKS[currentRole]||[])];
+  if(isClubManager)links.unshift(['🏸 Vereinsverwaltung','Den eigenen Verein verwalten.','vereine.html']);
+  const l=links.find(x=>x[2]===$('areaSelect')?.value);$('areaDesc').textContent=l?l[1]:'Für diese Rolle sind keine internen Bereiche hinterlegt.'
+}
+function openSelectedArea(){const select=$('areaSelect');if(select&&select.value)window.location.href=select.value}
+function openQuickSettings(){if(!currentUser)return;quickDraft=getQuickSelection();$('quickOptions').innerHTML=QUICK_ITEMS.filter(x=>(LINKS[currentRole]||[]).some(l=>l[2]===x[0])||x[0]==='live.html').map(x=>`<label class="quick-option"><input type="checkbox" value="${escapeHtml(x[0])}" ${quickDraft.includes(x[0])?'checked':''}><span>${escapeHtml(x[1])}<small>${escapeHtml(x[2])}</small></span></label>`).join('');$('quickError').style.display='none';$('quickModal').style.display='flex'}
+function closeQuickSettings(){$('quickModal').style.display='none'}
+function quickBackdrop(e){if(e.target===$('quickModal'))closeQuickSettings()}
+function saveQuickSettings(){const selected=[...$('quickOptions').querySelectorAll('input:checked')].map(x=>x.value);if(!selected.length){$('quickError').textContent='Bitte wähle mindestens einen Schnellzugriff aus.';$('quickError').style.display='block';return}try{localStorage.setItem(quickStorageKey(),JSON.stringify(selected));closeQuickSettings();renderQuickLinks()}catch(e){$('quickError').textContent='Speichern im Browser nicht möglich.';$('quickError').style.display='block'}}
+function resetQuickSettings(){try{localStorage.removeItem(quickStorageKey())}catch(e){}quickDraft=getQuickSelection();openQuickSettings()}
+function showLoggedOut(){document.body.classList.remove('logged-in');$('registerBtn').style.display='inline-flex';$('loginBtn').style.display='inline-flex';$('profileBtn').style.display='none';$('logoutBtn').style.display='none';$('userLabel').style.display='none';$('statusbar').style.display='none';$('roleSection').style.display='none';$('dashboard').style.display='none'}
+function showLoggedInWithoutRole(){document.body.classList.add('logged-in');$('registerBtn').style.display='none';$('loginBtn').style.display='none';$('profileBtn').style.display='inline-flex';$('logoutBtn').style.display='inline-flex';$('userLabel').style.display='inline';$('userLabel').textContent=currentUser?.email||'Angemeldet';$('statusbar').style.display='block';$('welcome').textContent='Angemeldet';$('roleInfo').textContent='Für dieses Konto wurde noch keine gültige Rolle hinterlegt.';$('roleSection').style.display='none';$('dashboard').style.display='none'}
+function showLoggedIn(){
+ document.body.classList.add('logged-in');$('registerBtn').style.display='none';$('loginBtn').style.display='none';$('profileBtn').style.display='inline-flex';$('logoutBtn').style.display='inline-flex';$('userLabel').style.display='inline';$('userLabel').textContent=currentUser.email||'Angemeldet';
+ const roleName=ROLE_LABELS[currentRole]||currentRole||'Benutzer';$('statusbar').style.display='block';$('welcome').textContent='Willkommen!';$('roleInfo').textContent='Rolle: '+roleName;loadWelcomePlayerName();
+ $('roleTitle').textContent=roleName+' – verfügbare Bereiche';renderAreas();$('areaSelect').onchange=updateAreaDesc;$('roleSection').style.display='block';$('dashboard').style.display='block';renderQuickLinks();loadDashboard();
+}
+async function loadWelcomePlayerName(){
+ if(!currentUser)return;let playerName='';
+ try{const {data:links}=await sb.from('player_accounts').select('player_id').eq('user_id',currentUser.id).eq('active',true).limit(1);
+ if(links?.length){const {data:player}=await sb.from('players').select('name').eq('id',links[0].player_id).maybeSingle();if(player?.name)playerName=player.name}
+ if(!playerName){const {data:profile}=await sb.from('profiles').select('display_name,full_name,name').eq('id',currentUser.id).maybeSingle();playerName=profile?.display_name||profile?.full_name||profile?.name||currentUser.user_metadata?.display_name||currentUser.email?.split('@')[0]||'Spieler'}
+ }catch(e){playerName=currentUser.user_metadata?.display_name||currentUser.email?.split('@')[0]||'Spieler'}
+ $('welcome').textContent='Willkommen, '+playerName+'!';
+}
+async function loadDashboard(){
+ const nextEl=$('dashNext'),reportsEl=$('dashReports'),reportsNote=$('dashReportsNote');if(!currentUser||!currentRole){$('dashboard').style.display='none';return}
+ nextEl.textContent='Daten werden geladen …';reportsEl.textContent='–';reportsNote.textContent='Status wird geladen …';
+ try{
+ const today=new Date(),todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+ const {data:matchData,error:matchError}=await sb.from('matches').select('id,home_team,away_team,match_date,match_time,venue,status').gte('match_date',todayStr).order('match_date',{ascending:true}).order('match_time',{ascending:true}).limit(100);if(matchError)throw matchError;
+ let upcoming=(matchData||[]).filter(m=>m.status!=='finished');
+ if(currentRole==='team_manager'||currentRole==='moderator'){const {data:memberships,error:membershipError}=await sb.from('team_memberships').select('team').eq('user_id',currentUser.id);if(membershipError)throw membershipError;const teams=[...new Set((memberships||[]).map(x=>x.team).filter(Boolean))];if(teams.length)upcoming=upcoming.filter(m=>teams.includes(m.home_team)||teams.includes(m.away_team));else upcoming=[]}
+ const m=upcoming[0];if(!m)nextEl.innerHTML='<div class="dash-value">Keine anstehende Begegnung</div><div class="dash-muted">Für die sichtbaren Mannschaften ist kein zukünftiger, offener Termin hinterlegt.</div>';
+ else{const date=m.match_date?new Date(m.match_date+'T00:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}):'Termin offen';nextEl.innerHTML='<div class="dash-value">'+escapeHtml(date)+'</div><strong>'+escapeHtml(m.home_team||'Heim')+' – '+escapeHtml(m.away_team||'Gast')+'</strong><div class="dash-muted">'+(m.match_time?escapeHtml(String(m.match_time).slice(0,5)+' Uhr')+' · ':'')+escapeHtml(m.venue||'Spielort nicht hinterlegt')+'</div>'}
+ const {data:finished,error:finishedError}=await sb.from('matches').select('id').eq('status','finished').order('match_date',{ascending:false}).limit(100);if(finishedError)throw finishedError;
+ const ids=(finished||[]).map(x=>x.id);if(!ids.length){reportsEl.textContent='0';reportsNote.textContent='Keine beendeten Begegnungen in den letzten 100 geladenen Datensätzen.';return}
+ const {data:reports,error:reportsError}=await sb.from('match_reports').select('match_id,confirmed,pdf_path').in('match_id',ids);if(reportsError)throw reportsError;
+ const byMatch=new Map((reports||[]).map(r=>[String(r.match_id),r]));const missing=ids.filter(id=>!byMatch.has(String(id))).length;const unconfirmed=(reports||[]).filter(r=>!r.confirmed).length;const noPdf=(reports||[]).filter(r=>!r.pdf_path).length;
+ reportsEl.textContent=String(missing+unconfirmed+noPdf);reportsNote.textContent=missing+' ohne Bericht · '+unconfirmed+' nicht bestätigt · '+noPdf+' ohne PDF (max. 100 beendete Begegnungen)';
+ }catch(err){nextEl.innerHTML='<span class="dash-error">Übersicht konnte nicht geladen werden.</span>';reportsEl.textContent='–';reportsNote.textContent='Daten konnten nicht vollständig geladen werden. Bitte die Berechtigungen prüfen.';console.warn('Dashboard:',err)}
+}
+function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+sb.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;if(currentUser)loadUser();else showLoggedOut()});
+loadUser();
+</script>
+<script>
+(function(){const key='badminton-theme';function sys(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}function apply(t){document.documentElement.dataset.theme=t;const p=document.getElementById('profileThemeButton');if(p)p.textContent=t==='dark'?'☀️ Helles Design':'🌙 Dark Mode'}function saved(){try{return localStorage.getItem(key)}catch(e){return null}}apply(saved()==='dark'||saved()==='light'?saved():'dark');window.toggleTheme=function(){const t=document.documentElement.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem(key,t)}catch(e){}apply(t)};if(window.matchMedia){const m=window.matchMedia('(prefers-color-scheme: dark)');const f=()=>{const v=saved();if(v!=='dark'&&v!=='light')apply('dark')};m.addEventListener?m.addEventListener('change',f):m.addListener(f)}document.addEventListener('DOMContentLoaded',()=>{apply(document.documentElement.dataset.theme||'dark');document.querySelectorAll('#dashboardTabs .tab-menu a').forEach(a=>a.addEventListener('click',()=>{const d=a.closest('details');if(d)d.open=false}))})})();
+</script>
+<script>
+
+(function(){
+ const root=document.getElementById('platformNav'); if(!root) return;
+ const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+ const items=[
+  {label:'Dashboard',href:'index.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Vereine',href:'vereine.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Mannschaften',href:'mannschaft.html',roles:['team_manager','moderator','admin','board','advisory']},
+  {label:'Spielplan',href:'spielplan.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Aufstellung',href:'aufstellung.html',roles:['team_manager','moderator','admin']},
+  {label:'Live',href:'live.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Moderator',href:'moderator.html',roles:['moderator','scorer','admin']},
+  {label:'Spielbericht',href:'spielbericht.html',roles:['moderator','admin']},
+  {label:'Spielerstatistik',href:'spielerstatistik.html',roles:['player','team_manager','moderator','admin','board','advisory']},
+  {label:'Rangliste',href:'Rangliste.html',roles:['player','team_manager','moderator','admin','board','advisory']},
+  {label:'Administration',href:'admin.html',roles:['admin']}
+ ];
+ const primary=['Dashboard','Vereine','Mannschaften','Spielplan','Aufstellung','Live'];
+ const labels=new Set(primary);
+ function link(it){const a=document.createElement('a');a.href=it.href;a.textContent=it.label;if(current===it.href.toLowerCase())a.setAttribute('aria-current','page');return a}
+ const links=root.querySelector('.pn-links'); if(!links)return;
+ function render(role,loggedIn){
+   links.innerHTML='';
+   const allowed=items.filter(it=>it.roles.includes(role));
+   allowed.filter(it=>labels.has(it.label)).forEach(it=>links.appendChild(link(it)));
+   const more=allowed.filter(it=>!labels.has(it.label));
+   if(more.length){
+     const d=document.createElement('details');d.className='pn-more';
+     const s=document.createElement('summary');s.textContent='Mehr ▾';d.appendChild(s);
+     const menu=document.createElement('div');menu.className='pn-menu';more.forEach(it=>menu.appendChild(link(it)));d.appendChild(menu);links.appendChild(d);
+   }
+   const u=root.querySelector('.pn-user'); if(u)u.textContent=loggedIn?'Angemeldet':'Öffentlicher Bereich';
+ }
+ const toggle=root.querySelector('.pn-toggle');
+ if(toggle)toggle.addEventListener('click',()=>{const open=links.classList.toggle('pn-open');toggle.setAttribute('aria-expanded',String(open));toggle.textContent=open?'✕ Schließen':'☰ Menü';});
+ // Keep public access functional; logged-in roles receive a tailored menu.
+ const fallback=()=>render('player',false);
+ if(!window.supabase||!window.supabase.createClient){fallback();return}
+ const url='https://apsarswjmsrmffoyxsgr.supabase.co';
+ const key='sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj';
+ try{
+   const client=window.__platformNavClient||(window.__platformNavClient=window.supabase.createClient(url,key));
+   client.auth.getUser().then(async ({data,error})=>{
+     if(error||!data.user){fallback();return}
+     let role='player';
+     const {data:profile}=await client.from('profiles').select('role').eq('id',data.user.id).maybeSingle();
+     if(profile&&profile.role)role=String(profile.role).toLowerCase();
+     const {data:members}=await client.from('club_memberships').select('club_role,status').eq('user_id',data.user.id).eq('status','active');
+     const roles=(members||[]).map(x=>String(x.club_role||'').toLowerCase());
+     if(role!=='admin'&&roles.length){
+       if(roles.includes('team_manager'))role='team_manager';
+       else if(roles.includes('moderator'))role='moderator';
+       else if(roles.includes('board'))role='board';
+       else if(roles.includes('advisory'))role='advisory';
+     }
+     render(role,true);
+   }).catch(fallback);
+ }catch(e){fallback()}
+})();
+
+</script>
+</body>
+</html>

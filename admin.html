@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Badminton – Admin-Verwaltung</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f3f6fa;--card:#fff;--text:#172033;--muted:#64748b;--line:#d8e1eb;--accent:#1769aa;--ok:#15803d;--bad:#b91c1c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:#12395b;color:#fff;padding:16px 18px}header h1{margin:0;font-size:1.3rem}header p{margin:3px 0 0;opacity:.85;font-size:.88rem}
+main{max-width:1050px;margin:12px auto;padding:0 8px}.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px;margin-bottom:10px;box-shadow:0 2px 10px #00000008}
+h2{font-size:1rem;margin:0 0 10px}.grid{display:grid;gap:9px}.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:1fr 1fr 1fr}
+label{display:block;font-size:.76rem;font-weight:700;color:#475569;margin-bottom:4px}
+input,select,button{font:inherit}input,select{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:10px;background:#fff}
+button{border:0;border-radius:9px;padding:10px 13px;font-weight:750;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#e8eef5;color:#17324d}.danger{background:#fee2e2;color:#991b1b}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}.status{padding:9px;border-radius:9px;background:#f1f5f9;font-size:.8rem;margin-top:9px}.status.ok{background:#ecfdf5;color:#166534}.status.bad{background:#fef2f2;color:#991b1b}
+.small{font-size:.76rem;color:var(--muted);line-height:1.4}.user-row{border:1px solid var(--line);border-radius:11px;padding:12px;margin-top:9px;background:#fbfdff}
+.user-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.name{font-weight:800}.muted{color:var(--muted);font-size:.72rem}
+.members{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.chip{background:#e8eef5;border-radius:999px;padding:5px 9px;font-size:.72rem}.chip.primary{background:#dbeafe;color:#1e40af}
+.assignment{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin-top:10px}
+.account-row{border:1px solid var(--line);border-radius:11px;padding:11px;margin-top:8px;background:#fff}.account-grid{display:grid;grid-template-columns:1.3fr 1fr auto;gap:8px;align-items:end}
+.home-menu-button{display:block;width:100%;box-sizing:border-box;margin:28px 0 8px;padding:15px 18px;border-radius:14px;background:#e8eef5;color:#1f3348;text-decoration:none;text-align:center;font-weight:700;font-size:16px;border:1px solid #d4dee9}
+.note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px;font-size:.78rem;line-height:1.45;color:#1e3a5f;margin-top:9px}
+@media(max-width:760px){.two,.three,.account-grid{grid-template-columns:1fr}.assignment{grid-template-columns:1fr}.toolbar button{width:100%}input,select{font-size:16px}.card{padding:12px}}
+
+.section-toggle{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;text-align:left;background:#e8eef5;color:#17324d;padding:14px 15px;border:1px solid #d4dee9;border-radius:10px;font-size:1rem}
+.section-toggle:hover{background:#dce7f1}.toggle-mark{font-size:1.3rem;line-height:1}.collapsible-panel{padding-top:12px}.collapsible-panel[hidden]{display:none}
+
+/* Darkmode-Kontrastkorrektur: überschreibt auch helle Inline-Hintergründe */
+html[data-theme="dark"] body{background:#101722!important;color:#e8eef7!important}
+html[data-theme="dark"] body :is(header,nav,main,section,article,aside,.card,.panel,.box,.modal,.wrap,.container,.stat,.tile,.dashboard-card,.welcome,.welcome-box,.quick-card,.content-card,[class*="card"],[class*="panel"]){background-color:#182332!important;color:#e8eef7!important;border-color:#344357!important}
+html[data-theme="dark"] body :is(h1,h2,h3,h4,h5,h6,p,span,label,li,dt,dd,strong,b,legend,summary,figcaption){color:inherit}
+html[data-theme="dark"] body :is(p,label,small,.muted,.hint,.description,.subtitle,.text-muted){color:#b8c4d4!important}
+html[data-theme="dark"] body :is(input,select,textarea){background:#111b28!important;color:#e8eef7!important;border-color:#46566c!important}
+html[data-theme="dark"] body :is(input,select,textarea)::placeholder{color:#9baabd!important;opacity:1}
+html[data-theme="dark"] body :is(table,tbody,tfoot){color:#e8eef7!important}
+html[data-theme="dark"] body th{background:#26364a!important;color:#f1f5fb!important}
+html[data-theme="dark"] body td{background-color:transparent!important;color:#e8eef7!important;border-color:#344357!important}
+html[data-theme="dark"] body tr:nth-child(even){background:#1c2939!important}
+html[data-theme="dark"] body a:not(.button):not(.btn){color:#8dccff!important}
+html[data-theme="dark"] body :is(button,.button,.btn,[role="button"]){color:#f7fbff}
+html[data-theme="dark"] body :is(.secondary,.profile-option){background:#26364a!important;color:#e8eef7!important;border-color:#46566c!important}
+html[data-theme="dark"] body :is(.success,.status-success){background:#153d32!important;color:#a8f0d0!important}
+html[data-theme="dark"] body :is(.error,.danger,.status-error){background:#482729!important;color:#ffd1d1!important}
+/* Feinschliff Darkmode: Kopfzeilen-Buttons, Begruessung und Dashboard-Kacheln */
+html[data-theme="dark"] .profile-btn,
+html[data-theme="dark"] .logout-btn,
+html[data-theme="dark"] .quick-edit,
+html[data-theme="dark"] .close,
+html[data-theme="dark"] .dashboard-head > button {
+  background:#26364a !important; color:#f1f5fb !important; border:1px solid #46566c !important;
+}
+html[data-theme="dark"] #profileBtn {
+  background:#263b53 !important; color:#ffffff !important; border:1px solid #5b7592 !important;
+  opacity:1 !important; text-shadow:none !important; box-shadow:0 1px 2px rgba(0,0,0,.18);
+}
+html[data-theme="dark"] #profileBtn:hover { background:#34516f !important; }
+html[data-theme="dark"] .profile-btn:hover,
+html[data-theme="dark"] .logout-btn:hover,
+html[data-theme="dark"] .quick-edit:hover,
+html[data-theme="dark"] .close:hover,
+html[data-theme="dark"] .dashboard-head > button:hover { background:#344a63 !important; color:#ffffff !important; }
+html[data-theme="dark"] .statusbar {
+  background:#1c3148 !important; color:#f1f5fb !important; border:1px solid #426486 !important;
+}
+html[data-theme="dark"] .statusbar strong,
+html[data-theme="dark"] #welcome,
+html[data-theme="dark"] #roleInfo { color:#f1f5fb !important; }
+html[data-theme="dark"] .dash-card {
+  background:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important;
+}
+html[data-theme="dark"] .dash-card h3,
+html[data-theme="dark"] .dash-value { color:#f1f5fb !important; }
+html[data-theme="dark"] .dash-muted,
+html[data-theme="dark"] .dashboard-note,
+html[data-theme="dark"] .area-desc { color:#bdc9d9 !important; }
+html[data-theme="dark"] .dash-actions a {
+  background:#21496b !important; color:#eaf5ff !important; border:1px solid #3d719a !important;
+}
+html[data-theme="dark"] .dash-actions a:hover { background:#2a5b83 !important; color:#fff !important; }
+html[data-theme="dark"] .hero p { color:#bdc9d9 !important; }
+
+
+/* Darkmode-Nachbesserung für seitenindividuelle Inhaltsflächen und Auswertungen */
+html[data-theme="dark"] body { background:#101722 !important; color:#e8eef7 !important; }
+html[data-theme="dark"] body :is(.card,.panel,.box,.match,.game,.stat,.tile,.kpi,.statline,.tablewrap,.controls,.login,.result,.encounter,.meeting,.player-card,.chart-card,.summary,.detail,.list-item,.item-card) { background-color:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body :is(h1,h2,h3,h4,strong,b,th,.value,.label,.title) { color:#f1f5fb; }
+html[data-theme="dark"] body :is(p,small,label,.muted,.small,.hint,.description,.subtitle) { color:#bdc9d9; }
+html[data-theme="dark"] body :is(input,select,textarea) { background:#111b28 !important; color:#e8eef7 !important; border-color:#46566c !important; }
+html[data-theme="dark"] body table { color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body th { background:#26364a !important; color:#f1f5fb !important; }
+html[data-theme="dark"] body td { background-color:transparent !important; color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body tr:nth-child(even) { background:#1c2939 !important; }
+html[data-theme="dark"] body :is(.secondary,.pill,.role,.stepper .minus,.set-action .secondary) { background:#26364a !important; color:#e8eef7 !important; border-color:#46566c !important; }
+html[data-theme="dark"] body :is(.status,.msg) { background:#223248 !important; color:#e8eef7 !important; }
+html[data-theme="dark"] body :is(.ok,.success,.status-success,.game.finished) { background:#153d32 !important; color:#b9f4d8 !important; }
+html[data-theme="dark"] body :is(.bad,.danger,.error,.status-error) { background:#482729 !important; color:#ffd1d1 !important; }
+html[data-theme="dark"] body :is(.warn,.game.live,.special-game.forfeit) { background:#443321 !important; color:#ffe0b3 !important; }
+html[data-theme="dark"] body :is(.match.selected,.selected) { background:#173b3a !important; border-color:#2b9c91 !important; }
+html[data-theme="dark"] body :is(.progress,.bar) { background:#2a3748 !important; }
+html[data-theme="dark"] body a:not(.button) { color:#83c7ff; }
+html[data-theme="dark"] body button { color:#f1f5fb; }
+html[data-theme="dark"] body .footer a { background:#26364a !important; color:#f1f5fb !important; border-color:#46566c !important; }
+
+/* Gemeinsame responsive Plattformnavigation */
+#platformNav{position:sticky;top:0;z-index:900;background:#102f4b;color:#f7fbff;box-shadow:0 3px 14px #0b1b2b22}
+#platformNav *{box-sizing:border-box}
+#platformNav .pn-inner{max-width:1200px;margin:auto;padding:9px 14px;display:flex;align-items:center;gap:12px}
+#platformNav .pn-brand{font-weight:850;white-space:nowrap;font-size:14px;color:#fff;text-decoration:none}
+#platformNav .pn-links{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
+#platformNav a{display:inline-flex;align-items:center;justify-content:center;color:#dcecff;text-decoration:none;border-radius:9px;padding:10px 11px;font-size:13px;font-weight:750;white-space:nowrap}
+#platformNav a:hover{background:#214d70;color:#fff}
+#platformNav a[aria-current="page"]{background:#fff;color:#12395b}
+#platformNav .pn-more{position:relative}
+#platformNav .pn-more summary{cursor:pointer;list-style:none;padding:10px 11px;border-radius:9px;font-size:13px;font-weight:750;color:#dcecff;white-space:nowrap}
+#platformNav .pn-more summary::-webkit-details-marker{display:none}
+#platformNav .pn-more[open] summary,#platformNav .pn-more summary:hover{background:#214d70;color:#fff}
+#platformNav .pn-menu{position:absolute;right:0;top:100%;min-width:210px;padding:7px;background:#102f4b;border:1px solid #315572;border-radius:12px;box-shadow:0 12px 30px #0003;display:grid;gap:3px}
+#platformNav .pn-menu a{justify-content:flex-start;white-space:normal}
+#platformNav .pn-user{font-size:12px;color:#c4d8e8;white-space:nowrap}
+#platformNav .pn-toggle{display:none;border:1px solid #45657e;background:#214d70;color:#fff;border-radius:9px;padding:9px 11px;font-weight:800}
+@media(max-width:760px){
+ #platformNav .pn-inner{flex-wrap:wrap;gap:8px;padding:8px 10px}
+ #platformNav .pn-brand{flex:1;min-width:0}
+ #platformNav .pn-toggle{display:inline-flex}
+ #platformNav .pn-links{display:none;flex:0 0 100%;width:100%;align-items:stretch;flex-direction:column;gap:4px;padding-top:5px}
+ #platformNav .pn-links.pn-open{display:flex}
+ #platformNav .pn-links>a,#platformNav .pn-more summary{justify-content:flex-start;width:100%;padding:12px}
+ #platformNav .pn-more{width:100%}
+ #platformNav .pn-menu{position:static;box-shadow:none;border:0;background:#0c263c;margin:4px 0 0;padding:5px}
+ #platformNav .pn-user{display:none}
+}
+
+</style><style>
+/* Einheitlicher Darkmode: Systemeinstellung als Standard, manuell überschreibbar */
+:root{color-scheme:light dark}
+html[data-theme="dark"]{color-scheme:dark;--bg:#101722;--card:#182332;--text:#e8eef7;--muted:#aab7c8;--primary:#3186c8;--primary2:#246da7;--border:#344357;--danger:#ff8f86;--success:#62d9a0}
+html[data-theme="dark"] body{background:var(--bg)!important;color:var(--text)!important}
+html[data-theme="dark"] header,html[data-theme="dark"] nav,html[data-theme="dark"] .card,html[data-theme="dark"] .panel,html[data-theme="dark"] .box,html[data-theme="dark"] .modal,html[data-theme="dark"] .wrap,html[data-theme="dark"] section,html[data-theme="dark"] .stat,html[data-theme="dark"] .tile{background-color:var(--card);color:var(--text);border-color:var(--border)}
+html[data-theme="dark"] p,html[data-theme="dark"] label,html[data-theme="dark"] small,html[data-theme="dark"] .muted{color:var(--muted)}
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:#111b28!important;color:var(--text)!important;border-color:var(--border)!important}
+html[data-theme="dark"] table{color:var(--text)}html[data-theme="dark"] th{background:#223248!important;color:var(--text)!important}html[data-theme="dark"] td{border-color:var(--border)!important}html[data-theme="dark"] tr:nth-child(even){background:#1c2939}
+html[data-theme="dark"] a:not(.button){color:#83c7ff}html[data-theme="dark"] .secondary,html[data-theme="dark"] .profile-option{background:#26364a!important;color:var(--text)!important;border-color:var(--border)!important}
+@media print{}
+</style>
+
+<style id="darkmode-page-fixes">
+html[data-theme="dark"] body .slot,
+html[data-theme="dark"] body .modal-box,
+html[data-theme="dark"] body .modal-actions,
+html[data-theme="dark"] body .opp-row,
+html[data-theme="dark"] body .opp-player,
+html[data-theme="dark"] body .validation,
+html[data-theme="dark"] body .playerlist,
+html[data-theme="dark"] body .playerlist tr,
+html[data-theme="dark"] body .playerlist td { background-color:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body .slot h3,
+html[data-theme="dark"] body .opp-row h3,
+html[data-theme="dark"] body .modal-box h2,
+html[data-theme="dark"] body .opp-side-title,
+html[data-theme="dark"] body .opponent-label,
+html[data-theme="dark"] body .opp-none-label { color:#e8eef7 !important; }
+html[data-theme="dark"] body .slot .sub,
+html[data-theme="dark"] body .modal-box p { color:#b8c4d4 !important; }
+html[data-theme="dark"] body .modal-box .modal-actions { background:#182332 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body .opp-player { background:#20364d !important; color:#e8eef7 !important; border-color:#3a5876 !important; }
+html[data-theme="dark"] body .slot select, html[data-theme="dark"] body .slot input { background:#111b28 !important; color:#e8eef7 !important; border-color:#46566c !important; }
+html[data-theme="dark"] body .slot select option { background:#182332 !important; color:#e8eef7 !important; }
+</style>
+
+<style id="darkmode-final-contrast-fix">
+html[data-theme="dark"] body :is(.user-row,.match-card,.encounter-card,.stat-card,.statistic-card,.player-card,.game-card,.game,.match,.fixture,.lineup-card,.discipline-card,.report-card,.admin-card,.section-card,.result-card,.ranking-card,.team-card,.player-stat,.stat-box,.metric-card,.info-card,.form-card,.list-card,.accordion-item,.modal-content,.modal-box,.slot,.pair-card,.set-card,.score-card,.table-wrap,.table-container,.chart-card,.chart-container,[class*="match"],[class*="encounter"],[class*="stat"],[class*="player"],[class*="lineup"],[class*="admin"],[class*="report"],[class*="result"],[class*="ranking"],[class*="fixture"],[class*="score"],[class*="chart"],[class*="team"]){background-color:#182332 !important;color:#e8eef7 !important;border-color:#344357 !important}
+html[data-theme="dark"] body :is(.user-row,.match-card,.encounter-card,.stat-card,.statistic-card,.player-card,.game-card,.game,.match,.fixture,.lineup-card,.discipline-card,.report-card,.admin-card,.section-card,.result-card,.ranking-card,.team-card,.player-stat,.stat-box,.metric-card,.info-card,.form-card,.list-card,.accordion-item,.modal-content,.modal-box,.slot,.pair-card,.set-card,.score-card,.table-wrap,.table-container,.chart-card,.chart-container,[class*="match"],[class*="encounter"],[class*="stat"],[class*="player"],[class*="lineup"],[class*="admin"],[class*="report"],[class*="result"],[class*="ranking"],[class*="fixture"],[class*="score"],[class*="chart"],[class*="team"]) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,b,div,td,th,li){color:inherit}
+html[data-theme="dark"] body :is(.user-row,.match-card,.encounter-card,.stat-card,.statistic-card,.player-card,.game-card,.game,.match,.fixture,.lineup-card,.discipline-card,.report-card,.admin-card,.section-card,.result-card,.ranking-card,.team-card,.player-stat,.stat-box,.metric-card,.info-card,.form-card,.list-card,.accordion-item,.modal-content,.modal-box,.slot,.pair-card,.set-card,.score-card,.table-wrap,.table-container,.chart-card,.chart-container) :is(input,select,textarea){background:#111b28 !important;color:#e8eef7 !important;border-color:#46566c !important}
+html[data-theme="dark"] body select option{background:#182332 !important;color:#e8eef7 !important}
+html[data-theme="dark"] body :is(.card,.user-row,.match-card,.encounter-card,.stat-card,.player-card,.game-card,.section-card,.result-card,.team-card,.modal-box,.slot) [style*="background: white"],html[data-theme="dark"] body :is(.card,.user-row,.match-card,.encounter-card,.stat-card,.player-card,.game-card,.section-card,.result-card,.team-card,.modal-box,.slot) [style*="background-color: white"]{background:#182332 !important;color:#e8eef7 !important}
+</style>
+
+<style id="admin-darkmode-final-fix">
+html[data-theme="dark"] body .section-toggle,
+html[data-theme="dark"] body .home-menu-button {
+  background:#26364a !important; color:#f1f5fb !important;
+  border:1px solid #46566c !important; box-shadow:none !important;
+}
+html[data-theme="dark"] body .section-toggle:hover,
+html[data-theme="dark"] body .home-menu-button:hover {
+  background:#344a63 !important; color:#ffffff !important;
+}
+html[data-theme="dark"] body .section-toggle *,
+html[data-theme="dark"] body .home-menu-button * { color:inherit !important; }
+html[data-theme="dark"] body .user-row,
+html[data-theme="dark"] body .account-row,
+html[data-theme="dark"] body .collapsible-panel,
+html[data-theme="dark"] body .note {
+  background:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important;
+}
+html[data-theme="dark"] body .chip { background:#26364a !important; color:#e8eef7 !important; }
+html[data-theme="dark"] body .chip.primary { background:#1e4164 !important; color:#d8ebff !important; }
+html[data-theme="dark"] body .status.ok { background:#153d32 !important; color:#b9f4d8 !important; }
+html[data-theme="dark"] body .status.bad { background:#482729 !important; color:#ffd1d1 !important; }
+html[data-theme="dark"] body button.primary { background:#1769aa !important; color:#ffffff !important; }
+html[data-theme="dark"] body button.danger { background:#482729 !important; color:#ffd1d1 !important; }
+</style>
+</head>
+<body>
+
+<nav id="platformNav" aria-label="Hauptnavigation">
+ <div class="pn-inner">
+  <a class="pn-brand" href="index.html">🏸 Badminton-Plattform</a>
+  <button class="pn-toggle" type="button" aria-expanded="false" aria-controls="pnLinks">☰ Menü</button>
+  <div class="pn-links" id="pnLinks"><a href="index.html">Dashboard</a><a href="vereine.html">Vereine</a><a href="mannschaft.html">Mannschaften</a><a href="spielplan.html">Spielplan</a><a href="aufstellung.html">Aufstellung</a><a href="live.html">Live</a></div>
+  <span class="pn-user">Navigation wird geladen …</span>
+ </div>
+</nav>
+
+<header><h1>👑 Admin-Verwaltung</h1><p>Benutzer, Rollen, Mannschaften und Spieler-Konten</p></header>
+<main>
+<section class="card" id="recoveryCard" style="display:none">
+<h2>🔑 Neues Passwort setzen</h2>
+<p class="small">Du bist über den Passwort-Reset hierher gekommen. Bitte vergib ein neues Passwort.</p>
+<div class="two grid"><div><label>Neues Passwort</label><input id="recoveryPassword" type="password" autocomplete="new-password"></div><div><label>Passwort wiederholen</label><input id="recoveryPassword2" type="password" autocomplete="new-password"></div></div>
+<div class="toolbar" style="margin-top:9px"><button class="primary" onclick="updateOwnPassword()">Passwort speichern</button></div>
+<div id="recoveryStatus" class="status">–</div>
+</section>
+
+<section class="card" id="loginCard">
+<h2>Anmeldung</h2>
+<div class="two grid"><div><label>E-Mail</label><input id="email" type="email" autocomplete="username"></div><div><label>Passwort</label><input id="password" type="password" autocomplete="current-password"></div></div>
+<div class="toolbar" style="margin-top:9px"><button class="primary" onclick="login()">Anmelden</button><button class="secondary" onclick="logout()">Abmelden</button><button class="secondary" onclick="forgotPassword()">🔑 Passwort per E-Mail zurücksetzen</button></div>
+<div id="authStatus" class="status">Nicht angemeldet.</div>
+</section>
+
+<section class="card" id="createCard" style="display:none">
+<button class="section-toggle" type="button" aria-expanded="false" aria-controls="createUserPanel" onclick="toggleAdminPanel('createUserPanel',this)"><span>➕ Benutzerkonto anlegen</span><span class="toggle-mark">＋</span></button>
+<div id="createUserPanel" class="collapsible-panel" hidden>
+<p class="small">Hier kann ein vorläufiges Konto mit Startpasswort angelegt und direkt einem Spieler zugeordnet werden. Das Startpasswort wird dem Benutzer mitgeteilt und sollte anschließend geändert werden.</p>
+<div class="two grid">
+  <div><label>E-Mail / Login</label><input id="newEmail" type="email" autocomplete="off" placeholder="spieler@verein.de"></div>
+  <div><label>Startpasswort (mind. 8 Zeichen)</label><input id="newPassword" type="password" autocomplete="new-password" placeholder="Startpasswort"></div>
+  <div><label>Anzeigename (optional)</label><input id="newDisplayName" type="text" placeholder="Max Mustermann"></div>
+  <div><label>Rolle</label><select id="newRole"><option value="player">player</option><option value="team_manager">team_manager</option><option value="moderator">moderator</option><option value="admin">admin</option></select></div>
+  <div><label>Spieler (optional)</label><select id="newPlayer"><option value="">– später zuordnen –</option></select></div>
+  <div><label>Mannschaft (optional)</label><select id="newTeam"><option value="">– automatisch / später –</option></select></div>
+</div>
+<div class="toolbar" style="margin-top:9px"><button class="primary" onclick="createUser()">Benutzerkonto anlegen</button></div>
+<div id="createStatus" class="status">–</div>
+</div>
+</section>
+
+<section class="card" id="appCard" style="display:none">
+<button class="section-toggle" type="button" aria-expanded="false" aria-controls="usersPanel" onclick="toggleAdminPanel('usersPanel',this)"><span>👤 Benutzer verwalten</span><span class="toggle-mark">＋</span></button>
+<div id="usersPanel" class="collapsible-panel" hidden>
+<p class="small">Hier verwaltest du bestehende Konten direkt. Weise jedem Konto einen Spielernamen zu; mehrere Konten dürfen demselben Spieler zugeordnet werden.</p>
+<div class="toolbar"><button class="secondary" onclick="loadAll()">🔄 Aktualisieren</button></div>
+<div id="usersStatus" class="status">–</div>
+<div id="users"></div></div>
+</section>
+
+<section class="card" id="teamsCard" style="display:none">
+<button class="section-toggle" type="button" aria-expanded="false" aria-controls="teamsPanel" onclick="toggleAdminPanel('teamsPanel',this)"><span>🏸 Mannschaften verwalten</span><span class="toggle-mark">＋</span></button>
+<div id="teamsPanel" class="collapsible-panel" hidden>
+<p class="small">Hier kannst du pro Mannschaft Staffel-Bezeichnung und Staffelnummer hinterlegen. Der Spielbericht übernimmt diese Angaben automatisch anhand der Heimmannschaft (ersatzweise Gastmannschaft).</p>
+<div id="teams"></div></div>
+</section>
+
+<a class="home-menu-button" href="index.html">🏠 Zurück zum Hauptmenü</a>
+</main>
+
+<script>
+"use strict";
+const SUPABASE_URL="https://apsarswjmsrmffoyxsgr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let user=null,profile=null,profiles=[],memberships=[],players=[],accounts=[],teamSettings=[];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+const msg=e=>e?.message||e?.details||"Unbekannter Fehler";
+function toggleAdminPanel(id,button){const panel=$(id);const open=panel.hidden;panel.hidden=!open;button.setAttribute("aria-expanded",String(open));const mark=button.querySelector(".toggle-mark");if(mark)mark.textContent=open?"−":"＋"}
+function setStatus(id,text,type=""){const e=$(id);e.className="status"+(type?" "+type:"");e.textContent=text}
+
+async function login(){
+  const email=$("email").value.trim(),password=$("password").value;
+  if(!email||!password){setStatus("authStatus","Bitte E-Mail und Passwort eingeben.","bad");return}
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  if(error)setStatus("authStatus","Anmeldung fehlgeschlagen: "+msg(error),"bad");
+}
+async function updateOwnPassword(){
+  const p=$("recoveryPassword").value,p2=$("recoveryPassword2").value;
+  if(!p||p.length<8){setStatus("recoveryStatus","Das Passwort muss mindestens 8 Zeichen haben.","bad");return}
+  if(p!==p2){setStatus("recoveryStatus","Die Passwörter stimmen nicht überein.","bad");return}
+  const {error}=await sb.auth.updateUser({password:p});
+  if(error){setStatus("recoveryStatus","Passwort konnte nicht gespeichert werden: "+msg(error),"bad");return}
+  setStatus("recoveryStatus","Passwort erfolgreich geändert.","ok");
+  $("recoveryPassword").value="";$("recoveryPassword2").value="";
+}
+async function forgotPassword(){
+  const email=$("email").value.trim();
+  if(!email){setStatus("authStatus","Bitte zuerst die E-Mail-Adresse eingeben.","bad");return}
+  const redirectTo=location.origin+location.pathname;
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
+  if(error){setStatus("authStatus","Reset-Mail konnte nicht angefordert werden: "+msg(error),"bad");return}
+  setStatus("authStatus","Wenn für diese E-Mail ein Konto existiert, wurde eine E-Mail zum Zurücksetzen des Passworts angefordert.","ok");
+}
+async function logout(){await sb.auth.signOut();location.reload()}
+
+async function init(){
+  const r=await sb.auth.getSession(); user=r.data.session?.user||null;
+  if(location.hash.includes("type=recovery")||location.search.includes("type=recovery")) $("recoveryCard").style.display="block";
+  if(user) await afterLogin();
+  sb.auth.onAuthStateChange(async(event,s)=>{
+    user=s?.user||null;
+    if(event==="PASSWORD_RECOVERY") $("recoveryCard").style.display="block";
+    if(user) await afterLogin();
+  });
+}
+async function afterLogin(){
+  const {data:p,error}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();
+  if(error){setStatus("authStatus","Profil konnte nicht geladen werden: "+msg(error),"bad");return}
+  profile=p;
+  if(!profile||profile.role!=="admin"){
+    setStatus("authStatus","Zugriff verweigert. Diese Seite ist nur für Admins.","bad");
+    return;
+  }
+  setStatus("authStatus","Als Admin angemeldet.","ok");
+  $("appCard").style.display="block";$("teamsCard").style.display="block";$("createCard").style.display="block";
+  await loadAll();
+}
+
+async function loadAll(){
+  setStatus("usersStatus","Lade Benutzer …");
+  const [pr,mr,pl,ar,tr]=await Promise.all([
+    sb.from("profiles").select("*").order("display_name",{ascending:true}),
+    sb.from("team_memberships").select("*").order("team",{ascending:true}),
+    sb.from("players").select("id,team,name,ranking_position,gender,active,user_id").eq("active",true).order("team",{ascending:true}).order("gender",{ascending:true}).order("ranking_position",{ascending:true}),
+    sb.from("player_accounts").select("id,player_id,user_id,is_primary,active,created_at").order("player_id",{ascending:true}),
+    sb.from("team_competition_settings").select("team,staffel,staffel_nr,updated_at").order("team",{ascending:true})
+  ]);
+  if(pr.error){setStatus("usersStatus","Benutzer konnten nicht geladen werden: "+msg(pr.error),"bad");return}
+  if(mr.error){setStatus("usersStatus","Team-Zuordnungen konnten nicht geladen werden: "+msg(mr.error),"bad");return}
+  if(pl.error){setStatus("usersStatus","Spieler konnten nicht geladen werden: "+msg(pl.error),"bad");return}
+  if(ar.error){setStatus("usersStatus","Spielerkonten konnten nicht geladen werden. Wurde player_accounts.sql ausgeführt? "+msg(ar.error),"bad");accounts=[]}else accounts=ar.data||[];
+  if(tr.error){teamSettings=[];setStatus("usersStatus","Staffel-Einstellungen konnten nicht geladen werden. Bitte team_competition_settings.sql ausführen. "+msg(tr.error),"bad")}else teamSettings=tr.data||[];
+  // E-Mail-Adressen werden sicher über die Admin-user Edge Function geladen,
+  // da profiles die Auth-E-Mail nicht zwingend enthält.
+  let authUsers=[];
+  try{
+    const session=(await sb.auth.getSession()).data.session;
+    if(session){
+      const response=await fetch(SUPABASE_URL+"/functions/v1/Admin-user",{
+        method:"POST",
+        headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},
+        body:JSON.stringify({action:"list_users"})
+      });
+      const result=await response.json();
+      if(response.ok&&!result.error)authUsers=result.users||[];
+      else console.warn("E-Mail-Adressen konnten nicht über Admin-user geladen werden:",result.error||response.statusText);
+    }
+  }catch(err){console.warn("Auth-Benutzerliste konnte nicht geladen werden:",err)}
+  const authById=new Map(authUsers.map(a=>[a.id,a]));
+  profiles=(pr.data||[]).map(p=>({...p,email:authById.get(p.id)?.email||p.email||"",display_name:p.display_name||authById.get(p.id)?.display_name||""}));
+  // Die erste Zeile des importierten Google-Sheets enthält Überschriften statt Daten.
+  // Diese Zeile darf nicht als Spieler oder Mannschaft in der Admin-Oberfläche erscheinen.
+  const isSheetHeader = value => String(value ?? "").trim().toLocaleLowerCase("de") === "mannschaft";
+  memberships=(mr.data||[]).filter(m=>!isSheetHeader(m.team));
+  players=(pl.data||[]).filter(p=>!isSheetHeader(p.team) && !isSheetHeader(p.name));
+  renderUsers();renderTeams();fillCreateLists();
+  setStatus("usersStatus",profiles.length+" Benutzer geladen.","ok");
+}
+function displayName(p){return p?.display_name||p?.full_name||p?.name||p?.email||p?.id||"Unbekannt"}
+function emailOf(p){return p?.email||p?.username||p?.id||""}
+function memberRows(uid){return memberships.filter(m=>m.user_id===uid)}
+function accountRows(pid){return accounts.filter(a=>String(a.player_id)===String(pid))}
+function allTeams(){
+  const isSheetHeader = value => String(value ?? "").trim().toLocaleLowerCase("de") === "mannschaft";
+  const s=new Set();
+  memberships.forEach(m=>{if(m.team && !isSheetHeader(m.team))s.add(m.team)});
+  players.forEach(p=>{if(p.team && !isSheetHeader(p.team))s.add(p.team)});
+  profiles.forEach(p=>{if(p.team && !isSheetHeader(p.team))s.add(p.team)});
+  return [...s].sort((a,b)=>a.localeCompare(b,"de",{numeric:true}));
+}
+function roleOptions(current){return ["player","team_manager","moderator","admin"].map(r=>`<option value="${r}" ${r===current?"selected":""}>${r}</option>`).join("")}
+function playerOptions(selected="",onlyUnlinked=false){
+  return players.filter(p=>!onlyUnlinked||accountRows(p.id).length===0).map(p=>`<option value="${p.id}" ${String(p.id)===String(selected)?"selected":""}>${esc(p.team)} · ${esc(p.name)}${p.ranking_position?" · Rang "+esc(p.ranking_position):""}</option>`).join("")
+}
+function fillCreateLists(){
+  $("newPlayer").innerHTML='<option value="">– später zuordnen –</option>'+playerOptions();
+  $("newTeam").innerHTML='<option value="">– automatisch / später –</option>'+allTeams().map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("");
+}
+function renderUsers(){
+  $("users").innerHTML=profiles.map(p=>{
+    const ms=memberRows(p.id);
+    const linked=accounts.find(a=>a.user_id===p.id && a.active!==false);
+    const linkedPlayer=linked ? players.find(x=>String(x.id)===String(linked.player_id)) : null;
+    const label=esc(displayName(p)),identifier=esc(emailOf(p));
+    return `<div class="user-row">
+      <div class="user-head"><div><div class="name">${label}</div><div class="muted">${identifier}</div></div>
+      <select id="role_${p.id}" onchange="saveRole('${p.id}',this.value)" style="max-width:170px">${roleOptions(p.role||"player")}</select></div>
+      <div class="assignment">
+        <div><label>Spieler zuordnen</label>
+          <select id="playerFor_${p.id}" onchange="savePlayerAssignment('${p.id}',this.value)">
+            <option value="">– kein Spieler zugeordnet –</option>${playerOptions(linkedPlayer?.id||"")}
+          </select>
+        </div>
+        <div class="small">${linkedPlayer?`Zugeordnet: ${esc(linkedPlayer.name)} · ${esc(linkedPlayer.team)}`:"Noch keinem Spieler zugeordnet"}</div>
+      </div>
+      <div class="members">${ms.map(m=>`<span class="chip">${esc(m.team)} · ${esc(m.role)}</span>`).join("")||'<span class="muted">Keine Mannschaft zugeordnet</span>'}</div>
+      <div class="assignment">
+        <div><label>Mannschaft hinzufügen</label><select id="team_${p.id}"><option value="">– auswählen –</option>${allTeams().map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("")}</select></div>
+        <button class="primary" onclick="addMembership('${p.id}')">+ Zuordnen</button>
+      </div>
+      ${ms.length?`<div class="toolbar" style="margin-top:8px">${ms.map(m=>`<button class="secondary" onclick="removeMembership('${m.id}')">✕ ${esc(m.team)} (${esc(m.role)})</button>`).join("")}</div>`:""}
+      <div class="toolbar" style="margin-top:8px">
+        <button class="secondary" onclick="resetForEmail('${esc(emailOf(p))}')">🔑 Passwort-Reset per E-Mail</button>
+        <button class="danger" onclick="deleteUser('${p.id}','${esc(emailOf(p))}')">🗑️ Benutzerkonto löschen</button>
+      </div>
+    </div>`;
+  }).join("")||'<div class="small">Keine Benutzerprofile gefunden.</div>';
+}
+async function savePlayerAssignment(uid,playerId){
+  const existing=accounts.find(a=>a.user_id===uid);
+  if(!playerId){
+    if(!existing)return;
+    if(!confirm("Spieler-Zuordnung entfernen? Das Benutzerkonto bleibt bestehen.")){await loadAll();return}
+    const {error}=await sb.from("player_accounts").delete().eq("user_id",uid);
+    if(error){alert("Zuordnung konnte nicht entfernt werden: "+msg(error));await loadAll();return}
+    await loadAll();return;
+  }
+  const {error}=await sb.from("player_accounts").upsert({
+    player_id:playerId,user_id:uid,is_primary:!accounts.some(a=>String(a.player_id)===String(playerId)&&a.is_primary),active:true
+  },{onConflict:"user_id"});
+  if(error){alert("Spieler konnte nicht zugeordnet werden: "+msg(error));await loadAll();return}
+  await loadAll();
+}
+async function deleteUser(uid,email){
+  if(uid===user?.id){alert("Das aktuell angemeldete Admin-Konto kann hier nicht gelöscht werden.");return}
+  if(!confirm(`Benutzerkonto ${email||uid} wirklich vollständig löschen?\\n\\nDies entfernt den Auth-Login und kann nicht rückgängig gemacht werden.`))return;
+  const session=(await sb.auth.getSession()).data.session;
+  if(!session){alert("Admin-Sitzung ist abgelaufen.");return}
+  const res=await fetch(SUPABASE_URL+"/functions/v1/Admin-user",{
+    method:"POST",
+    headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},
+    body:JSON.stringify({action:"delete",user_id:uid})
+  });
+  let data={};try{data=await res.json()}catch{}
+  if(!res.ok||data.error){alert("Benutzerkonto konnte nicht gelöscht werden: "+(data.error||res.statusText)+"\\nBitte prüfen, ob die Admin-user Edge Function die Aktion 'delete' unterstützt.");return}
+  alert("Benutzerkonto wurde gelöscht.");
+  await loadAll();
+}
+async function saveRole(uid,role){
+  const {error}=await sb.from("profiles").update({role}).eq("id",uid);
+  if(error){alert("Rolle konnte nicht gespeichert werden: "+msg(error));await loadAll();return}
+  const p=profiles.find(x=>x.id===uid);if(p)p.role=role;setStatus("usersStatus","Rolle gespeichert.","ok");
+}
+async function addMembership(uid){
+  const team=$("team_"+uid)?.value;if(!team){alert("Bitte eine Mannschaft auswählen.");return}
+  const role=profiles.find(p=>p.id===uid)?.role==="moderator"?"moderator":profiles.find(p=>p.id===uid)?.role==="team_manager"?"team_manager":"player";
+  const {error}=await sb.from("team_memberships").upsert({user_id:uid,team,role},{onConflict:"user_id,team"});
+  if(error){alert("Zuordnung konnte nicht gespeichert werden: "+msg(error));return}await loadAll();
+}
+async function removeMembership(id){if(!confirm("Diese Mannschafts-Zuordnung wirklich entfernen?"))return;const {error}=await sb.from("team_memberships").delete().eq("id",id);if(error){alert("Zuordnung konnte nicht gelöscht werden: "+msg(error));return}await loadAll()}
+
+async function createUser(){
+  const email=$("newEmail").value.trim().toLowerCase(),password=$("newPassword").value,display_name=$("newDisplayName").value.trim(),role=$("newRole").value,player_id=$("newPlayer").value,team=$("newTeam").value;
+  if(!email||!password){setStatus("createStatus","E-Mail und Startpasswort sind erforderlich.","bad");return}
+  if(password.length<8){setStatus("createStatus","Das Startpasswort muss mindestens 8 Zeichen haben.","bad");return}
+  setStatus("createStatus","Lege Benutzerkonto an …");
+  const session=(await sb.auth.getSession()).data.session;
+  if(!session){setStatus("createStatus","Admin-Sitzung ist abgelaufen.","bad");return}
+  const res=await fetch(SUPABASE_URL+"/functions/v1/Admin-user",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({action:"create",email,password,display_name,role,player_id:player_id||null,team:team||"",primary:true})});
+  let data={};try{data=await res.json()}catch{}
+  if(!res.ok||data.error){setStatus("createStatus","Benutzer konnte nicht angelegt werden: "+(data.error||res.statusText),"bad");return}
+  setStatus("createStatus","Benutzerkonto wurde angelegt.","ok");
+  $("newEmail").value="";$("newPassword").value="";$("newDisplayName").value="";$("newPlayer").value="";$("newTeam").value="";
+  await loadAll();
+}
+async function resetForEmail(email){
+  if(!email)return;
+  if(!confirm("Eine Passwort-Reset-Mail an "+email+" anfordern?"))return;
+  const redirectTo=location.origin+location.pathname;
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
+  if(error){alert("Reset-Mail konnte nicht angefordert werden: "+msg(error));return}
+  alert("Die Passwort-Reset-Mail wurde angefordert.");
+}
+async function saveTeamSetting(team){
+  const staffel=$("staffel_"+encodeURIComponent(team)).value.trim();
+  const staffelNr=$("staffelnr_"+encodeURIComponent(team)).value.trim();
+  const {error}=await sb.from("team_competition_settings").upsert({team,staffel:staffel||null,staffel_nr:staffelNr||null,updated_at:new Date().toISOString()},{onConflict:"team"});
+  if(error){alert("Staffel-Daten konnten nicht gespeichert werden: "+msg(error));return}
+  await loadAll();alert("Staffel-Daten für "+team+" gespeichert.");
+}
+function renderTeams(){
+  const teams=allTeams();
+  $("teams").innerHTML=teams.map(team=>{const ms=memberships.filter(m=>m.team===team),ps=players.filter(p=>p.team===team),cfg=teamSettings.find(t=>t.team===team)||{},key=encodeURIComponent(team);return `<div class="user-row"><div class="name">${esc(team)}</div><div class="small">${ps.length} aktive Spieler · ${ms.length} Benutzer-Zuordnungen</div><div class="two grid" style="margin-top:10px"><div><label>Staffel-Bezeichnung</label><input id="staffel_${key}" value="${esc(cfg.staffel||"")}" placeholder="z. B. Bezirksklasse Nord"></div><div><label>Staffelnummer</label><input id="staffelnr_${key}" value="${esc(cfg.staffel_nr||"")}" placeholder="z. B. 123"></div></div><div class="toolbar" style="margin-top:8px"><button class="primary" onclick="saveTeamSetting('${esc(team).replace(/'/g,"&#039;")}')">Staffel-Daten speichern</button></div><div class="members">${ms.map(m=>{const p=profiles.find(x=>x.id===m.user_id);return `<span class="chip">${esc(displayName(p||{id:m.user_id}))} · ${esc(m.role)}</span>`}).join("")||'<span class="muted">Keine Benutzer zugeordnet</span>'}</div></div>`}).join("")||'<div class="small">Noch keine Mannschaften gefunden.</div>';
+}
+init();
+</script>
+
+<script>(function(){const key='badminton-theme';function systemTheme(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}let saved=null;try{saved=localStorage.getItem(key)}catch(e){}document.documentElement.dataset.theme=saved==='dark'||saved==='light'?saved:systemTheme();if(window.matchMedia){const mq=window.matchMedia('(prefers-color-scheme: dark)');const changed=()=>{let v=null;try{v=localStorage.getItem(key)}catch(e){}if(v!=='dark'&&v!=='light')document.documentElement.dataset.theme=systemTheme()};if(mq.addEventListener)mq.addEventListener('change',changed);else if(mq.addListener)mq.addListener(changed)}})();</script>
+<script>
+(function(){const key='badminton-theme';function sys(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}function apply(t){document.documentElement.dataset.theme=t;const p=document.getElementById('profileThemeButton');if(p)p.textContent=t==='dark'?'☀️ Helles Design':'🌙 Dark Mode'}function saved(){try{return localStorage.getItem(key)}catch(e){return null}}apply(saved()==='dark'||saved()==='light'?saved():sys());window.toggleTheme=function(){const t=document.documentElement.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem(key,t)}catch(e){}apply(t)};if(window.matchMedia){const m=window.matchMedia('(prefers-color-scheme: dark)');const f=()=>{const v=saved();if(v!=='dark'&&v!=='light')apply(sys())};m.addEventListener?m.addEventListener('change',f):m.addListener(f)}document.addEventListener('DOMContentLoaded',()=>apply(document.documentElement.dataset.theme||sys()))})();
+</script>
+<script>
+
+(function(){
+ const root=document.getElementById('platformNav'); if(!root) return;
+ const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+ const items=[
+  {label:'Dashboard',href:'index.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Vereine',href:'vereine.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Mannschaften',href:'mannschaft.html',roles:['team_manager','moderator','admin','board','advisory']},
+  {label:'Spielplan',href:'spielplan.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Aufstellung',href:'aufstellung.html',roles:['team_manager','moderator','admin']},
+  {label:'Live',href:'live.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Moderator',href:'moderator.html',roles:['moderator','scorer','admin']},
+  {label:'Spielbericht',href:'spielbericht.html',roles:['moderator','admin']},
+  {label:'Spielerstatistik',href:'spielerstatistik.html',roles:['player','team_manager','moderator','admin','board','advisory']},
+  {label:'Rangliste',href:'Rangliste.html',roles:['player','team_manager','moderator','admin','board','advisory']},
+  {label:'Administration',href:'admin.html',roles:['admin']}
+ ];
+ const primary=['Dashboard','Vereine','Mannschaften','Spielplan','Aufstellung','Live'];
+ const labels=new Set(primary);
+ function link(it){const a=document.createElement('a');a.href=it.href;a.textContent=it.label;if(current===it.href.toLowerCase())a.setAttribute('aria-current','page');return a}
+ const links=root.querySelector('.pn-links'); if(!links)return;
+ function render(role,loggedIn){
+   links.innerHTML='';
+   const allowed=items.filter(it=>it.roles.includes(role));
+   allowed.filter(it=>labels.has(it.label)).forEach(it=>links.appendChild(link(it)));
+   const more=allowed.filter(it=>!labels.has(it.label));
+   if(more.length){
+     const d=document.createElement('details');d.className='pn-more';
+     const s=document.createElement('summary');s.textContent='Mehr ▾';d.appendChild(s);
+     const menu=document.createElement('div');menu.className='pn-menu';more.forEach(it=>menu.appendChild(link(it)));d.appendChild(menu);links.appendChild(d);
+   }
+   const u=root.querySelector('.pn-user'); if(u)u.textContent=loggedIn?'Angemeldet':'Öffentlicher Bereich';
+ }
+ const toggle=root.querySelector('.pn-toggle');
+ if(toggle)toggle.addEventListener('click',()=>{const open=links.classList.toggle('pn-open');toggle.setAttribute('aria-expanded',String(open));toggle.textContent=open?'✕ Schließen':'☰ Menü';});
+ // Keep public access functional; logged-in roles receive a tailored menu.
+ const fallback=()=>render('player',false);
+ if(!window.supabase||!window.supabase.createClient){fallback();return}
+ const url='https://apsarswjmsrmffoyxsgr.supabase.co';
+ const key='sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj';
+ try{
+   const client=window.__platformNavClient||(window.__platformNavClient=window.supabase.createClient(url,key));
+   client.auth.getUser().then(async ({data,error})=>{
+     if(error||!data.user){fallback();return}
+     let role='player';
+     const {data:profile}=await client.from('profiles').select('role').eq('id',data.user.id).maybeSingle();
+     if(profile&&profile.role)role=String(profile.role).toLowerCase();
+     const {data:members}=await client.from('club_memberships').select('club_role,status').eq('user_id',data.user.id).eq('status','active');
+     const roles=(members||[]).map(x=>String(x.club_role||'').toLowerCase());
+     if(role!=='admin'&&roles.length){
+       if(roles.includes('team_manager'))role='team_manager';
+       else if(roles.includes('moderator'))role='moderator';
+       else if(roles.includes('board'))role='board';
+       else if(roles.includes('advisory'))role='advisory';
+     }
+     render(role,true);
+   }).catch(fallback);
+ }catch(e){fallback()}
+})();
+</script>
+</body>
+</html>
