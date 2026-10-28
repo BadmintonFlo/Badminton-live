@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101722">
+<title>Badminton – Dashboard</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner"><div class="brand">🏸 Badminton Mannschaftsverwaltung</div><div class="auth-actions"><button id="loginOpen" class="btn primary" type="button">🔐 Login</button><button id="registerOpen" class="btn" type="button">📝 Registrieren</button><button id="logout" class="btn" type="button" hidden>Abmelden</button></div></div></header>
+<nav class="nav" aria-label="Hauptnavigation"><div class="nav-inner">
+<a class="active" href="index.html"><span class="ico">⌂</span><span>Dashboard</span></a>
+<a href="vereine.html"><span class="ico">♜</span><span>Vereine</span></a>
+<a href="mannschaft.html"><span class="ico">♟</span><span>Mannschaften</span></a>
+<a href="spielerstatistik.html"><span class="ico">♙</span><span>Spieler</span></a>
+<a href="spielplan.html"><span class="ico">▦</span><span>Spielplan</span></a>
+<div class="nav-more" id="navMore"><a href="#" id="moreToggle" aria-expanded="false"><span class="ico">•••</span><span>Mehr</span></a><div class="more-menu" id="moreMenu">
+<a href="aufstellung.html">📝 Aufstellung</a><a href="moderator.html">🎮 Moderator</a><a href="spielbericht.html">📄 Spielberichte</a><a href="Rangliste.html">🏸 Rangliste</a><a href="live.html">🔴 Live-Ticker</a><a href="admin.html" id="adminLink">⚙️ Administration</a>
+</div></div></div></nav>
+<main><section class="welcome"><h1>Willkommen beim Badminton-Dashboard</h1><p>Deine Vereine, Mannschaften, Spieler und Spieltermine an einem Ort.</p></section>
+<div class="status" id="status"><strong id="welcomeText">Angemeldet</strong><span id="roleText"></span></div>
+<section class="dashboard" id="dashboard"><h2 class="section-title">Dein Überblick</h2><div class="grid">
+<article class="card"><h3>📅 Nächste Begegnung</h3><div id="nextMatch" class="muted">Daten werden geladen …</div><p>Die kommenden Termine deiner Mannschaften.</p><a class="btn" href="spielplan.html">Zum Spielplan →</a></article>
+<article class="card"><h3>🏸 Mannschaftsverwaltung</h3><p>Vereine, Saisons und Mannschaftskader verwalten.</p><a class="btn" href="mannschaft.html">Mannschaften öffnen →</a></article>
+<article class="card"><h3>👥 Spielerliste</h3><p>Spielerprofile und Zuordnungen ansehen.</p><a class="btn" href="spielerstatistik.html">Spieler öffnen →</a></article>
+<article class="card"><h3>📝 Spielberichte</h3><p>Berichte und Ergebnisse verwalten.</p><a class="btn" href="spielbericht.html">Spielberichte öffnen →</a></article>
+</div></section>
+<section id="publicSections"><h2 class="section-title">Schnellzugriff</h2><div class="grid">
+<article class="card"><h2>🔴 Live-Ticker</h2><p>Aktuelle Spiele und laufende Ergebnisse öffentlich ansehen.</p><a class="btn" href="live.html">Live-Ticker öffnen</a></article>
+<article class="card"><h2>🏸 Vereine</h2><p>Badmintonvereine entdecken, Trainingsorte ansehen und Informationen zu den Vereinen finden.</p><a class="btn" href="vereine.html">Vereine entdecken</a></article>
+</div></section></main><footer>Badminton Mannschaftsverwaltung</footer>
+<div class="modal-bg" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle"><div class="modal"><div class="modal-head"><h2 id="authTitle">🔐 Anmelden</h2><button type="button" class="close" id="modalClose">✕</button></div>
+<form id="authForm"><label for="email">E-Mail</label><input id="email" type="email" autocomplete="username" required><label for="password">Passwort</label><input id="password" type="password" autocomplete="current-password" minlength="8" required>
+<div id="confirmWrap" hidden><label for="confirmPassword">Passwort wiederholen</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="8"></div><div id="nameWrap" hidden><label for="displayName">Vor- und Nachname</label><input id="displayName" type="text" autocomplete="name" maxlength="100"></div>
+<button type="submit" class="btn primary submit" id="submitButton">Anmelden</button><button type="button" class="btn" id="forgotButton" style="width:100%;margin-top:8px">Passwort vergessen?</button><div class="message" id="authMessage" role="status"></div></form></div></div>
+<script>
+(() => {
+const URL='https://apsarswjmsrmffoyxsgr.supabase.co', KEY='sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj';
+const sb=window.supabase?.createClient(URL,KEY),$=id=>document.getElementById(id);let mode='login';
+$('moreToggle').addEventListener('click',e=>{e.preventDefault();const open=$('navMore').classList.toggle('open');$('moreToggle').setAttribute('aria-expanded',String(open));});
+document.addEventListener('click',e=>{if(!$('navMore').contains(e.target)){$('navMore').classList.remove('open');$('moreToggle').setAttribute('aria-expanded','false');}});
+function message(text,error=true){const el=$('authMessage');el.textContent=text;el.style.display='block';el.style.background=error?'#482729':'#153d32';el.style.color=error?'#ffd1d1':'#a8f0d0';}
+function openModal(next){mode=next;$('authTitle').textContent=mode==='register'?'📝 Konto erstellen':'🔐 Anmelden';$('submitButton').textContent=mode==='register'?'Konto erstellen':'Anmelden';$('confirmWrap').hidden=mode!=='register';$('nameWrap').hidden=mode!=='register';$('forgotButton').hidden=mode!=='login';$('authMessage').style.display='none';$('authModal').style.display='flex';}
+function closeModal(){$('authModal').style.display='none';}
+$('loginOpen').addEventListener('click',()=>openModal('login'));$('registerOpen').addEventListener('click',()=>openModal('register'));$('modalClose').addEventListener('click',closeModal);$('authModal').addEventListener('click',e=>{if(e.target===$('authModal'))closeModal();});
+function loggedOut(){$('loginOpen').hidden=false;$('registerOpen').hidden=false;$('logout').hidden=true;$('status').style.display='none';$('dashboard').style.display='none';}
+async function loadUser(){if(!sb)return;const {data:{session}}=await sb.auth.getSession();if(!session?.user){loggedOut();return;}let role='';try{const {data}=await sb.from('profiles').select('role').eq('id',session.user.id).maybeSingle();role=data?.role||'';}catch(_){}$('loginOpen').hidden=true;$('registerOpen').hidden=true;$('logout').hidden=false;$('status').style.display='block';$('welcomeText').textContent='Willkommen, '+(session.user.email||'Benutzer')+'!';$('roleText').textContent=role?'Rolle: '+role:'Angemeldet';$('dashboard').style.display='block';if(role!=='admin')$('adminLink').style.display='none';
+try{const today=new Date().toISOString().slice(0,10);const {data,error}=await sb.from('matches').select('home_team,away_team,match_date,match_time,venue,status').gte('match_date',today).order('match_date',{ascending:true}).order('match_time',{ascending:true}).limit(1);if(!error&&data?.length){const m=data[0];$('nextMatch').textContent=`${m.match_date||'Termin offen'} · ${m.home_team||'Heim'} – ${m.away_team||'Gast'}${m.match_time?' · '+String(m.match_time).slice(0,5):''}${m.venue?' · '+m.venue:''}`;}else $('nextMatch').textContent='Keine kommende Begegnung gefunden.';}catch(_){$('nextMatch').textContent='Termine konnten nicht geladen werden.';}}
+$('authForm').addEventListener('submit',async e=>{e.preventDefault();if(!sb){message('Anmeldung momentan nicht verfügbar.');return;}const email=$('email').value.trim().toLowerCase(),password=$('password').value;$('submitButton').disabled=true;try{if(mode==='register'){const name=$('displayName').value.trim();if(name.length<2)throw Error('Bitte gib deinen vollständigen Namen ein.');if(password!==$('confirmPassword').value)throw Error('Die Passwörter stimmen nicht überein.');const {data,error}=await sb.auth.signUp({email,password,options:{data:{display_name:name,full_name:name,name},emailRedirectTo:new URL('index.html',location.href).href}});if(error)throw error;message(data.session?'Konto erstellt. Du bist angemeldet.':'Registrierung gestartet. Bitte prüfe dein E-Mail-Postfach.',false);if(data.session)await loadUser();}else{const {error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;closeModal();await loadUser();}}catch(err){message(err?.message||'Ein Fehler ist aufgetreten.');}finally{$('submitButton').disabled=false;}});
+$('forgotButton').addEventListener('click',async()=>{if(!sb)return message('Passwort-Reset momentan nicht verfügbar.');const email=$('email').value.trim();if(!email)return message('Bitte zuerst deine E-Mail-Adresse eingeben.');const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:new URL('passwort.html',location.href).href});if(error)return message(error.message);message('Wenn für diese E-Mail ein Konto existiert, wurde eine Reset-Mail versendet.',false);});
+$('logout').addEventListener('click',async()=>{if(sb)await sb.auth.signOut();loggedOut();});if(sb)sb.auth.onAuthStateChange(()=>loadUser());loadUser();
+})();
+</script>
+</body>
+</html>
