@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#14263a">
+<title>Anmelden · BadminOne</title>
+<style>
+:root{color-scheme:dark;--bg:#142338;--panel:#192b3e;--panel2:#20384f;--border:#344b61;--text:#edf3fb;--muted:#b5c4d5;--blue:#3288c5;--blue2:#8ec8ff;--danger:#ffd1d1;--success:#b6f0d4}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#1c3852 0%,var(--bg) 48%,#101d2d 100%);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);display:flex;flex-direction:column}
+a{color:var(--blue2)}
+.topbar{padding:18px 20px;border-bottom:1px solid var(--border);background:#17283a;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text);min-width:0}
+.logo{width:48px;height:48px;display:grid;place-items:center;background:#203d57;border:1px solid #3a5873;border-radius:15px;font-size:25px;flex-shrink:0}
+.brand-name{font-weight:800;color:var(--blue2);font-size:19px;line-height:1.1}
+.brand-tag{font-size:11px;letter-spacing:1.3px;font-weight:800;color:#b9c9d9;margin-top:5px}
+.back{border:1px solid var(--border);border-radius:12px;padding:10px 14px;background:#20364b;color:var(--text);font-weight:700;text-decoration:none;white-space:nowrap}
+main{width:min(100% - 28px,480px);margin:auto;padding:32px 0}
+.card{background:rgba(25,43,62,.97);border:1px solid #415a72;border-radius:24px;padding:clamp(20px,5vw,28px);box-shadow:0 18px 50px #0003}
+.eyebrow{font-size:12px;letter-spacing:1.7px;font-weight:900;color:var(--blue2);margin:0 0 9px}
+h1{font-size:29px;line-height:1.15;margin:0 0 9px}
+.intro{color:var(--muted);line-height:1.55;margin:0 0 24px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#122235;border:1px solid var(--border);border-radius:14px;padding:5px;margin-bottom:22px}
+.tab{border:0;border-radius:10px;padding:12px 8px;font:inherit;font-weight:800;background:transparent;color:var(--muted);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--blue);color:white}
+.field{display:block;margin:16px 0 0;font-weight:750;font-size:14px}
+.field input{display:block;width:100%;margin-top:8px;padding:15px 14px;background:#0f1b2a;border:1px solid #465a70;border-radius:13px;color:var(--text);font:inherit;font-size:16px;outline:none}
+.field input:focus{border-color:var(--blue2);box-shadow:0 0 0 3px #3288c533}
+.primary{width:100%;border:0;border-radius:13px;background:var(--blue);color:white;padding:15px 16px;margin-top:22px;font:inherit;font-weight:850;font-size:17px;cursor:pointer}
+.primary:disabled{opacity:.65;cursor:wait}
+.secondary{display:block;text-align:center;width:100%;border:0;background:transparent;color:var(--blue2);font:inherit;font-weight:700;padding:15px 8px 0;cursor:pointer}
+.message{padding:12px 14px;border-radius:12px;margin-top:16px;line-height:1.45;background:#482729;color:var(--danger);overflow-wrap:anywhere}
+.message.ok{background:#153d32;color:var(--success)}
+.hidden{display:none!important}
+.foot{padding:18px;text-align:center;color:#9fb0c3;font-size:12px}
+.note{font-size:12px;color:#aebed0;line-height:1.5;margin-top:18px}
+@media(max-width:380px){.topbar{padding:14px}.brand-name{font-size:17px}.logo{width:42px;height:42px}.back{padding:9px 10px;font-size:13px}}
+</style>
+<link rel="stylesheet" href="assets/css/badminone-header.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="BadminOne Startseite">
+    <span class="logo" aria-hidden="true">🏸</span>
+    <span><span class="brand-name">BadminOne</span><span class="brand-tag" style="display:block">ALL YOUR GAME IN ONE</span></span>
+  </a>
+  <a id="backLink" class="back" href="index.html">← Zurück</a>
+</header>
+
+<main>
+  <section class="card" aria-labelledby="title">
+    <p class="eyebrow">BADMINTON-PLATTFORM</p>
+    <h1 id="title">Anmelden</h1>
+    <p id="intro" class="intro">Melde dich an, um zu deinen Vereinen, Teams und persönlichen Funktionen zurückzukehren.</p>
+
+    <div class="tabs" role="tablist" aria-label="Konto">
+      <button class="tab" id="loginTab" type="button" role="tab" aria-selected="true">Anmelden</button>
+      <button class="tab" id="registerTab" type="button" role="tab" aria-selected="false">Konto erstellen</button>
+    </div>
+
+    <form id="authForm">
+      <label id="nameField" class="field hidden">Name
+        <input id="fullName" name="fullName" autocomplete="name" minlength="2">
+      </label>
+      <label class="field">E-Mail-Adresse
+        <input id="email" name="email" type="email" autocomplete="email" required>
+      </label>
+      <label class="field">Passwort
+        <input id="password" name="password" type="password" autocomplete="current-password" minlength="6" required>
+      </label>
+      <label id="confirmField" class="field hidden">Passwort wiederholen
+        <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="6">
+      </label>
+      <button id="submitBtn" class="primary" type="submit">Anmelden</button>
+    </form>
+
+    <button id="forgotBtn" class="secondary" type="button">Passwort vergessen?</button>
+    <div id="message" class="message hidden" role="status" aria-live="polite"></div>
+    <p class="note">Deine Anmeldung wird über Supabase verarbeitet. Nach erfolgreicher Anmeldung kehrst du zur zuvor geöffneten BadminOne-Seite zurück.</p>
+  </section>
+</main>
+<footer class="foot">BadminOne · All Your Game in One</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+  "use strict";
+
+  const SUPABASE_URL = "https://apsarswjmsrmffoyxsgr.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj";
+  const $ = id => document.getElementById(id);
+  const params = new URLSearchParams(location.search);
+  let mode = params.get("mode") === "register" ? "register" : "login";
+
+  // Only allow relative HTML pages on this site; no external redirect destinations.
+  const allowedPages = new Set([
+    "index.html","vereine.html","mannschaft.html","mannschaftsverwaltung.html",
+    "live.html","spielerstatistik.html","spielplan.html","aufstellung.html",
+    "spielbericht.html","rangliste.html","Rangliste.html","Rangliste_aus_Mannschaften.html","moderator.html","admin.html","passwort.html"
+  ]);
+
+  function getReturnTarget() {
+    const requested = params.get("return");
+    if (requested) {
+      const clean = requested.split(/[?#]/)[0].split("/").pop();
+      if (allowedPages.has(clean.toLowerCase())) {
+        // Use the canonical filename casing for known paths.
+        const canonical = [...allowedPages].find(p => p.toLowerCase() === clean.toLowerCase());
+        return canonical || "index.html";
+      }
+    }
+    try {
+      if (document.referrer) {
+        const ref = new URL(document.referrer);
+        const previous = ref.pathname.split("/").pop();
+        if (ref.origin === location.origin && allowedPages.has(previous.toLowerCase())) {
+          return [...allowedPages].find(p => p.toLowerCase() === previous.toLowerCase()) || "index.html";
+        }
+      }
+    } catch (_) {}
+    return "index.html";
+  }
+
+  const returnTarget = getReturnTarget();
+  $("backLink").href = returnTarget;
+  $("backLink").textContent = returnTarget === "index.html" ? "← Zur Startseite" : "← Zurück";
+
+  let supabaseClient = null;
+  try {
+    if (window.supabase?.createClient) {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    }
+  } catch (_) {}
+
+  function showMessage(text, ok = false) {
+    const el = $("message");
+    el.textContent = text;
+    el.classList.remove("hidden", "ok");
+    if (ok) el.classList.add("ok");
+  }
+
+  function setMode(next) {
+    mode = next;
+    const registering = mode === "register";
+    $("loginTab").setAttribute("aria-selected", String(!registering));
+    $("registerTab").setAttribute("aria-selected", String(registering));
+    $("title").textContent = registering ? "Konto erstellen" : "Anmelden";
+    $("intro").textContent = registering
+      ? "Erstelle dein BadminOne-Konto, um die Plattform zu nutzen."
+      : "Melde dich an, um zu deinen Vereinen, Teams und persönlichen Funktionen zurückzukehren.";
+    $("submitBtn").textContent = registering ? "Registrieren" : "Anmelden";
+    $("nameField").classList.toggle("hidden", !registering);
+    $("confirmField").classList.toggle("hidden", !registering);
+    $("fullName").required = registering;
+    $("confirmPassword").required = registering;
+    $("password").autocomplete = registering ? "new-password" : "current-password";
+    $("forgotBtn").classList.toggle("hidden", registering);
+    $("message").classList.add("hidden");
+    $("message").classList.remove("ok");
+  }
+
+  $("loginTab").addEventListener("click", () => setMode("login"));
+  $("registerTab").addEventListener("click", () => setMode("register"));
+
+  $("authForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!supabaseClient) {
+      showMessage("Der Anmeldedienst konnte nicht geladen werden. Bitte prüfe deine Internetverbindung und lade die Seite erneut.");
+      return;
+    }
+
+    const email = $("email").value.trim().toLowerCase();
+    const password = $("password").value;
+    const button = $("submitBtn");
+    button.disabled = true;
+
+    try {
+      if (mode === "register") {
+        const fullName = $("fullName").value.trim();
+        if (fullName.length < 2) throw new Error("Bitte gib deinen Namen ein.");
+        if (password !== $("confirmPassword").value) throw new Error("Die Passwörter stimmen nicht überein.");
+        if (password.length < 6) throw new Error("Das Passwort muss mindestens 6 Zeichen lang sein.");
+
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { display_name: fullName, full_name: fullName, name: fullName },
+            emailRedirectTo: new URL(returnTarget, location.href).href
+          }
+        });
+        if (error) throw error;
+
+        if (data.session) {
+          showMessage("Konto erstellt. Du wirst zurückgeleitet …", true);
+          location.replace(returnTarget);
+        } else {
+          showMessage("Bitte prüfe dein E-Mail-Postfach und bestätige deine E-Mail-Adresse. Danach kannst du dich hier anmelden.", true);
+        }
+      } else {
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        showMessage("Anmeldung erfolgreich. Du wirst zurückgeleitet …", true);
+        location.replace(returnTarget);
+      }
+    } catch (error) {
+      showMessage(error?.message || "Die Anmeldung ist fehlgeschlagen.");
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $("forgotBtn").addEventListener("click", async () => {
+    if (!supabaseClient) {
+      showMessage("Der Anmeldedienst konnte nicht geladen werden.");
+      return;
+    }
+    const email = $("email").value.trim().toLowerCase();
+    if (!email) {
+      showMessage("Bitte gib zuerst deine E-Mail-Adresse ein.");
+      $("email").focus();
+      return;
+    }
+    try {
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: new URL("passwort.html", location.href).href
+      });
+      if (error) throw error;
+      showMessage("Falls ein Konto mit dieser Adresse existiert, wurde eine E-Mail zum Zurücksetzen des Passworts versendet.", true);
+    } catch (error) {
+      showMessage(error?.message || "Die Passwort-Zurücksetzung ist fehlgeschlagen.");
+    }
+  });
+
+  setMode(mode);
+})();
+</script>
+</body>
+</html>
