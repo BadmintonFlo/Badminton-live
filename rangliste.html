@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BadminOne – Rangliste aus Mannschaften</title>
+
+<link rel="stylesheet" href="assets/css/style.css?v=externalized-20261029">
+<link rel="stylesheet" href="assets/css/badminton-header.css?v=shared-header-20261029">
+<style>
+/* Rangliste: Seitenhintergrund wie die übrige BadminOne-App; Header-CSS bleibt unangetastet. */
+html, body { background-color: #14253a !important; }
+body { color: #e8eef7; }
+#rankingMain, #rankingMain.page { background: transparent !important; }
+/* Nur ranglistenspezifische Elemente; Header und allgemeine Gestaltung kommen aus den gemeinsamen CSS-Dateien. */
+#rankingMain{width:min(100% - 28px,1020px);margin:auto;padding:23px 0 34px;color:#e8eef7}
+#rankingMain .ranking-card{min-width:0;margin-top:20px;padding:18px;background:#182635;border:1px solid #344357;border-radius:18px;color:#e8eef7}
+#rankingMain h2{margin:0 0 14px;color:#e8eef7;font-size:clamp(19px,3vw,24px);line-height:1.2}
+#rankingMain p{line-height:1.45;color:#d0dbea}
+#rankingMain .ranking-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;min-width:0}
+#rankingMain .ranking-team{min-width:0;border:1px solid #344357;border-radius:16px;padding:14px;margin:12px 0;background:#182635;color:#e8eef7}
+#rankingMain .ranking-team-head{display:grid;grid-template-columns:minmax(0,1fr) 100px;gap:10px;align-items:end;margin:8px 0}
+#rankingMain .ranking-player{display:grid;grid-template-columns:44px minmax(0,1fr) 70px;gap:10px;align-items:center;padding:10px 0;border-top:1px solid #344357;color:#e8eef7}
+#rankingMain .ranking-move{display:flex;gap:4px;min-width:0}
+#rankingMain .ranking-move button{min-width:0;min-height:36px;padding:6px;margin:0}
+#rankingMain .ranking-rank{font-weight:850;color:#8ecbff;text-align:center}
+#rankingMain .ranking-tag{display:inline-block;padding:4px 9px;border-radius:20px;background:#203d58;color:#c9e5ff;font-size:.8rem}
+#rankingMain .ranking-status{padding:12px;background:#1d334a;color:#e8eef7;border-radius:12px;margin-top:10px;white-space:pre-wrap;overflow-wrap:anywhere}
+#rankingMain .ranking-status.ok{background:#153d32;color:#a8f0d0}
+#rankingMain .ranking-status.bad{background:#482729;color:#ffd1d1}
+#rankingMain .ranking-hint{color:#b8c4d4;font-size:.9rem}
+#rankingMain label{display:block;margin:0 0 6px;color:#b8c4d4;font-size:13px;font-weight:750}
+#rankingMain input,#rankingMain select{display:block;width:100%;min-width:0;min-height:43px;padding:10px 12px;border:1px solid #45627f;border-radius:10px;background:#101722;color:#e8eef7;font:inherit}
+#rankingMain .btn{display:flex;width:100%;max-width:100%;min-width:0;margin-top:12px;white-space:normal;overflow-wrap:anywhere;word-break:normal;text-align:center;line-height:1.25;padding:12px;box-sizing:border-box}
+#rankingMain .profile-link{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 13px;border-radius:13px;background:#21374b;border:1px solid #344357;color:#e8eef7;font-weight:750;text-decoration:none}
+@media(max-width:560px){#rankingMain{width:calc(100% - 24px);padding:15px 0 30px}#rankingMain .ranking-card{padding:16px}#rankingMain .ranking-team-head{grid-template-columns:minmax(0,1fr) 85px}#rankingMain .ranking-player{grid-template-columns:34px minmax(0,1fr) 68px}}
+
+/* Einheitliche dunkle Auswahlmenüs statt nativer Android-/Browser-Auswahldialoge */
+.ranking-custom-select{position:relative;width:100%;color:#e8eef7}.ranking-select-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;padding:11px 12px;min-height:44px;border:1px solid #344357;border-radius:10px;background:#111c29!important;color:#e8eef7!important;font:inherit;color-scheme:dark}.ranking-select-menu{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:200;max-height:300px;overflow:auto;padding:6px;border:1px solid #496079;border-radius:11px;background:#182433!important;box-shadow:0 12px 30px #0009;color:#e8eef7!important;color-scheme:dark}.ranking-select-menu[hidden]{display:none}.ranking-select-option{display:block;width:100%;margin:0;padding:11px 10px;text-align:left;border:0;border-radius:7px;background:transparent!important;color:#e8eef7!important;font:inherit}.ranking-select-option:hover,.ranking-select-option[aria-selected="true"]{background:#244665!important}
+
+#rankingMain .directory-club{border:1px solid #344357;border-radius:14px;margin:10px 0;overflow:hidden;background:#142235}
+#rankingMain .directory-club>summary{padding:15px;font-weight:800;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px}
+#rankingMain .directory-club>summary::-webkit-details-marker{display:none}
+#rankingMain .directory-teams{padding:0 12px 12px}
+#rankingMain .directory-team{display:block;width:100%;text-align:left;margin:7px 0;padding:13px;border:1px solid #40536a;border-radius:11px;background:#20364d;color:#e8eef7;font:inherit;font-weight:700}
+#rankingMain .ranking-modal{position:fixed;inset:0;z-index:9999;background:#050b12d9;display:flex;align-items:center;justify-content:center;padding:16px}
+#rankingMain .ranking-modal[hidden]{display:none}
+#rankingMain .ranking-modal-panel{width:min(100%,620px);max-height:85vh;overflow:auto;background:#182635;border:1px solid #52657b;border-radius:18px;padding:18px;box-shadow:0 18px 55px #0009}
+#rankingMain .ranking-modal-head{position:sticky;top:-18px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-18px -18px 12px;padding:14px 18px;background:#182635;border-bottom:1px solid #40536a;border-radius:18px 18px 0 0}
+#rankingMain .ranking-modal-head h2{margin:0}
+#rankingMain .ranking-modal-panel{overscroll-behavior:contain}
+#rankingMain .ranking-modal-close{width:auto;min-width:44px;padding:8px 13px;background:#263d54;color:#fff;border:1px solid #50647b;border-radius:10px}
+
+#rankingMain details.editor-accordion>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}
+#rankingMain details.editor-accordion>summary::-webkit-details-marker{display:none}
+#rankingMain details.editor-accordion>summary:after{content:"＋";font-size:1.4rem;color:#8ecbff}
+#rankingMain details.editor-accordion[open]>summary:after{content:"−"}
+#rankingMain details.editor-accordion>summary h2{margin:0}
+#rankingMain .accordion-content{padding-top:14px}
+#rankingMain .ranking-player{grid-template-columns:52px minmax(0,1fr) 112px}
+#rankingMain .rank-position-input{width:56px!important;min-height:38px!important;padding:5px!important;text-align:center;font-weight:800}
+#rankingMain .ranking-move button{min-width:42px}
+</style></head>
+<body>
+<nav id="platformNav" aria-label="Hauptnavigation">
+  <div class="pn-brandbar">
+    <a class="pn-brand" href="index.html"><span class="pn-logo">🏸</span><span class="pn-brandtext"><strong>BadminOne</strong><small>ALL YOUR GAME IN ONE</small></span></a>
+    <div class="pn-actions">
+      <div class="pn-profile-wrap">
+        <a class="pn-profile-btn" id="profileLink" href="login.html?return=rangliste.html" aria-label="Profil und Anmeldung" title="Profil">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="pn-tiles" aria-label="Hauptbereiche">
+    <a href="index.html" class="pn-tile"><span class="pn-icon">⌂</span><span>Home</span></a>
+    <a href="vereine.html" class="pn-tile"><span class="pn-icon pn-vereine-icon-wrap" aria-hidden="true"></span><span>Vereine</span></a>
+    <a href="live.html" class="pn-tile"><span class="pn-icon pn-live">●</span><span>Live</span></a>
+    <a href="mannschaft.html" class="pn-tile"><span class="pn-icon pn-teams-icon-wrap"></span><span>Teams</span></a>
+    <details class="pn-more">
+      <summary><span class="pn-icon">•••</span><span>Mehr</span></summary>
+      <div class="pn-menu">
+        <a href="spielplan.html">Spielplan</a>
+        <a href="aufstellung.html">Aufstellungen</a>
+        <a href="spielbericht.html">Spielberichte</a>
+        <a href="spielerstatistik.html">Spieler</a>
+        <a href="rangliste.html" aria-current="page">Rangliste</a>
+        <a href="moderator.html">Moderator</a>
+        <a href="admin.html">Administration</a>
+      </div>
+    </details>
+  </div>
+</nav>
+<main id="rankingMain" class="page">
+<section class="ranking-card" id="authCard" hidden><h2 id="authTitle">Öffentliche Rangliste</h2><p id="authStatus" class="ranking-status">Die Rangliste kann ohne Anmeldung angesehen werden. Für die Bearbeitung ist eine Anmeldung erforderlich.</p><a id="authLink" class="profile-link" href="login.html?return=rangliste.html">Anmelden zum Bearbeiten</a></section>
+<div id="app">
+<section class="ranking-card" id="publicSearchCard">
+  <div class="ranking-grid" style="align-items:end">
+    <div><h2 style="margin-bottom:6px">Rangliste suchen</h2><p class="ranking-hint">Suche nach Verein, Mannschaft oder Spieler.</p></div>
+    <div><label for="globalSearch">Suchbegriff</label><input id="globalSearch" type="search" placeholder="Verein, Mannschaft oder Spieler suchen …"></div>
+  </div>
+  <div id="searchResults" class="ranking-status" hidden></div>
+</section>
+<section class="ranking-card" id="directoryCard"><h2>Alle Vereine und Ranglisten</h2><div id="clubDirectory" class="ranking-hint">Vereine werden geladen …</div></section>
+<section class="ranking-card" id="publicRankingCard">
+  <div class="ranking-grid" style="align-items:center">
+    <div><h2 style="margin-bottom:4px">Rangliste</h2><p class="ranking-hint">Öffentlich einsehbar. Bearbeiten dürfen nur berechtigte Vereinsverwalter.</p></div>
+    <div><button class="btn primary" id="editRankingBtn" hidden>Rangliste bearbeiten</button></div>
+  </div>
+</section>
+<div id="editor" hidden>
+<details class="ranking-card editor-accordion"><summary><h2>1. Verein und Saison</h2></summary><div class="accordion-content"><div class="ranking-grid"><div><label for="club">Verein</label><select id="club" aria-hidden="true" tabindex="-1" style="display:none"><option value="">Verein auswählen …</option></select><div id="clubPicker" class="ranking-custom-select" data-type="club"><button type="button" class="ranking-select-trigger" aria-expanded="false"><span>Verein auswählen …</span><span>▾</span></button><div class="ranking-select-menu" hidden></div></div></div><div><label for="season">Saison</label><input id="season" value="2026/2027" maxlength="20"></div><div><label for="gender">Rangliste</label><select id="gender" aria-hidden="true" tabindex="-1" style="display:none"><option value="Herren">Herren</option><option value="Damen">Damen</option></select><div id="genderPicker" class="ranking-custom-select" data-type="gender"><button type="button" class="ranking-select-trigger" aria-expanded="false"><span>Herren</span><span>▾</span></button><div class="ranking-select-menu" hidden><button type="button" class="ranking-select-option" data-value="Herren" aria-selected="true">Herren</button><button type="button" class="ranking-select-option" data-value="Damen" aria-selected="false">Damen</button></div></div></div></div><button class="btn primary" id="loadBtn">Mannschaften und Kader aus Mannschaftenverwaltung laden</button><div id="loadStatus" class="ranking-status">Wähle Verein und Saison.</div></div></details>
+<details class="ranking-card editor-accordion"><summary><h2>2. Mannschaftsreihenfolge</h2></summary><div class="accordion-content"><p class="ranking-hint">Die Reihenfolge hier ist verbindlich. Mannschaft 1 steht vor Mannschaft 2 usw. Die Kaderzuordnung selbst wird nicht verändert.</p><div id="teamOrderList" class="muted">Noch keine Mannschaften geladen.</div></div></details>
+<details class="ranking-card editor-accordion"><summary><h2>3. Rangfolge innerhalb der Mannschaften</h2></summary><div class="accordion-content"><p class="ranking-hint">Verschiebe Spieler innerhalb ihres Kaders. Die Gesamtplatzierung wird aus Mannschaftsreihenfolge und Spielerreihenfolge berechnet.</p><div id="rankingList" class="muted">Lade zuerst die Mannschaften.</div><button class="btn primary" id="saveBtn">Ranglistenreihenfolge speichern</button><div id="saveStatus" class="ranking-status" hidden></div></div></details>
+</div></div>
+<div id="rankingModal" class="ranking-modal" hidden role="dialog" aria-modal="true" aria-labelledby="rankingModalTitle">
+ <div class="ranking-modal-panel"><div class="ranking-modal-head"><h2 id="rankingModalTitle">Mannschaftsrangliste</h2><button type="button" class="ranking-modal-close" id="rankingModalClose" aria-label="Rangliste schließen">✕</button></div><div id="rankingModalBody"></div></div>
+</div></main>
+<script>
+'use strict';
+(async()=>{
+const $=id=>document.getElementById(id);
+function loadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.async=true;s.onload=()=>resolve();s.onerror=()=>{s.remove();reject(new Error('Laden fehlgeschlagen: '+src))};document.head.appendChild(s)})}
+async function ensureSupabase(){if(window.supabase?.createClient)return true;const sources=['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js','https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js','https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'];for(const src of sources){try{await loadScript(src);if(window.supabase?.createClient)return true}catch(e){console.warn(e.message)}}return !!window.supabase?.createClient}
+const loaded=await ensureSupabase();
+if(!loaded){$('authStatus').textContent='Supabase-Bibliothek konnte nicht geladen werden. Prüfe die Internetverbindung und öffne die Datei in Acode über Vorschau/Browser. Falls du eine lokale Datei-Vorschau nutzt, teste die HTML bitte über deine normale BadminOne-Webadresse.';$('authStatus').className='status bad';return}
+const URL='https://apsarswjmsrmffoyxsgr.supabase.co',KEY='sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj';
+const sb=window.supabase.createClient(URL,KEY);
+let user=null,isAdmin=false,canEdit=false,managed=[],clubTeams=[],rosters=[],rankSeason=null,rankTeams=[],entries=[],sgPreview=[];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function msg(id,text,kind=''){const e=$(id);e.hidden=false;e.className='ranking-status '+(kind==='bad'?'bad':kind==='ok'?'ok':'');e.textContent=text}
+function normalizeGender(g){
+ const s=String(g||'').trim().toLocaleLowerCase('de');
+ if(['frauen','frau','female','f','w','weiblich','damen','dame'].includes(s)||s.startsWith('damen'))return 'Damen';
+ if(['männer','maenner','mann','male','m','männlich','herren','herr'].includes(s)||s.startsWith('herren'))return 'Herren';
+ return 'Herren';
+}
+async function init(){
+ const {data:{session},error}=await sb.auth.getSession();
+ if(error){msg('authStatus','Anmeldestatus konnte nicht geprüft werden: '+error.message,'bad');return}
+ user=session?.user||null;
+ await loadClubs();
+ setAccessState();
+ sb.auth.onAuthStateChange(async(_ev,s)=>{user=s?.user||null;await loadClubs();setAccessState()});
+}
+function setAccessState(){
+ canEdit=!!user&&managed.includes(clubId());
+ $('authCard').hidden=true;$('app').hidden=false;
+ $('editRankingBtn').hidden=!(!!user&&managed.length>0);
+ $('saveBtn').hidden=!canEdit;
+ $('teamOrderList').parentElement.hidden=!canEdit;
+ $('editor').hidden=true;
+}
+async function loadClubs(){
+ const [{data:mr,error:me},{data:cs,error:ce}]=await Promise.all([
+  user?sb.from('club_managers').select('club_id').eq('user_id',user.id):Promise.resolve({data:[],error:null}),
+  sb.from('clubs').select('id,name,city,archived_at').eq('is_published',true).is('archived_at',null).order('name')
+ ]);
+ if(me||ce){msg('loadStatus','Vereine konnten nicht geladen werden: '+(me||ce).message,'bad');return}
+ managed=(mr||[]).map(x=>x.club_id);
+ const available=cs||[];
+ if(!$('club').value && managed.length===1 && available.some(c=>c.id===managed[0])) $('club').value=managed[0];
+ $('club').innerHTML='<option value="">Verein auswählen …</option>'+available.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}${c.city?' · '+esc(c.city):''}</option>`).join('');
+ const picker=$('clubPicker');
+ picker.querySelector('.ranking-select-menu').innerHTML=[{id:'',label:'Verein auswählen …'},...available.map(c=>({id:c.id,label:c.name+(c.city?' · '+c.city:'')}))].map(c=>`<button type="button" class="ranking-select-option" data-value="${esc(c.id)}" aria-selected="false">${esc(c.label)}</button>`).join('');
+ const selected=available.find(c=>c.id===$('club').value);
+ picker.querySelector('.ranking-select-trigger span').textContent=selected?(selected.name+(selected.city?' · '+selected.city:'')):'Verein auswählen …';
+ picker.querySelectorAll('.ranking-select-option').forEach(o=>o.setAttribute('aria-selected',String(o.dataset.value===$('club').value)));
+ bindRankingSelects();setAccessState();
+}
+function bindRankingSelects(){
+ document.querySelectorAll('.ranking-select-trigger').forEach(b=>b.onclick=()=>{
+  const menu=b.nextElementSibling,opening=menu.hidden;
+  document.querySelectorAll('.ranking-select-menu').forEach(m=>m.hidden=true);
+  document.querySelectorAll('.ranking-select-trigger').forEach(x=>x.setAttribute('aria-expanded','false'));
+  menu.hidden=!opening;b.setAttribute('aria-expanded',String(opening));
+ });
+ document.querySelectorAll('.ranking-select-option').forEach(o=>o.onclick=()=>{
+  const wrap=o.closest('.ranking-custom-select');if(!wrap)return;
+  const type=wrap.dataset.type,value=o.dataset.value||'';
+  wrap.querySelector('.ranking-select-menu').hidden=true;
+  wrap.querySelector('.ranking-select-trigger').setAttribute('aria-expanded','false');
+  wrap.querySelectorAll('.ranking-select-option').forEach(x=>x.setAttribute('aria-selected',String(x===o)));
+  wrap.querySelector('.ranking-select-trigger span').textContent=o.textContent.trim();
+  const sel=$(type==='club'?'club':'gender');sel.value=value;
+  sel.dispatchEvent(new Event('change',{bubbles:true}));
+ });
+ if(!document.body.dataset.rankingSelectOutside){
+  document.addEventListener('click',e=>{
+   if(!e.target.closest('.ranking-custom-select')){
+    document.querySelectorAll('.ranking-select-menu').forEach(m=>m.hidden=true);
+    document.querySelectorAll('.ranking-select-trigger').forEach(b=>b.setAttribute('aria-expanded','false'));
+   }
+  });
+  document.body.dataset.rankingSelectOutside='1';
+ }
+}
+function clubId(){return $('club').value}
+async function loadFromTeams(){if(!clubId()||!$('season').value.trim()){msg('loadStatus','Bitte Verein und Saison ausfüllen.','bad');return}
+ if(!canEdit){return loadPublicRanking()}
+ msg('loadStatus','Mannschaften und Kader werden aus Supabase geladen …');
+const {data:ts,error:te}=await sb.from('club_teams').select('id,name,season,league,league_level,is_active').eq('club_id',clubId()).eq('season',$('season').value.trim()).order('name');
+if(te){msg('loadStatus','Mannschaften konnten nicht geladen werden: '+te.message,'bad');return}
+clubTeams=(ts||[]).filter(t=>t.is_active!==false);
+if(!clubTeams.length){rankTeams=[];entries=[];render();msg('loadStatus','Für diesen Verein und diese Saison wurden keine Mannschaften gefunden. Bitte zuerst Mannschaften.html verwenden.','bad');return}
+const ids=clubTeams.map(t=>t.id);
+const {data:as,error:ae}=await sb.from('club_team_players').select('id,team_id,player_id,assignment_role').in('team_id',ids);
+if(ae){msg('loadStatus','Kader konnten nicht geladen werden: '+ae.message,'bad');return}
+const playerIds=[...new Set((as||[]).map(a=>a.player_id))];
+let ps=[];
+if(playerIds.length){const {data,error}=await sb.from('players').select('id,name,gender,active,club_id').in('id',playerIds);if(error){msg('loadStatus','Spielerdaten konnten nicht geladen werden: '+error.message,'bad');return}ps=data||[]}
+// Freigegebene SG-Spieler werden nur angezeigt; keine Änderung ihrer Vereinszugehörigkeit.
+sgPreview=[];
+const {data:sgs,error:sgError}=await sb.from('club_partnerships').select('id,name').eq('carrier_club_id',clubId()).eq('season',$('season').value.trim()).eq('status','active');
+if(sgError){msg('loadStatus','Spielgemeinschaften konnten nicht geladen werden: '+sgError.message,'bad');return}
+if(sgs?.length){
+ const {data:rel,error:relError}=await sb.from('club_partnership_player_releases').select('partnership_id,player_id,partner_club_id,status').in('partnership_id',sgs.map(x=>x.id)).eq('status','released');
+ if(relError){msg('loadStatus','SG-Spielerfreigaben konnten nicht geladen werden: '+relError.message,'bad');return}
+ if(rel?.length){const {data:rp,error:rpError}=await sb.from('players').select('id,name,gender,club_id,active').in('id',[...new Set(rel.map(x=>x.player_id))]);
+ if(rpError){msg('loadStatus','Freigegebene Spieler konnten nicht geladen werden: '+rpError.message,'bad');return}
+ sgPreview=(rp||[]).filter(p=>p.active!==false&&rel.some(x=>String(x.player_id)===String(p.id)&&String(x.partner_club_id)===String(p.club_id))).map(p=>({...p,partnerships:rel.filter(x=>String(x.player_id)===String(p.id)).map(x=>sgs.find(z=>z.id===x.partnership_id)?.name).filter(Boolean)}));
+ }
+}
+const pmap=new Map(ps.filter(p=>p.active!==false).map(p=>[String(p.id),p]));
+const {data:seasonRows,error:se}=await sb.from('ranking_seasons').select('id,club_id,season,label,is_active').eq('club_id',clubId()).eq('season',$('season').value.trim()).limit(1);
+if(se){msg('loadStatus','Saisonranglisten-Tabelle nicht verfügbar: '+se.message,'bad');return}
+if(seasonRows?.length)rankSeason=seasonRows[0];else{const {data,error}=await sb.from('ranking_seasons').insert({club_id:clubId(),season:$('season').value.trim(),label:'Rangliste '+$('season').value.trim(),is_active:true,created_by:user.id}).select('id,club_id,season,label,is_active').single();if(error){msg('loadStatus','Saison konnte nicht angelegt werden: '+error.message,'bad');return}rankSeason=data}
+const {data:existing,error:xe}=await sb.from('ranking_season_teams').select('id,season_id,team_name,team_order,source_club_team_id').eq('season_id',rankSeason.id).order('team_order');
+if(xe){msg('loadStatus','Ranglisten-Mannschaften konnten nicht geladen werden. Falls source_club_team_id fehlt, bitte zuerst die beigefügte SQL-Migration ausführen. '+xe.message,'bad');return}
+const existingBySource=new Map((existing||[]).filter(t=>t.source_club_team_id).map(t=>[String(t.source_club_team_id),t]));
+rankTeams=[];
+for(let i=0;i<clubTeams.length;i++){
+ const t=clubTeams[i];let rt=existingBySource.get(String(t.id));
+ if(!rt){const {data,error}=await sb.from('ranking_season_teams').insert({season_id:rankSeason.id,team_name:t.name,team_order:i+1,source_club_team_id:t.id}).select('id,season_id,team_name,team_order,source_club_team_id').single();if(error){msg('loadStatus','Mannschaft '+t.name+' konnte nicht in Rangliste übernommen werden: '+error.message,'bad');return}rt=data}
+ rankTeams.push({...rt,source:t});
+}
+const {data:oldEntries,error:oe}=await sb.from('ranking_season_entries').select('id,season_id,team_id,player_id,gender,team_rank_position,rank_position').eq('season_id',rankSeason.id);
+if(oe){msg('loadStatus','Ranglisteneinträge konnten nicht geladen werden: '+oe.message,'bad');return}
+const oldByPlayer=new Map((oldEntries||[]).map(e=>[String(e.player_id),e]));
+entries=[];
+for(const rt of rankTeams){
+ const teamAssignments=(as||[]).filter(a=>String(a.team_id)===String(rt.source.id));
+ const teamPlayers=teamAssignments.map(a=>({assignment:a,player:pmap.get(String(a.player_id))})).filter(x=>x.player);
+ for(const gender of ['Herren','Damen']){
+  const same=teamPlayers.filter(x=>normalizeGender(x.player.gender)===gender).sort((a,b)=>a.player.name.localeCompare(b.player.name,'de'));
+  let pos=1;
+  for(const x of same){
+   const old=oldByPlayer.get(String(x.player.id));
+   if(old){entries.push({...old,team_id:rt.id,gender,rank_position:old.rank_position??null,player:x.player,team_order:rt.team_order,team_name:rt.team_name,source_assignment_id:x.assignment.id});}
+   else {entries.push({id:null,season_id:rankSeason.id,team_id:rt.id,player_id:x.player.id,gender,team_rank_position:pos,rank_position:null,player:x.player,team_order:rt.team_order,team_name:rt.team_name,source_assignment_id:x.assignment.id});}
+   pos++;
+  }
+ }
+}
+// Keep existing internal order; append newly added roster players after current entries for their team+gender.
+for(const rt of rankTeams)for(const gender of ['Herren','Damen']){
+ const list=entries.filter(e=>String(e.team_id)===String(rt.id)&&e.gender===gender).sort((a,b)=>(a.team_rank_position||9999)-(b.team_rank_position||9999)||a.player.name.localeCompare(b.player.name,'de'));
+ list.forEach((e,i)=>{e.team_rank_position=i+1});
+}
+for(const gender of ['Herren','Damen']){
+ const globalList=entries.filter(e=>e.gender===gender).sort((a,b)=>(a.rank_position||999999)-(b.rank_position||999999)||(a.team_order||9999)-(b.team_order||9999)||(a.team_rank_position||9999)-(b.team_rank_position||9999));
+ globalList.forEach((e,i)=>{e.rank_position=i+1});
+}
+render();msg('loadStatus',`Übernahme abgeschlossen: ${rankTeams.length} Mannschaft(en), ${entries.length} Spielerzuordnungen aus Mannschaften.html geladen. Die Kaderzuordnung wurde nicht verändert.`,'ok')}
+async function loadPublicRanking(){
+ if(!clubId()){msg('loadStatus','Bitte einen Verein auswählen.');return}
+ msg('loadStatus','Öffentliche Rangliste wird geladen …');
+ const season=$('season').value.trim(),gender=$('gender').value;
+ const {data:viewRows,error:viewError}=await sb.from('public_ranking_view').select('season_id,club_id,club_name,season,gender,rank_position,player_name,team_name').eq('club_id',clubId()).eq('season',season).eq('gender',gender).order('rank_position');
+ if(viewError) console.warn('Public view:',viewError.message);
+ let rows=viewRows||[];
+ // Noch nicht initialisierte Saison: vorhandene Mannschaften und Kader direkt öffentlich lesen.
+ if(!rows.length){
+  const {data:teams,error:teamError}=await sb.from('club_teams').select('id,name,season,is_active').eq('club_id',clubId()).eq('season',season).eq('is_active',true).order('name');
+  if(teamError){msg('loadStatus','Mannschaften konnten nicht geladen werden: '+teamError.message,'bad');return}
+  const tids=(teams||[]).map(t=>t.id);
+  if(tids.length){
+   const {data:assignments,error:assignError}=await sb.from('club_team_players').select('team_id,player_id').in('team_id',tids);
+   if(assignError){msg('loadStatus','Kader konnten nicht geladen werden: '+assignError.message,'bad');return}
+   const pids=[...new Set((assignments||[]).map(a=>a.player_id))];
+   if(pids.length){
+    const {data:players,error:playerError}=await sb.from('players').select('id,name,gender,active').in('id',pids);
+    if(playerError){msg('loadStatus','Spieler konnten nicht geladen werden: '+playerError.message,'bad');return}
+    const pmap=new Map((players||[]).filter(p=>p.active!==false).map(p=>[String(p.id),p]));
+    rows=(assignments||[]).map(a=>({team_name:teams.find(t=>t.id===a.team_id)?.name,player:pmap.get(String(a.player_id))})).filter(x=>x.player&&normalizeGender(x.player.gender)===gender).map((x,i)=>({rank_position:i+1,player_name:x.player.name,team_name:x.team_name}));
+   }
+  }
+ }
+ $('teamOrderList').parentElement.hidden=true;$('saveBtn').hidden=true;
+ const grouped=new Map();for(const r of rows){if(!grouped.has(r.team_name))grouped.set(r.team_name,[]);grouped.get(r.team_name).push(r)}
+ $('rankingList').innerHTML=rows.length?[...grouped.entries()].map(([team,list])=>`<article class="ranking-team"><strong>${esc(team)}</strong><span class="ranking-tag">${list.length} Spieler</span>${list.map((r,i)=>`<div class="ranking-player"><div class="ranking-rank">${i+1}</div><div>${esc(r.player_name)}</div><div></div></div>`).join('')}</article>`).join(''):'<p class="ranking-hint">Für diesen Verein und diese Saison sind noch keine aktiven Spieler in Mannschaftskadern hinterlegt.</p>';
+ msg('loadStatus',viewRows?.length?'Gespeicherte Rangliste geladen.':'Mannschaften und Spieler aus dem aktuellen Kader angezeigt.','ok');
+}
+function render(){
+ const order=[...rankTeams].sort((a,b)=>a.team_order-b.team_order);
+ $('teamOrderList').innerHTML=order.length?order.map((t,i)=>`<div class="ranking-team-head" style="margin:8px 0"><div><label>Mannschaft ${i+1}</label><input value="${esc(t.team_name)}" readonly></div><div class="ranking-move"><button class="secondary" onclick="moveTeam('${t.id}',-1)" ${i===0?'disabled':''}>↑</button><button class="secondary" onclick="moveTeam('${t.id}',1)" ${i===order.length-1?'disabled':''}>↓</button></div></div>`).join(''):'Noch keine Mannschaften geladen.';
+ const g=$('gender').value;
+ const list=entries.filter(e=>e.gender===g).sort((a,b)=>(a.rank_position||999999)-(b.rank_position||999999));
+ $('rankingList').innerHTML=list.length?list.map((e,i)=>`<div class="ranking-player"><div><input class="rank-position-input" type="number" min="1" max="${list.length}" value="${i+1}" aria-label="Ranglistenplatz für ${esc(e.player.name)}" onchange="setPlayerPosition('${e.player_id}',this.value)"></div><div><strong>${esc(e.player.name)}</strong><div class="ranking-hint">${esc(e.team_name||'Mannschaft nicht zugeordnet')}</div></div><div class="ranking-move"><button class="secondary" data-move-player="${esc(e.player_id)}" data-direction="-1" ${i===0?'disabled':''}>↑</button><button class="secondary" data-move-player="${esc(e.player_id)}" data-direction="1" ${i===list.length-1?'disabled':''}>↓</button></div></div>`).join(''):'Keine Spieler geladen.';
+ const extra=sgPreview.filter(p=>normalizeGender(p.gender)===g&&!entries.some(e=>String(e.player_id)===String(p.id)));
+ if(extra.length)$('rankingList').innerHTML+=`<article class="ranking-team"><strong>Freigegebene SG-Spieler (noch nicht in der Rangliste)</strong>${extra.map(p=>`<div class="ranking-player"><div>–</div><div>${esc(p.name)}<div class="ranking-hint">${esc(p.partnerships.join(', '))}</div></div><div></div></div>`).join('')}</article>`;
+ window.moveTeam=function(id,dir){const list=[...rankTeams].sort((a,b)=>a.team_order-b.team_order),i=list.findIndex(t=>String(t.id)===String(id)),j=i+dir;if(i<0||j<0||j>=list.length)return;[list[i],list[j]]=[list[j],list[i]];list.forEach((t,n)=>t.team_order=n+1);rankTeams=list;render()};
+ window.movePlayer=function(id,dir){const g=$('gender').value,list=entries.filter(x=>x.gender===g).sort((a,b)=>(a.rank_position||999999)-(b.rank_position||999999)),i=list.findIndex(x=>String(x.player_id)===String(id)),j=i+dir;if(i<0||j<0||j>=list.length)return;[list[i].rank_position,list[j].rank_position]=[list[j].rank_position,list[i].rank_position];list.forEach((e,n)=>e.rank_position=n+1);render()};
+ window.setPlayerPosition=function(id,value){const g=$('gender').value,list=entries.filter(x=>x.gender===g).sort((a,b)=>(a.rank_position||999999)-(b.rank_position||999999)),e=list.find(x=>String(x.player_id)===String(id));if(!e)return;const target=Math.max(1,Math.min(list.length,Number(value)||1)),old=list.indexOf(e);list.splice(old,1);list.splice(target-1,0,e);list.forEach((x,i)=>x.rank_position=i+1);render()};
+}
+$('rankingList').addEventListener('click',ev=>{
+ const btn=ev.target.closest('[data-move-player]');
+ if(!btn)return;
+ ev.preventDefault();
+ window.movePlayer?.(btn.dataset.movePlayer,Number(btn.dataset.direction));
+});
+async function saveRanking(){
+ if(!rankSeason)return msg('saveStatus','Bitte zuerst Mannschaften laden.','bad');
+ $('saveBtn').disabled=true;
+ msg('saveStatus','Ranglistenreihenfolge wird gespeichert …');
+ const fail=(label,error)=>{$('saveBtn').disabled=false;msg('saveStatus',label+': '+error.message,'bad')};
+ // Mannschaftsplätze zunächst auf eindeutige, positive Zwischenwerte setzen.
+ for(let i=0;i<rankTeams.length;i++){
+  const t=rankTeams[i],{error}=await sb.from('ranking_season_teams').update({team_order:1000000+i}).eq('id',t.id);
+  if(error)return fail('Mannschaftsreihenfolge konnte nicht vorbereitet werden',error);
+ }
+ for(const t of rankTeams){
+  const {error}=await sb.from('ranking_season_teams').update({team_order:t.team_order}).eq('id',t.id);
+  if(error)return fail('Mannschaftsreihenfolge konnte nicht gespeichert werden',error);
+ }
+ const g=$('gender').value;
+ const selected=entries.filter(e=>e.gender===g).sort((a,b)=>(a.rank_position||999999)-(b.rank_position||999999));
+ // Unique partial index + positive check: alle bestehenden Plätze mit eindeutigen POSITIVEN Werten freimachen.
+ const {data:existingGender,error:eg}=await sb.from('ranking_season_entries')
+  .select('id').eq('season_id',rankSeason.id).eq('gender',g);
+ if(eg)return fail('Bestehende Positionen konnten nicht vorbereitet werden',eg);
+ for(let i=0;i<(existingGender||[]).length;i++){
+  const {error}=await sb.from('ranking_season_entries')
+   .update({team_rank_position:1000000+i,rank_position:2000000+i}).eq('id',existingGender[i].id);
+  if(error)return fail('Positionen konnten nicht freigemacht werden',error);
+ }
+ // Aktuelle Liste auf weitere eindeutige positive Zwischenwerte setzen (auch neue Spieler).
+ for(let i=0;i<selected.length;i++){
+  const e=selected[i],payload={season_id:rankSeason.id,team_id:e.team_id,player_id:e.player_id,gender:e.gender,
+   team_rank_position:3000000+i,rank_position:4000000+i};
+  let result;
+  if(e.id)result=await sb.from('ranking_season_entries').update(payload).eq('id',e.id).select('id').single();
+  else result=await sb.from('ranking_season_entries').upsert(payload,{onConflict:'season_id,player_id'}).select('id').single();
+  if(result.error)return fail('Spieler konnte nicht vorbereitet werden',result.error);
+  e.id=result.data?.id||e.id;
+ }
+ // Endgültige Plätze schreiben; globale Position und Mannschaftsplatz bleiben konsistent.
+ for(let i=0;i<selected.length;i++){
+  const e=selected[i],{error}=await sb.from('ranking_season_entries').update({
+   team_id:e.team_id,gender:e.gender,team_rank_position:e.team_rank_position,rank_position:i+1
+  }).eq('id',e.id);
+  if(error)return fail('Endgültige Ranglistenposition konnte nicht gespeichert werden',error);
+ }
+ $('saveBtn').disabled=false;
+ msg('saveStatus','Gespeichert. Die Rangfolge wurde aktualisiert; die öffentliche Übersicht verwendet dieselbe Reihenfolge. Mannschafts- und Spielerzuordnungen im Kader bleiben unverändert.','ok');
+ render();
+}
+$('editRankingBtn').addEventListener('click',async()=>{
+ if(!user||!managed.length){msg('loadStatus','Für dein Konto wurde keine Vereinsmanager-Berechtigung gefunden. Bitte prüfe den Eintrag in club_managers.','bad');return}
+ if(!managed.includes(clubId())){
+  const firstManaged=managed[0];
+  $('club').value=firstManaged;
+  const option=[...$('clubPicker').querySelectorAll('.ranking-select-option')].find(o=>o.dataset.value===firstManaged);
+  if(option){
+   $('clubPicker').querySelector('.ranking-select-trigger span').textContent=option.textContent.trim();
+   $('clubPicker').querySelectorAll('.ranking-select-option').forEach(o=>o.setAttribute('aria-selected',String(o===option)));
+  }
+ }
+ setAccessState();
+ if(!canEdit){msg('loadStatus','Dein Vereinsmanager-Eintrag konnte dem ausgewählten Verein nicht zugeordnet werden.','bad');return}
+ $('editor').hidden=false;$('editor').scrollIntoView({behavior:'smooth',block:'start'});
+ await loadFromTeams();
+});
+let directoryData=[];
+async function loadPublicDirectory(query=''){
+ const host=$('clubDirectory');host.textContent='Vereine und Mannschaften werden geladen …';
+ const [{data:clubs,error:ce},{data:teams,error:te}]=await Promise.all([
+  sb.from('clubs').select('id,name,city').eq('is_published',true).is('archived_at',null).order('name'),
+  sb.from('club_teams').select('id,name,season,club_id,is_active').eq('is_active',true).order('name')
+ ]);
+ if(ce||te){host.textContent='Übersicht konnte nicht geladen werden: '+(ce||te).message;return}
+ const validTeams=teams||[],teamIds=validTeams.map(t=>t.id);
+ let assignments=[],players=[];
+ if(teamIds.length){
+  const {data:a,error:ae}=await sb.from('club_team_players').select('team_id,player_id').in('team_id',teamIds);
+  if(ae){host.textContent='Mannschaftskader konnten nicht geladen werden: '+ae.message;return}
+  assignments=a||[];
+  const ids=[...new Set(assignments.map(a=>a.player_id))];
+  if(ids.length){
+   const {data:ps,error:pe}=await sb.from('players').select('id,name,gender,active').in('id',ids);
+   if(pe){host.textContent='Spieler konnten nicht geladen werden: '+pe.message;return}
+   players=(ps||[]).filter(x=>x.active!==false);
+  }
+ }
+ const pmap=new Map(players.map(p=>[String(p.id),p]));
+ directoryData=(clubs||[]).map(c=>{
+  const own=validTeams.filter(t=>String(t.club_id)===String(c.id)).map(t=>({...t,players:assignments.filter(a=>String(a.team_id)===String(t.id)).map(a=>pmap.get(String(a.player_id))).filter(Boolean)}));
+  return {...c,teams:own};
+ });
+ renderDirectory(query);
+}
+function renderDirectory(query=''){
+ const host=$('clubDirectory'),q=query.trim().toLocaleLowerCase('de');
+ const clubs=directoryData.map(c=>{
+  const clubMatch=!q||c.name.toLocaleLowerCase('de').includes(q)||(c.city||'').toLocaleLowerCase('de').includes(q);
+  const matchingTeams=c.teams.filter(t=>!q||clubMatch||t.name.toLocaleLowerCase('de').includes(q)||t.players.some(p=>p.name.toLocaleLowerCase('de').includes(q)));
+  const matched=clubMatch?c.teams:matchingTeams;
+  return {...c,visibleTeams:matched,visible:clubMatch||matchingTeams.length>0};
+ }).filter(c=>c.visible);
+ host.innerHTML=clubs.length?clubs.map(c=>`<details class="directory-club"><summary><span>${esc(c.name)}${c.city?' · '+esc(c.city):''}</span><span>${c.visibleTeams.length} Mannschaft(en) ▾</span></summary><div class="directory-teams">${c.visibleTeams.length?c.visibleTeams.map(t=>`<button type="button" class="directory-team" data-team="${esc(t.id)}">${esc(t.name)}${t.season?' · '+esc(t.season):''}<span class="ranking-hint" style="display:block;font-weight:400">${t.players.length} aktive Spieler · Rangliste öffnen</span></button>`).join(''):'<p class="ranking-hint">Keine Mannschaften hinterlegt.</p>'}</div></details>`).join(''):'<p class="ranking-hint">Keine passenden Vereine, Mannschaften oder Spieler gefunden.</p>';
+ host.querySelectorAll('[data-team]').forEach(b=>b.addEventListener('click',()=>openTeamRanking(b.dataset.team)));
+}
+async function openTeamRanking(teamId){
+ const team=directoryData.flatMap(c=>c.teams.map(t=>({...t,club:c}))).find(t=>String(t.id)===String(teamId));
+ if(!team)return;
+ $('rankingModalTitle').textContent=team.club.name+' · '+team.name;
+ const body=$('rankingModalBody');body.innerHTML='<p class="ranking-hint">Rangliste wird geladen …</p>';$('rankingModal').hidden=false;
+ // Stored rank order first; if no published ranking exists yet, use active team roster as an initial alphabetical list.
+ let ranked=[];
+ const {data:seasonRows}=await sb.from('ranking_seasons').select('id').eq('club_id',team.club.id).eq('season',team.season||'').limit(1);
+ if(seasonRows?.length){
+  const {data:rankRows}=await sb.from('public_ranking_view').select('gender,rank_position,player_name,team_name').eq('season_id',seasonRows[0].id).eq('team_name',team.name).order('rank_position');
+  if(rankRows?.length)ranked=rankRows;
+ }
+ if(!ranked.length)ranked=team.players.slice().sort((a,b)=>a.name.localeCompare(b.name,'de')).map((p,i)=>({gender:normalizeGender(p.gender),rank_position:i+1,player_name:p.name,team_name:team.name}));
+ const sections=['Herren','Damen'].map(g=>{
+  const list=ranked.filter(r=>normalizeGender(r.gender)===g);
+  return `<h3>${g}</h3>${list.length?list.map((r,i)=>`<div class="ranking-player"><div class="ranking-rank">${i+1}</div><div>${esc(r.player_name)}</div><div></div></div>`).join(''):'<p class="ranking-hint">Keine Spieler eingetragen.</p>'}`;
+ }).join('');
+ body.innerHTML=sections;
+}
+$('rankingModalClose').addEventListener('click',()=>$('rankingModal').hidden=true);
+$('rankingModal').addEventListener('click',e=>{if(e.target===$('rankingModal'))$('rankingModal').hidden=true});
+$('globalSearch').addEventListener('input',()=>renderDirectory($('globalSearch').value));
+$('loadBtn').addEventListener('click',loadFromTeams);$('saveBtn').addEventListener('click',saveRanking);$('gender').addEventListener('change',()=>{if(!canEdit&&clubId())loadPublicRanking();else render()});$('club').addEventListener('change',()=>{setAccessState();if(clubId())loadPublicRanking()});loadPublicDirectory().catch(e=>{ $('clubDirectory').textContent='Fehler beim Laden: '+e.message });init().catch(e=>msg('authStatus','Fehler: '+e.message,'bad'));
+})().catch(e=>{const el=document.getElementById('authStatus');if(el){el.textContent='Startfehler: '+e.message;el.className='status bad'}});
+</script></body></html>
