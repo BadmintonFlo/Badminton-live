@@ -15,7 +15,7 @@ const items = {
   schedule: {label:"Spielplan",icon:"▦",href:"spielplan.html",desc:"Termine deiner Mannschaften",auth:true},
   lineup: {label:"Aufstellungen",icon:"📝",href:"aufstellung.html",desc:"Aufstellungen verwalten",auth:true},
   reports: {label:"Spielberichte",icon:"📄",href:"spielbericht.html",desc:"Spielberichte",auth:true},
-  ranking: {label:"Rangliste",icon:"🏸",href:"Rangliste.html",desc:"Ranglisten und Statistiken"},
+  ranking: {label:"Rangliste",icon:"🏸",href:"rangliste.html",desc:"Ranglisten und Statistiken"},
   moderator: {label:"Moderator",icon:"🎮",href:"moderator.html",desc:"Moderationsfunktionen",roles:["moderator","scorer","admin"]},
   admin: {label:"Administration",icon:"⚙️",href:"admin.html",desc:"Systemverwaltung",roles:["admin"]}
 };
