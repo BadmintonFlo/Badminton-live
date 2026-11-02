@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101722">
+<title>BadminOne · Mein Profil</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/badminton-header.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{color-scheme:dark}
+.profile-page{width:min(100% - 28px,900px);margin:28px auto 60px}
+.profile-hero{padding:24px;border:1px solid var(--border,#34465a);border-radius:20px;background:linear-gradient(135deg,#1a2b3e,#142131)}
+.profile-hero .eyebrow{color:#8ecbff;font-size:12px;font-weight:800;letter-spacing:.12em}
+.profile-hero h1{margin:8px 0;font-size:clamp(26px,5vw,38px)}
+.profile-hero p{color:#bdcbd9;line-height:1.55;margin:0}
+.profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}
+.profile-card{min-width:0;padding:20px;border:1px solid var(--border,#34465a);border-radius:17px;background:rgba(20,32,47,.82)}
+.profile-card h2{font-size:18px;margin:0 0 14px}
+.profile-label{display:block;color:#aebed0;font-size:12px;font-weight:750;margin-bottom:6px}
+.profile-value{overflow-wrap:anywhere;font-size:15px;font-weight:650}
+.profile-code{font-size:clamp(19px,4vw,25px);letter-spacing:.07em;font-weight:900;color:#9bd2ff;overflow-wrap:anywhere;margin:12px 0}
+.profile-muted{color:#aebed0;font-size:13px;line-height:1.5}
+.profile-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.profile-btn{border:1px solid #53677e;border-radius:11px;padding:11px 15px;background:#263d54;color:#fff;font:inherit;font-weight:750;cursor:pointer}
+.profile-btn.primary{background:#2878b9;border-color:#2878b9}
+.profile-btn:disabled{opacity:.55;cursor:wait}
+.profile-message{padding:12px 14px;border-radius:12px;margin-top:14px;background:#482729;color:#ffd4d4;line-height:1.45}
+.profile-message.ok{background:#153d32;color:#c9f4df}
+.profile-message[hidden]{display:none}
+.profile-status{display:inline-flex;align-items:center;gap:7px;color:#bfe9d0;font-size:13px;font-weight:750}
+.profile-status:before{content:"";width:8px;height:8px;border-radius:50%;background:#54cf8b}
+.profile-list{padding-left:18px;color:#d8e2ec;line-height:1.7}
+@media(max-width:650px){.profile-grid{grid-template-columns:1fr}.profile-hero{padding:20px}.profile-card{padding:17px}}
+</style>
+</head>
+<body>
+<nav id="platformNav" aria-label="Hauptnavigation">
+  <div class="pn-brandbar">
+    <a class="pn-brand" href="index.html" aria-label="BadminOne – Startseite">
+      <span class="pn-logo">🏸</span><span class="pn-brandtext"><strong>BadminOne</strong><small>ALL YOUR GAME IN ONE</small></span>
+    </a>
+    <div class="pn-actions">
+      <a class="pn-profile-btn" href="profil.html" aria-label="Mein Profil" title="Mein Profil">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>
+      </a>
+    </div>
+  </div>
+  <div class="pn-tiles" aria-label="Hauptbereiche">
+    <a href="index.html" class="pn-tile"><span class="pn-icon">⌂</span><span>Home</span></a>
+    <a href="vereine.html" class="pn-tile"><span class="pn-icon">♜</span><span>Vereine</span></a>
+    <a href="live.html" class="pn-tile"><span class="pn-icon pn-live">●</span><span>Live</span></a>
+    <a href="mannschaft.html" class="pn-tile"><span class="pn-icon">♟</span><span>Teams</span></a>
+    <details class="pn-more"><summary><span class="pn-icon">•••</span><span>Mehr</span></summary>
+      <div class="pn-menu">
+        <a href="spielplan.html">Spielplan</a><a href="aufstellung.html">Aufstellungen</a>
+        <a href="spielbericht.html">Spielberichte</a><a href="spielerstatistik.html">Spieler</a>
+        <a href="rangliste.html">Rangliste</a><a href="moderator.html">Moderator</a><a href="admin.html">Administration</a>
+      </div>
+    </details>
+  </div>
+</nav>
+
+<main class="profile-page">
+  <section class="profile-hero">
+    <p class="eyebrow">BADMINTON · VEREINSPLATTFORM</p>
+    <h1>Mein Profil</h1>
+    <p>Hier findest du deine Kontoinformationen und deinen persönlichen BadminOne-Code für die sichere Zuordnung zu einem Spielerprofil.</p>
+  </section>
+
+  <div id="profileMessage" class="profile-message" role="status" aria-live="polite" hidden></div>
+
+  <section class="profile-grid" aria-label="Kontoinformationen">
+    <article class="profile-card">
+      <h2>Persönliche Angaben</h2>
+      <span class="profile-label">Name</span>
+      <div class="profile-value" id="profileName">Wird geladen …</div>
+      <div style="height:14px"></div>
+      <span class="profile-label">E-Mail-Adresse</span>
+      <div class="profile-value" id="profileEmail">Wird geladen …</div>
+      <div style="height:14px"></div>
+      <span class="profile-label">Kontostatus</span>
+      <div class="profile-status" id="profileStatus">Prüfung läuft</div>
+      <div class="profile-actions">
+        <button class="profile-btn" id="logoutBtn" type="button">Abmelden</button>
+      </div>
+    </article>
+
+    <article class="profile-card">
+      <h2>Dein BadminOne-Code</h2>
+      <p class="profile-muted">Mit diesem persönlichen Code kann dich deine Vereinsverwaltung deinem bestehenden Spielerprofil zuordnen. Teile ihn nur mit Personen, denen du vertraust.</p>
+      <div class="profile-code" id="accountCode">Wird geladen …</div>
+      <div class="profile-actions">
+        <button class="profile-btn primary" id="copyCodeBtn" type="button" disabled>Code kopieren</button>
+      </div>
+      <p class="profile-muted" style="margin-top:13px">Der Code bleibt deinem Konto zugeordnet und ändert sich nicht bei einer erneuten Anmeldung.</p>
+    </article>
+
+    <article class="profile-card">
+      <h2>Spielerprofile &amp; Familie</h2>
+      <p class="profile-muted">Die Verknüpfung deiner Konten mit Spielerprofilen und Familienmitgliedern wird hier später ergänzt.</p>
+      <ul class="profile-list">
+        <li>Spielerprofil zuordnen lassen</li>
+        <li>Weitere Familienprofile verwalten</li>
+        <li>Berechtigungen und Freigaben einsehen</li>
+      </ul>
+    </article>
+
+    <article class="profile-card">
+      <h2>Kontosicherheit</h2>
+      <p class="profile-muted">Deine Anmeldung und dein persönlicher Code werden über BadminOne und Supabase verwaltet.</p>
+      <div class="profile-actions">
+        <a class="profile-btn" href="passwort.html">Passwort / Kontoeinstellungen</a>
+        <a class="profile-btn" href="index.html">Zur Startseite</a>
+      </div>
+    </article>
+  </section>
+</main>
+<footer class="footer">BadminOne · All Your Game in One</footer>
+
+<script>
+(() => {
+  "use strict";
+  const SUPABASE_URL = "https://apsarswjmsrmffoyxsgr.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj";
+  const $ = id => document.getElementById(id);
+  const client = window.supabase?.createClient
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+    : null;
+  let currentCode = "";
+
+  function message(text, ok=false) {
+    const el = $("profileMessage");
+    el.textContent = text;
+    el.hidden = false;
+    el.classList.toggle("ok", ok);
+  }
+
+  async function init() {
+    if (!client) {
+      message("Der Anmeldedienst konnte nicht geladen werden. Bitte lade die Seite erneut.");
+      return;
+    }
+    const {data:{session},error:sessionError} = await client.auth.getSession();
+    if (sessionError || !session) {
+      const back = encodeURIComponent("profil.html");
+      location.replace("login.html?return=" + back);
+      return;
+    }
+
+    const user = session.user;
+    const metadata = user.user_metadata || {};
+    $("profileName").textContent = metadata.full_name || metadata.name || "Kein Name hinterlegt";
+    $("profileEmail").textContent = user.email || "Keine E-Mail-Adresse hinterlegt";
+    $("profileStatus").textContent = user.email_confirmed_at ? "E-Mail bestätigt" : "E-Mail noch nicht bestätigt";
+
+    const {data:code,error:codeError} = await client.rpc("get_my_badminone_code");
+    if (codeError || !code) {
+      $("accountCode").textContent = "Code derzeit nicht verfügbar";
+      message("Dein BadminOne-Code konnte nicht geladen werden. Bitte versuche es später erneut.");
+      return;
+    }
+    currentCode = code;
+    $("accountCode").textContent = code;
+    $("copyCodeBtn").disabled = false;
+  }
+
+  $("copyCodeBtn").addEventListener("click", async () => {
+    if (!currentCode) return;
+    try {
+      await navigator.clipboard.writeText(currentCode);
+      message("Dein BadminOne-Code wurde kopiert.", true);
+    } catch (_) {
+      message("Kopieren war nicht möglich. Du kannst den Code markieren und manuell kopieren.");
+    }
+  });
+
+  $("logoutBtn").addEventListener("click", async () => {
+    $("logoutBtn").disabled = true;
+    const {error} = await client.auth.signOut();
+    if (error) {
+      $("logoutBtn").disabled = false;
+      message("Abmelden war nicht möglich: " + error.message);
+      return;
+    }
+    location.replace("index.html");
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>

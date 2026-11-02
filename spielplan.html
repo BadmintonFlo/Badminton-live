@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>BadminOne · Spielplan</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/badminton-header.css?v=personal-nav-20261101">
+<link rel="stylesheet" href="assets/css/spielplan.css">
+<script src="assets/js/shared-nav.js?v=personal-nav-20261101" defer></script>
+<script src="assets/js/spielplan.js" defer></script>
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+
+<nav id="platformNav" aria-label="Hauptnavigation">
+  <div class="pn-brandbar">
+    <a class="pn-brand" href="index.html" aria-label="BadminOne – Startseite"><span class="pn-logo">🏸</span><span class="pn-brandtext"><strong>BadminOne</strong><small>ALL YOUR GAME IN ONE</small></span></a>
+    <div class="pn-actions"><div class="pn-profile-wrap"><a class="pn-profile-btn" href="profil.html" aria-label="Profil und Anmeldung" title="Profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></a></div></div>
+  </div>
+  <div class="pn-tiles" aria-label="Hauptbereiche">
+    <a href="index.html" class="pn-tile"><span class="pn-icon">⌂</span><span>Home</span></a>
+    <a href="vereine.html" class="pn-tile" data-id="clubs" ><span class="pn-icon pn-vereine-icon-wrap" aria-hidden="true"></span><span>Vereine</span></a>
+    <a href="live.html" class="pn-tile" data-id="live" ><span class="pn-icon pn-live">●</span><span>Live</span></a>
+    <a href="mannschaft.html" class="pn-tile" data-id="teams" data-feature="teams" ><span class="pn-icon pn-teams-icon-wrap" aria-hidden="true"></span><span>Teams</span></a>
+    <details class="pn-more"><summary aria-current="page"><span class="pn-icon">•••</span><span>Mehr</span></summary><div class="pn-menu">
+      <a href="spielplan.html" data-feature="schedule" aria-current="page">Spielplan</a>
+      <a href="aufstellung.html" data-feature="lineup" >Aufstellungen</a>
+      <a href="spielbericht.html" data-feature="reports">Spielberichte</a>
+      <a href="spielerstatistik.html" data-feature="players">Spieler</a>
+      <a href="rangliste.html" data-feature="ranking" >Rangliste</a>
+      <a href="moderator.html" data-feature="moderator" >Moderator</a>
+      <a href="admin.html" data-feature="admin">Administration</a>
+    </div></details>
+  </div>
+</nav>
+<div class="modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+  <div class="modalbox auth-modalbox">
+    <button class="secondary close" type="button" id="closeAuthModal">Schließen</button>
+    <h2 id="authModalTitle">Anmelden</h2>
+    <form id="scheduleLoginForm">
+      <div class="grid">
+        <div><label for="scheduleEmail">E-Mail</label><input id="scheduleEmail" type="email" autocomplete="username" required></div>
+        <div><label for="schedulePassword">Passwort</label><input id="schedulePassword" type="password" autocomplete="current-password" required></div>
+      </div>
+      <div id="scheduleAuthMessage" class="status" hidden></div>
+      <div class="toolbar"><button class="primary" type="submit" id="scheduleLoginSubmit">Anmelden</button></div>
+    </form>
+  </div>
+</div>
+
+
+<section class="hero"><div class="hero-copy"><p class="eyebrow">BADMINTON · MANNSCHAFTSPLATTFORM</p><h1>Spielplan</h1><p>Begegnungen, Zu- und Absagen sowie deine Termine für den Kalender.</p></div><div class="hero-mark" aria-hidden="true">🏸</div></section>
+<main>
+<section class="card access-info" id="accessInfo">
+  <h2>Zugriff auf den Spielplan</h2>
+  <p id="accessInfoText">Bitte melde dich über das Profil-Symbol oben rechts an, um den Spielplan deiner Mannschaft aufzurufen.</p>
+</section>
+
+<section class="card" id="controls" style="display:none">
+  <div class="sectionhead"><h2>Mein Spielplan</h2><div id="roleInfo" class="small"></div></div>
+  <div class="filters schedule-scope-filters">
+    <div><label for="clubFilter">Verein</label><select id="clubFilter"><option value="">Verein auswählen …</option></select></div>
+    <div><label for="teamFilter">Mannschaft</label><select id="teamFilter"><option value="">Mannschaft auswählen …</option></select></div>
+    <div><label for="seasonFilter">Saison</label><input id="seasonFilter" placeholder="z. B. 2026/27"></div>
+    <div id="adminSearchWrap" hidden><label for="adminScheduleSearch">Admin-Suche (Verein oder Mannschaft)</label><input id="adminScheduleSearch" type="search" placeholder="Verein oder Mannschaft suchen …"></div>
+  </div>
+  <div class="toolbar"><button class="primary" id="newBtn">＋ Begegnung anlegen</button><label class="secondary fileBtn" for="icsFile">📥 ICS importieren</label><button class="secondary" id="exportBtn">📅 Meinen Kalender exportieren</button><input id="icsFile" type="file" accept=".ics,text/calendar,.ical,text/plain" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"></div>
+  <div id="message" class="status" style="display:none"></div>
+  <div id="venueBookSection" style="display:none;margin-top:12px">
+    <button class="section-toggle" type="button" aria-expanded="false" onclick="togglePanel('venueBookPanel',this)"><span>📍 Austragungsorte verwalten</span><span class="toggle-mark">＋</span></button>
+    <div id="venueBookPanel" class="collapsible-panel" hidden style="padding:12px 0 0">
+      <p class="small">Lege Orte mit eigenem Titel an, z. B. „Heim Wesel“ oder „Auswärts Homberg“. Anschließend kannst du sie bei Begegnungen auswählen.</p>
+      <div class="two grid"><div><label>Titel</label><input id="venueLabel" placeholder="z. B. Heim Wesel"></div><div><label>Adresse / Halle</label><input id="venueAddress" placeholder="Straße, PLZ Ort / Hallenname"></div></div>
+      <div class="toolbar"><button class="primary" id="saveVenueBtn">＋ Austragungsort speichern</button><button class="secondary" id="cancelVenueEditBtn" style="display:none">Abbrechen</button></div>
+      <div id="venueBookList"></div>
+      <div id="venueTeamsModal" role="dialog" aria-modal="true" aria-labelledby="venueTeamsTitle" style="display:none;position:fixed;inset:0;background:#0008;z-index:1000;align-items:center;justify-content:center;padding:16px"><div style="background:var(--card,#fff);color:var(--text);border-radius:12px;padding:20px;width:min(440px,100%);max-height:85vh;overflow:auto;box-shadow:0 12px 40px #0004"><h3 id="venueTeamsTitle">Zugeordnete Mannschaften</h3><p class="small" id="venueTeamsVenueName"></p><div id="venueTeamsChoices" style="display:grid;gap:10px;margin:16px 0"></div><div class="toolbar"><button type="button" class="secondary" onclick="closeVenueTeams()">Schließen</button></div></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="scheduleCard" style="display:none"><button class="section-toggle" id="scheduleToggle" type="button" aria-expanded="true" onclick="togglePanel('schedulePanel',this)"><span>🏸 Begegnungen <span id="count" class="small"></span></span><span class="toggle-mark">−</span></button><div id="schedulePanel" class="collapsible-panel"><div id="schedule"></div></div></section>
+
+
+</main>
+
+<div class="modal" id="editModal"><div class="modalbox">
+  <button class="secondary close" id="closeEdit">Schließen</button><h2 id="editTitle">Begegnung</h2>
+  <div class="three grid">
+    <div><label>Spielart (bezogen auf ausgewählte Mannschaft)</label><select id="matchType"><option value="home">Heimspiel</option><option value="away">Auswärtsspiel</option></select></div><div><label>Gegner</label><input id="opponent" placeholder="Name der gegnerischen Mannschaft"></div><div><label>Saison</label><input id="season" placeholder="2026/27"></div>
+  </div>
+  <div class="three grid" style="margin-top:10px"><div><label>Datum</label><input id="date" type="date"></div><div><label>Uhrzeit</label><input id="time" type="time"></div><div><label>Austragungsort aus Adressbuch</label><select id="venueSelect"><option value="">Ort auswählen …</option></select></div></div>
+  <div style="margin-top:8px"><label>Austragungsort / Adresse (optional frei eingeben)</label><input id="venue" placeholder="Hallenname oder Adresse"></div>
+  <label style="display:flex;align-items:flex-start;gap:9px;margin-top:12px"><input id="isPublic" type="checkbox" style="width:auto;margin-top:3px"><span><strong>Im öffentlichen Live-Ticker veröffentlichen</strong><br><span class="small">Die Begegnung und ihre Spielstände sind ohne Anmeldung sichtbar. Die Veröffentlichung kann jederzeit zurückgenommen werden.</span></span></label>
+  <div class="toolbar"><button class="primary" id="saveMatch">Speichern</button><button class="danger" id="deleteMatch">Begegnung löschen</button></div>
+  <div class="small">Wenn Datum, Uhrzeit, Heim/Gast oder Halle geändert werden, werden die bisherigen Zu-/Absagen für beide Mannschaften automatisch wieder auf „offen“ gesetzt.</div>
+</div></div>
+
+<div class="modal" id="icsModal"><div class="modalbox">
+  <button class="secondary close" id="closeIcs">Schließen</button><h2>ICS-Import prüfen</h2><p class="small">Die erkannte Zuordnung kann vor dem Import direkt geändert werden. Noch nichts wurde gespeichert.</p>
+  <div class="two grid"><div><label>Diese Mannschaft gehört zur ICS-Datei</label><select id="icsTeam"></select></div><div><label>Saison</label><input id="icsSeason" placeholder="2026/27"></div></div>
+  <div class="tablewrap" style="margin-top:12px"><table class="preview"><thead><tr><th>Datum</th><th>Beginn</th><th>Ende</th><th>Heim</th><th>Gast</th><th>Ort</th><th>UID</th><th></th></tr></thead><tbody id="icsRows"></tbody></table></div>
+  <div class="toolbar"><button class="primary" id="importIcs">Alle importieren</button><button class="secondary" id="cancelIcs">Abbrechen</button></div>
+</div></div>
+
+<div class="modal" id="availabilityModal"><div class="modalbox">
+  <button class="secondary close" id="closeAvailability">Schließen</button>
+  <h2 id="availabilityTitle">Spieler-Zu-/Absagen</h2>
+  <div id="availabilityContent"></div>
+</div></div>
+
+
+
+
+
+
+</body>
+</html>
