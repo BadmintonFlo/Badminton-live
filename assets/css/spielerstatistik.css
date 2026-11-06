@@ -1,0 +1,69 @@
+.stats-page{max-width:1200px;margin:0 auto;padding:26px 18px 40px;color:var(--text,#e8eef7)}
+.stats-hero{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px 26px;margin:0 0 18px;border:1px solid #344b63;border-radius:20px;background:linear-gradient(125deg,#18324a,#1c405b 65%,#1b3147);color:#f1f7ff}
+.stats-hero h1{margin:0 0 8px;font-size:clamp(25px,4vw,34px);line-height:1.15;color:#fff}
+.stats-hero p:not(.stats-eyebrow){max-width:760px;margin:0;color:#c5d6e7;line-height:1.55}
+.stats-eyebrow{margin:0 0 7px;color:#80bce9;font-size:11px;font-weight:850;letter-spacing:1.2px}
+.stats-hero-icon{font-size:clamp(38px,7vw,66px);opacity:.9}
+.stats-card{margin:0 0 16px;padding:20px;border:1px solid #344357;border-radius:17px;background:#182332;color:#e8eef7;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:0}
+.stats-card h2{margin:0 0 13px;color:#f1f5fb;font-size:19px}
+.stats-muted,.stats-small{color:#b8c7d8;font-size:13px;line-height:1.5}
+.stats-login{max-width:480px;margin:32px auto;padding:24px}
+.stats-login label{display:block;margin:12px 0 5px;font-size:13px;font-weight:700;color:#d9e5f2}
+.stats-login input,.stats-controls select{width:100%;min-height:44px;padding:10px 12px;border:1px solid #46566c;border-radius:10px;background:#111b28;color:#e8eef7;font:inherit}
+.stats-login button{width:100%;margin-top:16px;min-height:44px;border:0;border-radius:10px;background:#247bb5;color:white;font:inherit;font-weight:800;cursor:pointer}
+.stats-login button:hover{background:#2d8bca}
+.stats-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:15px}
+.stats-section-head h2{margin:0 0 5px}
+.stats-section-head .stats-muted{margin:0}
+.stats-toolbar{padding-bottom:18px}
+.stats-toolbar .stats-section-head{align-items:center}
+.stats-toolbar .secondary{padding:10px 14px;border:1px solid #46566c;border-radius:10px;background:#26364a;color:#e8eef7;font:inherit;font-weight:750;cursor:pointer}
+.stats-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:17px}
+.stats-controls label{display:block;margin:0 0 6px;color:#c7d4e3;font-size:12px;font-weight:750}
+.stats-controls select{margin:0}
+.stats-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+.stats-kpi{min-width:0;padding:14px;border:1px solid #34485f;border-radius:13px;background:#1d2b3c}
+.stats-kpi .label{color:#b8c7d8;font-size:12px;line-height:1.35}
+.stats-kpi .value{margin-top:5px;color:#f4f8ff;font-size:clamp(20px,2.5vw,27px);font-weight:850;overflow-wrap:anywhere}
+.stats-grid-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.stats-grid-two .stats-card{margin-bottom:16px}
+.stats-statline{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #344357;color:#dce6f1}
+.stats-statline:last-child{border-bottom:0}
+.stats-statline strong{color:#fff;font-variant-numeric:tabular-nums}
+.stats-progress{display:block;width:100%;height:12px;margin:12px 0 4px;overflow:hidden;border:0;border-radius:99px;background:#2a394c;accent-color:#3b9bd8}
+.stats-progress::-webkit-progress-bar{border-radius:99px;background:#2a394c}
+.stats-progress::-webkit-progress-value{border-radius:99px;background:#3b9bd8}
+.stats-progress::-moz-progress-bar{border-radius:99px;background:#3b9bd8}
+.stats-note{margin-top:10px}
+.stats-team-note{margin-top:14px}
+.stats-table-wrap{width:100%;overflow-x:auto;margin-top:14px;border:1px solid #344357;border-radius:12px}
+.stats-table{width:100%;min-width:680px;border-collapse:collapse;color:#e8eef7}
+.stats-table th,.stats-table td{padding:11px 10px;border-bottom:1px solid #344357;text-align:left;white-space:nowrap}
+.stats-table th{background:#223248;color:#c6d7e8;font-size:11px;font-weight:850;letter-spacing:.4px;text-transform:uppercase}
+.stats-table td{background:transparent;font-size:13px}
+.stats-table tbody tr:nth-child(even){background:#1d2b3b}
+.stats-table tbody tr:last-child td{border-bottom:0}
+.stats-table td.good{color:#78dfb0;font-weight:800}
+.stats-table td.bad{color:#ff9c9c;font-weight:800}
+.stats-pill{display:inline-block;padding:4px 9px;border:1px solid #40546b;border-radius:999px;background:#26364a;color:#e5eef8;font-size:11px;font-weight:750}
+.stats-message{margin-top:12px;padding:11px 13px;border:1px solid #40546b;border-radius:10px;background:#223248;color:#e8eef7;font-size:13px}
+.stats-message.bad{border-color:#75464a;background:#482729;color:#ffd1d1}
+.stats-message.ok{border-color:#28624e;background:#153d32;color:#b9f4d8}
+.stats-footer{padding:10px 0 0;color:#8fa2b8;text-align:center;font-size:12px}
+.stats-page .hidden{display:none!important}
+#playerView{margin-top:0}
+@media(max-width:900px){.stats-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.stats-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.stats-page{padding:16px 12px 30px}.stats-hero{padding:19px 17px}.stats-hero-icon{display:none}.stats-card{padding:15px}.stats-grid-two{grid-template-columns:1fr;gap:0}.stats-controls{grid-template-columns:1fr}.stats-section-head{align-items:flex-start}.stats-table{min-width:620px}}
+/* Klassen der wiederhergestellten Statistik-Auswertung */
+.stats-page .kpi{min-width:0;padding:14px;border:1px solid #34485f;border-radius:13px;background:#1d2b3c}
+.stats-page .kpi .label{color:#b8c7d8;font-size:12px;line-height:1.35}
+.stats-page .kpi .value{margin-top:5px;color:#f4f8ff;font-size:clamp(20px,2.5vw,27px);font-weight:850;overflow-wrap:anywhere}
+.stats-page .statline{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #344357;color:#dce6f1}
+.stats-page .statline:last-child{border-bottom:0}
+.stats-page .statline strong{color:#fff;font-variant-numeric:tabular-nums}
+.stats-page .pill{display:inline-block;padding:4px 9px;border:1px solid #40546b;border-radius:999px;background:#26364a;color:#e5eef8;font-size:11px;font-weight:750}
+.stats-page .msg{margin-top:12px;padding:11px 13px;border:1px solid #40546b;border-radius:10px;background:#223248;color:#e8eef7;font-size:13px}
+.stats-page .msg.bad{border-color:#75464a;background:#482729;color:#ffd1d1}
+.stats-page .msg.ok{border-color:#28624e;background:#153d32;color:#b9f4d8}
+.stats-page .small{color:#b8c7d8;font-size:12px;line-height:1.5}
+.stats-page .empty{color:#b8c7d8;padding:10px 0}

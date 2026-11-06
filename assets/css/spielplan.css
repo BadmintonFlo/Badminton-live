@@ -1,0 +1,226 @@
+/* BadminOne – seitenbezogene Gestaltung des Spielplans.
+   Header und Navigation kommen ausschließlich aus badminton-header.css. */
+
+:root{--bg:#f3f6fa;--card:#fff;--text:#172033;--muted:#64748b;--line:#d8e1eb;--accent:#1769aa;--ok:#15803d;--bad:#b91c1c;--warn:#a16207}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:#12395b;color:#fff;padding:18px 20px} header h1{margin:0;font-size:1.35rem} header p{margin:3px 0 0;opacity:.85;font-size:.9rem}
+main{max-width:1200px;margin:14px auto;padding:0 10px}.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:15px;margin-bottom:14px;box-shadow:0 2px 10px #00000008}
+h2{font-size:1rem;margin:0 0 12px}.grid{display:grid;gap:10px}.two{grid-template-columns:1fr 1fr}.three{grid-template-columns:1fr 1fr 1fr}
+label{display:block;font-size:.78rem;font-weight:700;color:#475569;margin-bottom:4px} input,select,button,textarea{font:inherit} input,select,textarea{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:9px;background:#fff} textarea{min-height:80px;resize:vertical}
+button{border:0;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#e8eef5;color:#17324d}.danger{background:#fee2e2;color:#991b1b}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.fileBtn{display:flex;align-items:center;justify-content:center;border:0;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer;min-height:44px;box-sizing:border-box}.status{padding:9px;border-radius:8px;background:#f1f5f9;font-size:.82rem;margin-top:9px}.status.ok{background:#ecfdf5;color:#166534}.status.bad{background:#fef2f2;color:#991b1b}.status.warn{background:#fffbeb;color:#92400e}.small{font-size:.76rem;color:var(--muted);line-height:1.45}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:end}.filters>div{flex:1;min-width:180px}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.teamblock{border:1px solid var(--line);border-radius:11px;margin:10px 0;overflow:hidden}.teamtitle{background:#f8fafc;padding:10px 12px;font-weight:800}.match{padding:11px 12px;border-top:1px solid var(--line);display:grid;grid-template-columns:105px 1fr auto;gap:10px;align-items:center}.matchdate{font-weight:800}.matchmain strong{display:block}.matchmain span{font-size:.76rem;color:var(--muted)}.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:.72rem;font-weight:800;background:#e8eef5;color:#17324d}.badge.live{background:#fee2e2;color:#991b1b}.badge.done{background:#dcfce7;color:#166534}
+.tablewrap{overflow:auto}.preview{width:100%;border-collapse:collapse;font-size:.82rem}.preview th,.preview td{border-bottom:1px solid var(--line);padding:7px;text-align:left;vertical-align:top}.preview th{background:#f8fafc;white-space:nowrap}.preview input{min-width:120px;padding:7px}.preview .remove{width:40px;padding:7px}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:flex-start;justify-content:center;padding:16px;z-index:10;overflow:auto}.modalbox{background:#fff;border-radius:14px;width:min(1050px,100%);padding:15px;margin:auto;max-height:calc(100vh - 32px);overflow:auto}.close{float:right}.playerrow{display:grid;grid-template-columns:1fr 150px auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.playername strong{display:block}.playername span{font-size:.75rem;color:var(--muted)}.subbox{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:12px}.subrow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}.subrow:first-child{border-top:0}.pill-ok{background:#dcfce7;color:#166534}.pill-bad{background:#fee2e2;color:#991b1b}.pill-warn{background:#fef3c7;color:#92400e}
+.player-banner{background:#eaf4ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px;margin-bottom:12px}.player-banner strong{display:block;font-size:1rem}.player-banner .small{margin-top:3px}.player-status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.player-stat{background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px;text-align:center}.player-stat strong{display:block;font-size:1rem}.player-stat span{font-size:.7rem;color:var(--muted)}.player-highlight{border:2px solid #93c5fd!important;background:#f8fbff}.player-match-note{display:inline-block;margin-top:5px;font-size:.72rem;font-weight:800;color:#1d4ed8}.substitute-group .teamtitle{background:#eff6ff;color:#1e40af} .finished-note{font-size:.72rem;color:var(--muted);font-weight:700}
+.section-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;background:#f8fafc;color:#17324d;border:1px solid var(--line);padding:12px 14px;border-radius:10px}.toggle-mark{font-size:1.15rem}.collapsible-panel[hidden]{display:none}.venue-row{display:grid;grid-template-columns:minmax(120px,1fr) minmax(160px,2fr) auto;gap:8px;align-items:start;padding:12px 0;border-top:1px solid var(--line)}.venue-teams{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}.venue-teams input{width:auto}.venue-row:first-child{border-top:0}.team-toggle{width:100%;text-align:left;border-radius:0;background:#f8fafc;color:var(--text);padding:11px 12px}.team-toggle .toggle-mark{float:right}
+@media(max-width:700px){.two,.three{grid-template-columns:1fr}.match{grid-template-columns:1fr}.match .actions{display:flex;gap:7px}.match .actions button{flex:1}.filters>div{min-width:100%}button{min-height:44px;width:100%}.toolbar button,.toolbar .fileBtn{flex:1;min-width:0}.tablewrap{overflow-x:auto}.preview{min-width:850px}}
+
+/* Darkmode-Kontrastkorrektur: überschreibt auch helle Inline-Hintergründe */
+html[data-theme="dark"] body{background:#101722!important;color:#e8eef7!important}
+html[data-theme="dark"] body :is(header,nav,main,section,article,aside,.card,.panel,.box,.modal,.wrap,.container,.stat,.tile,.dashboard-card,.welcome,.welcome-box,.quick-card,.content-card,[class*="card"],[class*="panel"]){background-color:#182332!important;color:#e8eef7!important;border-color:#344357!important}
+html[data-theme="dark"] body :is(h1,h2,h3,h4,h5,h6,p,span,label,li,dt,dd,strong,b,legend,summary,figcaption){color:inherit}
+html[data-theme="dark"] body :is(p,label,small,.muted,.hint,.description,.subtitle,.text-muted){color:#b8c4d4!important}
+html[data-theme="dark"] body :is(input,select,textarea){background:#111b28!important;color:#e8eef7!important;border-color:#46566c!important}
+html[data-theme="dark"] body :is(input,select,textarea)::placeholder{color:#9baabd!important;opacity:1}
+html[data-theme="dark"] body :is(table,tbody,tfoot){color:#e8eef7!important}
+html[data-theme="dark"] body th{background:#26364a!important;color:#f1f5fb!important}
+html[data-theme="dark"] body td{background-color:transparent!important;color:#e8eef7!important;border-color:#344357!important}
+html[data-theme="dark"] body tr:nth-child(even){background:#1c2939!important}
+html[data-theme="dark"] body a:not(.button):not(.btn){color:#8dccff!important}
+html[data-theme="dark"] body :is(button,.button,.btn,[role="button"]){color:#f7fbff}
+html[data-theme="dark"] body :is(.secondary,.profile-option){background:#26364a!important;color:#e8eef7!important;border-color:#46566c!important}
+html[data-theme="dark"] body :is(.success,.status-success){background:#153d32!important;color:#a8f0d0!important}
+html[data-theme="dark"] body :is(.error,.danger,.status-error){background:#482729!important;color:#ffd1d1!important}
+/* Feinschliff Darkmode: Kopfzeilen-Buttons, Begruessung und Dashboard-Kacheln */
+html[data-theme="dark"] .profile-btn,
+html[data-theme="dark"] .logout-btn,
+html[data-theme="dark"] .quick-edit,
+html[data-theme="dark"] .close,
+html[data-theme="dark"] .dashboard-head > button {
+  background:#26364a !important; color:#f1f5fb !important; border:1px solid #46566c !important;
+}
+html[data-theme="dark"] #profileBtn {
+  background:#263b53 !important; color:#ffffff !important; border:1px solid #5b7592 !important;
+  opacity:1 !important; text-shadow:none !important; box-shadow:0 1px 2px rgba(0,0,0,.18);
+}
+html[data-theme="dark"] #profileBtn:hover { background:#34516f !important; }
+html[data-theme="dark"] .profile-btn:hover,
+html[data-theme="dark"] .logout-btn:hover,
+html[data-theme="dark"] .quick-edit:hover,
+html[data-theme="dark"] .close:hover,
+html[data-theme="dark"] .dashboard-head > button:hover { background:#344a63 !important; color:#ffffff !important; }
+html[data-theme="dark"] .statusbar {
+  background:#1c3148 !important; color:#f1f5fb !important; border:1px solid #426486 !important;
+}
+html[data-theme="dark"] .statusbar strong,
+html[data-theme="dark"] #welcome,
+html[data-theme="dark"] #roleInfo { color:#f1f5fb !important; }
+html[data-theme="dark"] .dash-card {
+  background:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important;
+}
+html[data-theme="dark"] .dash-card h3,
+html[data-theme="dark"] .dash-value { color:#f1f5fb !important; }
+html[data-theme="dark"] .dash-muted,
+html[data-theme="dark"] .dashboard-note,
+html[data-theme="dark"] .area-desc { color:#bdc9d9 !important; }
+html[data-theme="dark"] .dash-actions a {
+  background:#21496b !important; color:#eaf5ff !important; border:1px solid #3d719a !important;
+}
+html[data-theme="dark"] .dash-actions a:hover { background:#2a5b83 !important; color:#fff !important; }
+html[data-theme="dark"] .hero p { color:#bdc9d9 !important; }
+
+
+/* Darkmode-Nachbesserung für seitenindividuelle Inhaltsflächen und Auswertungen */
+html[data-theme="dark"] body { background:#101722 !important; color:#e8eef7 !important; }
+html[data-theme="dark"] body :is(.card,.panel,.box,.match,.game,.stat,.tile,.kpi,.statline,.tablewrap,.controls,.login,.result,.encounter,.meeting,.player-card,.chart-card,.summary,.detail,.list-item,.item-card) { background-color:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body :is(h1,h2,h3,h4,strong,b,th,.value,.label,.title) { color:#f1f5fb; }
+html[data-theme="dark"] body :is(p,small,label,.muted,.small,.hint,.description,.subtitle) { color:#bdc9d9; }
+html[data-theme="dark"] body :is(input,select,textarea) { background:#111b28 !important; color:#e8eef7 !important; border-color:#46566c !important; }
+html[data-theme="dark"] body table { color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body th { background:#26364a !important; color:#f1f5fb !important; }
+html[data-theme="dark"] body td { background-color:transparent !important; color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body tr:nth-child(even) { background:#1c2939 !important; }
+html[data-theme="dark"] body :is(.secondary,.pill,.role,.stepper .minus,.set-action .secondary) { background:#26364a !important; color:#e8eef7 !important; border-color:#46566c !important; }
+html[data-theme="dark"] body :is(.status,.msg) { background:#223248 !important; color:#e8eef7 !important; }
+html[data-theme="dark"] body :is(.ok,.success,.status-success,.game.finished) { background:#153d32 !important; color:#b9f4d8 !important; }
+html[data-theme="dark"] body :is(.bad,.danger,.error,.status-error) { background:#482729 !important; color:#ffd1d1 !important; }
+html[data-theme="dark"] body :is(.warn,.game.live,.special-game.forfeit) { background:#443321 !important; color:#ffe0b3 !important; }
+html[data-theme="dark"] body :is(.match.selected,.selected) { background:#173b3a !important; border-color:#2b9c91 !important; }
+html[data-theme="dark"] body :is(.progress,.bar) { background:#2a3748 !important; }
+html[data-theme="dark"] body a:not(.button) { color:#83c7ff; }
+html[data-theme="dark"] body button { color:#f1f5fb; }
+html[data-theme="dark"] body .footer a { background:#26364a !important; color:#f1f5fb !important; border-color:#46566c !important; }
+
+
+/* Spielplan: gezielte Darkmode-Korrektur fuer Team-Kopfzeilen, Status-Pills und Aktionsflaechen */
+html[data-theme="dark"] body .section-toggle,
+html[data-theme="dark"] body .team-toggle,
+html[data-theme="dark"] body .teamtitle { background:#26364a !important; color:#f1f5fb !important; border-color:#46566c !important; }
+html[data-theme="dark"] body .badge,
+html[data-theme="dark"] body .pill-ok,
+html[data-theme="dark"] body .pill-bad,
+html[data-theme="dark"] body .pill-warn { background:#26364a !important; color:#e8eef7 !important; border:1px solid #46566c !important; }
+html[data-theme="dark"] body .badge.live,
+html[data-theme="dark"] body .danger,
+html[data-theme="dark"] body .status.bad { background:#482729 !important; color:#ffd1d1 !important; }
+html[data-theme="dark"] body .badge.done,
+html[data-theme="dark"] body .status.ok { background:#153d32 !important; color:#b9f4d8 !important; }
+html[data-theme="dark"] body button:not(.primary):not(.danger),
+html[data-theme="dark"] body .fileBtn,
+html[data-theme="dark"] body .primary { background:#1769aa !important; color:#ffffff !important; }
+html[data-theme="dark"] body .match,
+html[data-theme="dark"] body .teamblock,
+html[data-theme="dark"] body .subbox,
+html[data-theme="dark"] body .player-banner,
+html[data-theme="dark"] body .player-stat { background:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body .matchmain span,
+html[data-theme="dark"] body .finished-note,
+html[data-theme="dark"] body .playername span { color:#bdc9d9 !important; }
+
+/* Einheitlicher Darkmode: Systemeinstellung als Standard, manuell überschreibbar */
+:root{color-scheme:light dark}
+html[data-theme="dark"]{color-scheme:dark;--bg:#101722;--card:#182332;--text:#e8eef7;--muted:#aab7c8;--primary:#3186c8;--primary2:#246da7;--border:#344357;--danger:#ff8f86;--success:#62d9a0}
+html[data-theme="dark"] body{background:var(--bg)!important;color:var(--text)!important}
+html[data-theme="dark"] header,html[data-theme="dark"] nav,html[data-theme="dark"] .card,html[data-theme="dark"] .panel,html[data-theme="dark"] .box,html[data-theme="dark"] .modal,html[data-theme="dark"] .wrap,html[data-theme="dark"] section,html[data-theme="dark"] .stat,html[data-theme="dark"] .tile{background-color:var(--card);color:var(--text);border-color:var(--border)}
+html[data-theme="dark"] p,html[data-theme="dark"] label,html[data-theme="dark"] small,html[data-theme="dark"] .muted{color:var(--muted)}
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:#111b28!important;color:var(--text)!important;border-color:var(--border)!important}
+html[data-theme="dark"] table{color:var(--text)}html[data-theme="dark"] th{background:#223248!important;color:var(--text)!important}html[data-theme="dark"] td{border-color:var(--border)!important}html[data-theme="dark"] tr:nth-child(even){background:#1c2939}
+html[data-theme="dark"] a:not(.button){color:#83c7ff}html[data-theme="dark"] .secondary,html[data-theme="dark"] .profile-option{background:#26364a!important;color:var(--text)!important;border-color:var(--border)!important}
+@media print{}
+
+
+html[data-theme="dark"] body .slot,
+html[data-theme="dark"] body .modal-box,
+html[data-theme="dark"] body .modal-actions,
+html[data-theme="dark"] body .opp-row,
+html[data-theme="dark"] body .opp-player,
+html[data-theme="dark"] body .validation,
+html[data-theme="dark"] body .playerlist,
+html[data-theme="dark"] body .playerlist tr,
+html[data-theme="dark"] body .playerlist td { background-color:#182332 !important; color:#e8eef7 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body .slot h3,
+html[data-theme="dark"] body .opp-row h3,
+html[data-theme="dark"] body .modal-box h2,
+html[data-theme="dark"] body .opp-side-title,
+html[data-theme="dark"] body .opponent-label,
+html[data-theme="dark"] body .opp-none-label { color:#e8eef7 !important; }
+html[data-theme="dark"] body .slot .sub,
+html[data-theme="dark"] body .modal-box p { color:#b8c4d4 !important; }
+html[data-theme="dark"] body .modal-box .modal-actions { background:#182332 !important; border-color:#344357 !important; }
+html[data-theme="dark"] body .opp-player { background:#20364d !important; color:#e8eef7 !important; border-color:#3a5876 !important; }
+html[data-theme="dark"] body .slot select, html[data-theme="dark"] body .slot input { background:#111b28 !important; color:#e8eef7 !important; border-color:#46566c !important; }
+html[data-theme="dark"] body .slot select option { background:#182332 !important; color:#e8eef7 !important; }
+
+html[data-theme="dark"] body :is(.user-row,.match-card,.encounter-card,.stat-card,.statistic-card,.player-card,.game-card,.game,.match,.fixture,.lineup-card,.discipline-card,.report-card,.admin-card,.section-card,.result-card,.ranking-card,.team-card,.player-stat,.stat-box,.metric-card,.info-card,.form-card,.list-card,.accordion-item,.modal-content,.modal-box,.slot,.pair-card,.set-card,.score-card,.table-wrap,.table-container,.chart-card,.chart-container,[class*="match"],[class*="encounter"],[class*="stat"],[class*="player"],[class*="lineup"],[class*="admin"],[class*="report"],[class*="result"],[class*="ranking"],[class*="fixture"],[class*="score"],[class*="chart"],[class*="team"]){background-color:#182332 !important;color:#e8eef7 !important;border-color:#344357 !important}
+html[data-theme="dark"] body :is(.user-row,.match-card,.encounter-card,.stat-card,.statistic-card,.player-card,.game-card,.game,.match,.fixture,.lineup-card,.discipline-card,.report-card,.admin-card,.section-card,.result-card,.ranking-card,.team-card,.player-stat,.stat-box,.metric-card,.info-card,.form-card,.list-card,.accordion-item,.modal-content,.modal-box,.slot,.pair-card,.set-card,.score-card,.table-wrap,.table-container,.chart-card,.chart-container,[class*="match"],[class*="encounter"],[class*="stat"],[class*="player"],[class*="lineup"],[class*="admin"],[class*="report"],[class*="result"],[class*="ranking"],[class*="fixture"],[class*="score"],[class*="chart"],[class*="team"]) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,b,div,td,th,li){color:inherit}
+html[data-theme="dark"] body :is(.user-row,.match-card,.encounter-card,.stat-card,.statistic-card,.player-card,.game-card,.game,.match,.fixture,.lineup-card,.discipline-card,.report-card,.admin-card,.section-card,.result-card,.ranking-card,.team-card,.player-stat,.stat-box,.metric-card,.info-card,.form-card,.list-card,.accordion-item,.modal-content,.modal-box,.slot,.pair-card,.set-card,.score-card,.table-wrap,.table-container,.chart-card,.chart-container) :is(input,select,textarea){background:#111b28 !important;color:#e8eef7 !important;border-color:#46566c !important}
+html[data-theme="dark"] body select option{background:#182332 !important;color:#e8eef7 !important}
+html[data-theme="dark"] body :is(.card,.user-row,.match-card,.encounter-card,.stat-card,.player-card,.game-card,.section-card,.result-card,.team-card,.modal-box,.slot) [style*="background: white"],html[data-theme="dark"] body :is(.card,.user-row,.match-card,.encounter-card,.stat-card,.player-card,.game-card,.section-card,.result-card,.team-card,.modal-box,.slot) [style*="background-color: white"]{background:#182332 !important;color:#e8eef7 !important}
+
+/* Mobile-Toolbar: Aktionen sauber in zwei Spalten statt gequetscht nebeneinander */
+.toolbar{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px}
+.toolbar > button,.toolbar > .fileBtn{flex:1 1 170px;min-width:0;width:auto;min-height:56px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;line-height:1.25;overflow-wrap:anywhere}
+.toolbar > .fileBtn{margin:0}
+@media(max-width:700px){
+  .toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .toolbar > button,.toolbar > .fileBtn{width:100%;min-width:0;min-height:64px;padding:10px 8px;flex:none;font-size:.92rem;overflow-wrap:normal;word-break:normal}
+  .toolbar > #newBtn{grid-column:auto}
+  .toolbar > button#saveVenueBtn,.toolbar > button#cancelVenueEditBtn{grid-column:span 1}
+}
+@media(max-width:380px){.toolbar > button,.toolbar > .fileBtn{font-size:.84rem;padding:9px 6px}}
+
+/* Darkmode: Dialogflächen im Spielplan einschließlich ihrer direkten Inhalte */
+html[data-theme="dark"] body .modal .modalbox {
+  background: #182332 !important;
+  color: #e8eef7 !important;
+  border: 1px solid #344357 !important;
+}
+html[data-theme="dark"] body .modal .modalbox :is(h1,h2,h3,h4,strong,b,span,div,p,label,small) {
+  color: inherit;
+}
+html[data-theme="dark"] body .modal .modalbox label,
+html[data-theme="dark"] body .modal .modalbox .small,
+html[data-theme="dark"] body .modal .modalbox p {
+  color: #bdc9d9 !important;
+}
+html[data-theme="dark"] body .modal .modalbox :is(input,select,textarea) {
+  background: #111b28 !important;
+  color: #e8eef7 !important;
+  border-color: #46566c !important;
+}
+html[data-theme="dark"] body .modal .modalbox select option {
+  background: #182332 !important;
+  color: #e8eef7 !important;
+}
+html[data-theme="dark"] body #availabilityContent .subbox,
+html[data-theme="dark"] body #availabilityContent .playerrow,
+html[data-theme="dark"] body #availabilityContent .subrow {
+  background: #182332 !important;
+  color: #e8eef7 !important;
+  border-color: #344357 !important;
+}
+html[data-theme="dark"] body #availabilityContent .playername span {
+  color: #bdc9d9 !important;
+}
+
+body{background:#101722;color:#e8eef7}
+main{max-width:1200px;margin:22px auto;padding:0 16px}
+.card{background:#182332;border:1px solid #344357;border-radius:16px;box-shadow:0 8px 26px #00000018;color:#e8eef7}
+.hero{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:25px 26px;margin:20px auto 16px;max-width:1168px;border:1px solid #344d66;border-radius:18px;background:linear-gradient(120deg,#172b40,#1b3d5a 65%,#204d70);color:#f3f8ff}
+#platformNav .menu-title{padding:8px 10px 5px;color:#91b6d5;font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.08em}.hero-copy{position:relative;z-index:1}.hero .eyebrow{margin:0 0 7px;color:#91caff;font-size:.72rem;font-weight:850;letter-spacing:.13em}.hero h1{margin:0;font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.15;color:#fff}.hero p{margin:8px 0 0;color:#c4d8e9;font-size:.92rem}.hero-mark{font-size:clamp(3rem,7vw,5rem);opacity:.9;filter:drop-shadow(0 8px 14px #07162666)}
+#authCard{margin-top:0}.card h2{color:#f1f6fc}.small{color:#b8c7d8}.status{background:#223248;color:#e8eef7}.status.ok{background:#153d32;color:#b9f4d8}.status.bad{background:#482729;color:#ffd1d1}.status.warn{background:#443321;color:#ffe0b3}
+input,select,textarea{background:#111b28;color:#e8eef7;border-color:#46566c}input::placeholder{color:#9baabd}
+.section-toggle,.team-toggle{background:#22364c;color:#f1f6fc;border-color:#3a526b}.teamtitle{background:#22364c;color:#f1f6fc}.match{background:#182332;color:#e8eef7;border-color:#344357}.teamblock{border-color:#344357}.badge{background:#263b53;color:#dcecff}.pill-ok{background:#153d32;color:#b9f4d8}.pill-bad{background:#482729;color:#ffd1d1}.pill-warn{background:#443321;color:#ffe0b3}
+@media(max-width:700px){main{margin:14px auto;padding:0 10px}.hero{margin:14px 10px 12px;padding:20px 18px}.hero-mark{font-size:2.8rem}}
+
+/* Zugriffshinweis statt separatem Login-/Logout-Bereich */
+.access-info { margin-top: 0; }
+.access-info p { margin: 8px 0 0; line-height: 1.55; color: var(--muted, #bdc9d9); }
+.auth-modalbox { max-width: 520px; }
+#profileMenu[hidden] { display:none !important; }
+
+.schedule-scope-filters { align-items:end; }
+.schedule-scope-filters > div { min-width:180px; flex:1 1 180px; }
+#adminSearchWrap[hidden] { display:none !important; }

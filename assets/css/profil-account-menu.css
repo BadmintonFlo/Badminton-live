@@ -1,0 +1,39 @@
+/* Konto-Dropdown für das Profil-Symbol in der Kopfzeile */
+.pn-account-menu { position: relative; }
+.pn-account-menu > summary { list-style: none; cursor: pointer; }
+.pn-account-menu > summary::-webkit-details-marker { display: none; }
+.pn-account-dropdown {
+  position: absolute;
+  z-index: 1000;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 160px;
+  padding: 7px;
+  display: grid;
+  gap: 4px;
+  background: #172231;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.32);
+}
+.pn-account-dropdown a,
+.pn-account-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.pn-account-dropdown a:hover,
+.pn-account-dropdown button:hover,
+.pn-account-dropdown a:focus-visible,
+.pn-account-dropdown button:focus-visible {
+  background: rgba(255,255,255,.09);
+  outline: none;
+}
