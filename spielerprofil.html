@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101722">
+<title>BadminOne · Spielerprofil</title>
+<link rel="stylesheet" href="assets/css/style.css?v=playerdash-20261103-1">
+<link rel="stylesheet" href="assets/css/badminton-header.css?v=playerdash-20261103-1">
+<link rel="stylesheet" href="assets/css/spielerbereich.css?v=spielerprofil-20261103-2">
+<link rel="stylesheet" href="assets/css/auth-popup.css?v=20261106-profilemenu">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/spielerbereich.js?v=spielerprofil-20261103-2" defer></script>
+</head><body>
+<nav id="platformNav" aria-label="Hauptnavigation">
+ <div class="pn-brandbar"><a class="pn-brand" href="index.html" aria-label="BadminOne – Startseite"><span class="pn-logo">🏸</span><span class="pn-brandtext"><strong>BadminOne</strong><small>ALL YOUR GAME IN ONE</small></span></a>
+ <div class="pn-actions"><div class="pn-profile-wrap"><button class="pn-profile-btn" id="profileBtn" type="button" aria-label="Profil und Anmeldung" aria-expanded="false" title="Profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></button><div class="pn-profile-menu" id="profileMenu" hidden><button type="button" id="profileLogin">Anmelden</button><button type="button" id="profileRegister">Konto erstellen</button><a href="profil.html" id="profileManage" hidden>Profil / Kontoeinstellungen</a><button type="button" id="logoutBtn" hidden>Abmelden</button></div></div></div></div>
+ <div class="pn-tiles" id="navInner" aria-label="Hauptbereiche"></div>
+</nav>
+<main class="player-page">
+ <section class="player-hero"><div><p class="eyebrow">DEIN BADMINTON · DEIN ÜBERBLICK</p><h1 id="playerGreeting">Spielerprofil</h1><p id="playerIntro">Deine Spielerdaten, Teams, Begegnungen und Trainingszeiten auf einen Blick.</p></div><div class="hero-racket" aria-hidden="true">🏸</div></section>
+ <div id="pageMessage" class="notice" role="status" hidden></div>
+ <section id="unlinkedPanel" class="panel" hidden><div class="panel-heading"><div><p class="eyebrow">WILLKOMMEN BEI BADMINONE</p><h2>Noch kein Spielerprofil verknüpft</h2></div><span class="panel-icon">👋</span></div><p>Du kannst BadminOne bereits nutzen und Vereine entdecken. Damit deine persönlichen Teams, Begegnungen und Rückmeldungen erscheinen, muss dich ein Vereinsverantwortlicher mit deinem Spielerprofil verknüpfen.</p><a class="btn primary" href="vereine.html">Vereine entdecken</a><div class="subtle">Die Verknüpfung erfolgt bewusst durch den Verein – du musst keine Spielerdaten selbst zuordnen.</div></section>
+ <div id="linkedDashboard" hidden>
+  <div class="dashboard-grid">
+   <section class="panel span-two"><div class="panel-heading"><div><p class="eyebrow">DEIN SPIELERPROFIL</p><h2>Kommende Begegnungen</h2></div><a class="text-link" href="spielplan.html">Zum Spielplan →</a></div><div id="upcomingMatches" class="stack-list"><p class="empty-state">Begegnungen werden geladen …</p></div></section>
+   <section class="panel"><div class="panel-heading"><div><p class="eyebrow">DEINE ZUORDNUNGEN</p><h2>Meine Teams & Vereine</h2></div></div><div id="memberships" class="stack-list"><p class="empty-state">Mitgliedschaften werden geladen …</p></div></section>
+   <section class="panel span-two"><div class="panel-heading"><div><p class="eyebrow">TRAINING & TERMINE</p><h2>Trainingszeiten</h2></div></div><div id="trainingList" class="stack-list"><p class="empty-state">Trainingszeiten werden geladen …</p></div></section>
+  </div>
+ </div>
+ <section class="panel public-clubs"><div class="panel-heading"><div><p class="eyebrow">BADMINTON IN DEINER NÄHE</p><h2>Vereine entdecken</h2></div><a class="text-link" href="vereine.html">Alle Vereine →</a></div><div id="clubFinder" class="club-grid"><p class="empty-state">Vereine werden geladen …</p></div></section>
+</main><footer class="player-footer">BadminOne · All Your Game in One</footer>
+<dialog class="dialog" id="authDialog"><form class="dialog-body" id="authForm"><div class="dialog-head"><div><p class="eyebrow">BADMINTON-PLATTFORM</p><h2 id="authTitle">Anmelden</h2></div><button class="icon-btn" type="button" id="closeAuth">✕</button></div><label for="email">E-Mail-Adresse</label><input id="email" type="email" autocomplete="username" required><label for="password">Passwort</label><input id="password" type="password" autocomplete="current-password" minlength="6" required><div id="registerFields" hidden><label for="fullName">Vor- und Nachname</label><input id="fullName" type="text" autocomplete="name" maxlength="100"><label for="confirmPassword">Passwort wiederholen</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="6"></div><p class="message" id="authMessage" hidden></p><button class="btn primary full" id="submitAuth" type="submit">Anmelden</button><button class="text-btn" id="forgotBtn" type="button">Passwort vergessen?</button><button class="text-btn" id="switchRegisterBtn" type="button">Noch kein Konto? Registrieren</button><button class="text-btn" id="switchLoginBtn" type="button" hidden>Bereits ein Konto? Anmelden</button></form></dialog>
+<script src="assets/js/shared-nav.js?v=20261104-adminnav3"></script>
+
+<script id="spielerprofil-profile-menu-fix">
+(() => {
+  "use strict";
+  const button = document.getElementById("profileBtn");
+  const menu = document.getElementById("profileMenu");
+  const login = document.getElementById("profileLogin");
+  const register = document.getElementById("profileRegister");
+  const manage = document.getElementById("profileManage");
+  const logout = document.getElementById("logoutBtn");
+  if (!button || !menu) return;
+
+  const closeMenu = () => {
+    menu.hidden = true;
+    button.setAttribute("aria-expanded", "false");
+  };
+  const openMenu = () => {
+    menu.hidden = false;
+    button.setAttribute("aria-expanded", "true");
+  };
+
+  button.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (menu.hidden) openMenu();
+    else closeMenu();
+  });
+
+  menu.addEventListener("click", event => event.stopPropagation());
+  document.addEventListener("click", closeMenu);
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      closeMenu();
+      button.focus();
+    }
+  });
+
+  const setSignedIn = signedIn => {
+    if (login) login.hidden = !!signedIn;
+    if (register) register.hidden = !!signedIn;
+    if (manage) manage.hidden = !signedIn;
+    if (logout) logout.hidden = !signedIn;
+    button.setAttribute(
+      "aria-label",
+      signedIn ? "Profil und Kontoeinstellungen" : "Profil und Anmeldung"
+    );
+  };
+
+  // The existing page script continues to own login, registration and logout actions.
+  // This code only opens/closes the menu and mirrors the current Supabase session.
+  try {
+    const client = window.supabase?.createClient?.(
+      "https://apsarswjmsrmffoyxsgr.supabase.co",
+      "sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj"
+    );
+    if (client) {
+      client.auth.getSession().then(({ data, error }) => {
+        if (!error) setSignedIn(!!data?.session);
+      }).catch(error => console.warn("[BadminOne Profilmenü] Sitzung:", error));
+
+      client.auth.onAuthStateChange((_event, session) => {
+        setSignedIn(!!session);
+      });
+    }
+  } catch (error) {
+    console.warn("[BadminOne Profilmenü] Initialisierung:", error);
+  }
+})();
+</script>
+
+</body></html>

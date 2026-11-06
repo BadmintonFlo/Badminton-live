@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>BadminOne · Spielplan</title>
+<link rel="stylesheet" href="assets/css/style.css?v=20261102">
+<link rel="stylesheet" href="assets/css/badminton-header.css?v=20261102">
+<link rel="stylesheet" href="assets/css/spielplan.css?v=20261102">
+<link rel="stylesheet" href="assets/css/ics-import.css?v=20261102-turnier2">
+<link rel="stylesheet" href="assets/css/badminone-selects.css?v=20261102-2">
+<link rel="stylesheet" href="assets/css/auth-popup.css?v=20261102">
+<script src="assets/js/spielplan.js?v=20261102-turnier2" defer></script>
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+
+<nav id="platformNav" aria-label="Hauptnavigation">
+  <div class="pn-brandbar">
+    <a class="pn-brand" href="index.html" aria-label="BadminOne – Startseite"><span class="pn-logo">🏸</span><span class="pn-brandtext"><strong>BadminOne</strong><small>ALL YOUR GAME IN ONE</small></span></a>
+    <div class="pn-actions">
+      <div class="pn-profile-wrap">
+        <button class="pn-profile-btn" id="profileBtn" type="button" aria-label="Profil und Anmeldung" aria-expanded="false" title="Profil">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>
+        </button>
+        <div class="pn-profile-menu" id="profileMenu" hidden>
+          <button type="button" id="profileLogin" data-auth-open="login">Anmelden</button>
+          <button type="button" id="profileRegister" data-auth-open="register">Konto erstellen</button>
+          <a href="profil.html" id="profileManage" hidden>Profil / Kontoeinstellungen</a>
+          <button type="button" id="logoutBtn" hidden>Abmelden</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pn-tiles" id="navInner" aria-label="Hauptbereiche"></div>
+</nav>
+<div class="modal" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+  <div class="modalbox auth-modalbox">
+    <button class="secondary close" type="button" id="closeAuthModal">Schließen</button>
+    <h2 id="authModalTitle">Anmelden</h2>
+    <form id="scheduleLoginForm">
+      <div class="grid">
+        <div><label for="scheduleEmail">E-Mail</label><input id="scheduleEmail" type="email" autocomplete="username" required></div>
+        <div><label for="schedulePassword">Passwort</label><input id="schedulePassword" type="password" autocomplete="current-password" required></div>
+      </div>
+      <div id="scheduleAuthMessage" class="status" hidden></div>
+      <div class="toolbar"><button class="primary" type="submit" id="scheduleLoginSubmit">Anmelden</button></div>
+    </form>
+  </div>
+</div>
+
+
+<section class="hero"><div class="hero-copy"><p class="eyebrow">BADMINTON · MANNSCHAFTSPLATTFORM</p><h1>Spielplan</h1><p>Begegnungen, Zu- und Absagen sowie deine Termine für den Kalender.</p></div><div class="hero-mark" aria-hidden="true">🏸</div></section>
+<main>
+<section class="card access-info" id="accessInfo">
+  <h2>Zugriff auf den Spielplan</h2>
+  <p id="accessInfoText">Bitte melde dich über das Profil-Symbol oben rechts an, um den Spielplan deiner Mannschaft aufzurufen.</p>
+</section>
+
+<section class="card" id="controls" style="display:none">
+  <div class="sectionhead"><h2>Mein Spielplan</h2><div id="roleInfo" class="small"></div></div>
+  <div class="filters schedule-scope-filters">
+    <div><label for="clubFilter">Verein</label><select id="clubFilter"><option value="">Verein auswählen …</option></select></div>
+    <div><label for="teamFilter">Mannschaft</label><select id="teamFilter"><option value="">Mannschaft auswählen …</option></select></div>
+    <div><label for="seasonFilter">Saison</label><input id="seasonFilter" placeholder="z. B. 2026/27"></div>
+    <div id="adminSearchWrap" hidden><label for="adminScheduleSearch">Admin-Suche (Verein oder Mannschaft)</label><input id="adminScheduleSearch" type="search" placeholder="Verein oder Mannschaft suchen …"></div>
+  </div>
+  <div class="turnier-playdata-launch"><div class="field"><label for="turnierPlaydataTeam">Zielmannschaft für Turnier-Import</label><select id="turnierPlaydataTeam"><option value="">Bitte zuerst Mannschaft auswählen …</option></select></div><button class="secondary" id="turnierPlaydataOpen" type="button" disabled>🌐 Turnier-Spielplan importieren</button></div>
+  <div class="toolbar"><button class="primary" id="newBtn">＋ Begegnung anlegen</button><label class="secondary fileBtn ics-file-button" id="icsPickerButton" for="icsFile">📥 ICS-Datei aus Downloads auswählen</label><button class="secondary" id="exportBtn">📅 Meinen Kalender exportieren</button><input id="icsFile" class="ics-file-input" type="file" accept=".ics,text/calendar,.ical,text/plain" aria-label="ICS-Datei auswählen"></div>
+  <div id="message" class="status" style="display:none"></div>
+  <div id="venueBookSection" style="display:none;margin-top:12px">
+    <button class="section-toggle" type="button" aria-expanded="false" onclick="togglePanel('venueBookPanel',this)"><span>📍 Austragungsorte verwalten</span><span class="toggle-mark">＋</span></button>
+    <div id="venueBookPanel" class="collapsible-panel" hidden style="padding:12px 0 0">
+      <p class="small">Lege Orte mit eigenem Titel an, z. B. „Heim Wesel“ oder „Auswärts Homberg“. Anschließend kannst du sie bei Begegnungen auswählen.</p>
+      <div class="two grid"><div><label>Titel</label><input id="venueLabel" placeholder="z. B. Heim Wesel"></div><div><label>Adresse / Halle</label><input id="venueAddress" placeholder="Straße, PLZ Ort / Hallenname"></div></div>
+      <div class="toolbar"><button class="primary" id="saveVenueBtn">＋ Austragungsort speichern</button><button class="secondary" id="cancelVenueEditBtn" style="display:none">Abbrechen</button></div>
+      <div id="venueBookList"></div>
+      <div id="venueTeamsModal" role="dialog" aria-modal="true" aria-labelledby="venueTeamsTitle" style="display:none;position:fixed;inset:0;background:#0008;z-index:1000;align-items:center;justify-content:center;padding:16px"><div style="background:var(--card,#fff);color:var(--text);border-radius:12px;padding:20px;width:min(440px,100%);max-height:85vh;overflow:auto;box-shadow:0 12px 40px #0004"><h3 id="venueTeamsTitle">Zugeordnete Mannschaften</h3><p class="small" id="venueTeamsVenueName"></p><div id="venueTeamsChoices" style="display:grid;gap:10px;margin:16px 0"></div><div class="toolbar"><button type="button" class="secondary" onclick="closeVenueTeams()">Schließen</button></div></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="card" id="scheduleCard" style="display:none"><button class="section-toggle" id="scheduleToggle" type="button" aria-expanded="true" onclick="togglePanel('schedulePanel',this)"><span>🏸 Begegnungen <span id="count" class="small"></span></span><span class="toggle-mark">−</span></button><div id="schedulePanel" class="collapsible-panel"><div id="schedule"></div></div></section>
+
+
+</main>
+
+<div class="modal" id="editModal"><div class="modalbox">
+  <button class="secondary close" id="closeEdit">Schließen</button><h2 id="editTitle">Begegnung</h2>
+  <div class="three grid">
+    <div><label>Spielart (bezogen auf ausgewählte Mannschaft)</label><select id="matchType"><option value="home">Heimspiel</option><option value="away">Auswärtsspiel</option></select></div><div><label>Gegner</label><input id="opponent" placeholder="Name der gegnerischen Mannschaft"></div><div><label>Saison</label><input id="season" placeholder="2026/27"></div>
+  </div>
+  <div class="three grid" style="margin-top:10px"><div><label>Datum</label><input id="date" type="date"></div><div><label>Uhrzeit</label><input id="time" type="time"></div><div><label>Austragungsort aus Adressbuch</label><select id="venueSelect"><option value="">Ort auswählen …</option></select></div></div>
+  <div style="margin-top:8px"><label>Austragungsort / Adresse (optional frei eingeben)</label><input id="venue" placeholder="Hallenname oder Adresse"></div>
+  <label style="display:flex;align-items:flex-start;gap:9px;margin-top:12px"><input id="isPublic" type="checkbox" style="width:auto;margin-top:3px"><span><strong>Im öffentlichen Live-Ticker veröffentlichen</strong><br><span class="small">Die Begegnung und ihre Spielstände sind ohne Anmeldung sichtbar. Die Veröffentlichung kann jederzeit zurückgenommen werden.</span></span></label>
+  <div class="toolbar"><button class="primary" id="saveMatch">Speichern</button><button class="danger" id="deleteMatch">Begegnung löschen</button></div>
+  <div class="small">Wenn Datum, Uhrzeit, Heim/Gast oder Halle geändert werden, werden die bisherigen Zu-/Absagen für beide Mannschaften automatisch wieder auf „offen“ gesetzt.</div>
+</div></div>
+
+<div class="modal ics-modal-overlay" id="icsModal" role="dialog" aria-modal="true" aria-labelledby="icsModalTitle"><div class="modalbox ics-modalbox">
+  <header class="ics-modal-header">
+    <button class="secondary close" id="closeIcs" type="button">Schließen</button>
+    <h2 id="icsModalTitle">ICS-Import prüfen</h2>
+    <p>Prüfe die erkannten Begegnungen. Änderungen werden erst beim Import gespeichert.</p>
+  </header>
+  <div class="ics-modal-content">
+    <div class="two grid ics-import-settings">
+      <div class="ics-team-picker-wrap">
+        <label id="icsTeamLabel">Diese Mannschaft gehört zur ICS-Datei</label>
+        <details class="ics-team-picker" id="icsTeamPicker">
+          <summary id="icsTeamPickerLabel">Mannschaft auswählen</summary>
+          <div class="ics-team-picker-menu" id="icsTeamPickerMenu"></div>
+        </details>
+        <select id="icsTeam" class="ics-team-native" aria-hidden="true" tabindex="-1"></select>
+      </div>
+      <div><label for="icsSeason">Saison</label><input id="icsSeason" placeholder="2026/27"></div>
+    </div>
+    <div id="icsImportSummary" class="ics-import-summary" aria-live="polite"></div>
+    <div class="ics-bulk-actions">
+      <label><input type="checkbox" id="icsSelectAll" checked> Alle gültigen Begegnungen auswählen</label>
+      <span id="icsListHint">Tippe auf „Bearbeiten“, um einzelne Angaben zu ändern.</span>
+    </div>
+    <div id="icsRows" class="ics-match-list"></div>
+  </div>
+  <footer class="toolbar ics-import-actions">
+    <button class="primary" id="importIcs" type="button">Ausgewählte Begegnungen importieren</button>
+    <button class="secondary" id="cancelIcs" type="button">Abbrechen</button>
+  </footer>
+</div></div>
+
+
+<div class="modal turnier-playdata-modal" id="turnierPlaydataModal" role="dialog" aria-modal="true" aria-labelledby="turnierPlaydataTitle">
+  <div class="modalbox turnier-playdata-box">
+    <header class="turnier-playdata-header">
+      <div class="turnier-playdata-heading">
+        <span class="turnier-playdata-kicker">BADMINONE · SPIELPLAN</span>
+        <h2 id="turnierPlaydataTitle">Turnier-Spielplan importieren</h2>
+        <p>Übernimm Begegnungen direkt aus DBV Turnier. Ergebnisse werden nicht importiert.</p>
+      </div>
+      <button class="secondary close" id="turnierPlaydataClose" type="button" aria-label="Dialog schließen">✕</button>
+    </header>
+    <div class="turnier-playdata-content">
+      <div class="turnier-playdata-step"><span>1</span><div><strong>Turnierquelle</strong><small>Füge den Link zur Mannschafts-Spielplanseite ein.</small></div></div>
+      <div class="field"><label for="turnierPlaydataUrl">DBV-Turnier-Link</label><input id="turnierPlaydataUrl" type="url" inputmode="url" placeholder="https://dbv.turnier.de/sport/teammatches.aspx?..." autocomplete="url"></div>
+      <div class="turnier-playdata-primary-action"><button class="primary" id="turnierPlaydataPreview" type="button">Vorschau laden <span aria-hidden="true">→</span></button></div>
+      <div id="turnierPlaydataStatus" class="status" hidden aria-live="polite"></div>
+      <div id="turnierPlaydataResults" class="turnier-playdata-results" hidden>
+        <div class="ics-bulk-actions"><label><input type="checkbox" id="turnierPlaydataSelectAll" checked> Alle neuen Begegnungen auswählen</label><span id="turnierPlaydataCount"></span></div>
+        <div id="turnierPlaydataRows"></div>
+        <div class="toolbar"><button class="primary" id="turnierPlaydataImport" type="button">Ausgewählte Begegnungen importieren</button></div>
+      </div>
+    </div>
+    <footer class="turnier-playdata-footer"><span><span class="turnier-playdata-dot"></span> Import erfolgt erst nach deiner Bestätigung</span><button class="secondary" id="turnierPlaydataCancel" type="button">Abbrechen</button></footer>
+  </div>
+</div>
+
+<div class="modal" id="availabilityModal"><div class="modalbox">
+  <button class="secondary close" id="closeAvailability">Schließen</button>
+  <h2 id="availabilityTitle">Spieler-Zu-/Absagen</h2>
+  <div id="availabilityContent"></div>
+</div></div>
+
+
+
+
+
+
+<script src="assets/js/auth-popup.js?v=20261102"></script>
+<script src="assets/js/shared-nav.js?v=20261104-adminnav3"></script>
+</body>
+</html>

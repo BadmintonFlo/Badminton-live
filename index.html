@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101722"><title>BadminOne · All Your Game in One</title>
+<link rel="stylesheet" href="assets/css/style.css?v=20261102">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>window.BADMINTON_NEWS_ENDPOINT = "https://apsarswjmsrmffoyxsgr.supabase.co/functions/v1/badminton-news";</script>
+<script src="assets/js/index.js?v=20261102" defer></script>
+
+
+
+
+
+
+<script>
+(function(){
+  function updateAuthViewport(){
+    var h=window.visualViewport?window.visualViewport.height:window.innerHeight;
+    document.documentElement.style.setProperty('--visual-viewport-height',Math.max(260,h)+'px');
+  }
+  updateAuthViewport();
+  window.addEventListener('resize',updateAuthViewport);
+  if(window.visualViewport){window.visualViewport.addEventListener('resize',updateAuthViewport);window.visualViewport.addEventListener('scroll',updateAuthViewport);}
+})();
+</script>
+  <link rel="stylesheet" href="assets/css/badminton-header.css?v=20261102">
+<link rel="stylesheet" href="assets/css/auth-popup.css?v=20261102">
+</head>
+<body>
+<nav id="platformNav" aria-label="Hauptnavigation">
+  <div class="pn-brandbar">
+    <a class="pn-brand" href="index.html" aria-label="BadminOne – Startseite"><span class="pn-logo">🏸</span><span class="pn-brandtext"><strong>BadminOne</strong><small>ALL YOUR GAME IN ONE</small></span></a>
+    <div class="pn-actions">
+      <div class="pn-profile-wrap">
+        <button class="pn-profile-btn" id="profileBtn" type="button" aria-label="Profil und Anmeldung" aria-expanded="false" title="Profil">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>
+        </button>
+        <div class="pn-profile-menu" id="profileMenu" hidden>
+          <button type="button" id="profileLogin" data-auth-open="login">Anmelden</button>
+          <button type="button" id="profileRegister" data-auth-open="register">Konto erstellen</button>
+          <a href="profil.html" id="profileManage" hidden>Profil / Kontoeinstellungen</a>
+          <button type="button" id="logoutBtn" hidden>Abmelden</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pn-tiles" id="navInner" aria-label="Hauptbereiche"></div>
+</nav>
+<main class="page">
+  <section class="welcome">
+    <div class="welcome-copy"><p class="eyebrow">BADMINTON · VEREINSPLATTFORM</p><h1 id="welcomeTitle">Willkommen!</h1>
+    <p id="welcomeSubtitle">Alles Wichtige rund um Vereine, Teams und Spiele an einem Ort.</p><p id="roleLine" class="role-line" hidden></p></div>
+    <div class="welcome-mark" aria-hidden="true">🏸</div>
+  </section>
+
+  <section class="section" id="nextMatchSection" hidden><div class="section-head"><div><h2>Dein nächstes Spiel</h2><p>Der nächste Termin deiner Mannschaft</p></div><a class="text-link" href="spielplan.html" data-auth="true">Zum Spielplan →</a></div>
+    <article class="info-card"><span class="big-icon">🏸</span><div><strong id="nextMatchTitle">Keine Begegnung geladen</strong><p id="nextMatchMeta">Kommende Termine werden hier angezeigt.</p></div></article>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>Neuigkeiten</h2><p>Aktuelles aus dem Badminton und aus der App</p></div></div>
+    <div class="news-grid">
+      <article class="news-panel">
+        <h3>🏸 Badminton-News</h3>
+        <p>Offizielle Meldungen aus dem Verband – öffnet die Quelle direkt.</p>
+        <div id="badmintonNewsList" aria-live="polite">
+          <a class="news-link" href="https://www.badminton.nrw/service/amtliche-nachrichten/alle-mitteilungen-1" target="_blank" rel="noopener noreferrer">
+            <span><strong>Wir suchen dich</strong><small>24.10.2026 · Mitarbeit im Verbandsjugendausschuss und RWU19</small></span><span class="arrow">↗</span>
+          </a>
+          <a class="news-link" href="https://www.badminton.nrw/service/amtliche-nachrichten/alle-mitteilungen-1" target="_blank" rel="noopener noreferrer">
+            <span><strong>WDM U19: Info Nr. 1</strong><small>24.10.2026 · Listen online</small></span><span class="arrow">↗</span>
+          </a>
+          <a class="news-link" href="https://www.badminton.nrw/service/amtliche-nachrichten/alle-mitteilungen-1" target="_blank" rel="noopener noreferrer">
+            <span><strong>Rückrunden-VRL U19</strong><small>21.10.2026 · Frist: 12.11.2026</small></span><span class="arrow">↗</span>
+          </a>
+        </div>
+        <div class="news-footer"><span id="newsStatus">Beispielvorschau · automatische Aktualisierung noch nicht verbunden</span><a href="https://www.badminton.nrw/service/amtliche-nachrichten/alle-mitteilungen-1" target="_blank" rel="noopener noreferrer">Alle Meldungen ↗</a></div>
+      </article>
+      <article class="news-panel">
+        <h3>✨ Neuigkeiten zur App</h3>
+        <p>Neue Funktionen und wichtige Hinweise zur Plattform.</p>
+        <div class="app-news-empty">Noch keine App-Neuigkeiten hinterlegt. Dieser Bereich ist für spätere, zentral gepflegte Mitteilungen vorbereitet.</div>
+      </article>
+    </div>
+  </section>
+  <p class="page-note">Welche Funktionen verfügbar sind, richtet sich nach Rolle sowie Vereins- und Mannschaftszugehörigkeit. Die Zielseiten und Supabase-RLS müssen Zugriffe zusätzlich serverseitig absichern.</p>
+</main>
+<footer class="footer">BadminOne · All Your Game in One</footer>
+
+<dialog class="dialog" id="prefsDialog"><form class="dialog-body" id="prefsForm">
+  <div class="dialog-head"><div><p class="eyebrow">PERSÖNLICHE EINSTELLUNG</p><h2 id="prefsTitle">Menüpunkt auswählen</h2></div><button class="icon-btn" type="button" id="closePrefs">✕</button></div>
+  <p class="dialog-intro" id="prefsIntro">Wähle den einen individuellen Menüpunkt. Home, Vereine, Live und Mehr bleiben fest.</p>
+  <div class="options" id="options"></div><p class="message" id="prefsMessage" hidden></p>
+  <div class="dialog-actions"><button class="btn secondary" type="button" id="resetPrefs">Standard: Teams</button><button class="btn primary" type="button" id="savePrefs">Speichern</button></div>
+</form></dialog>
+<script src="assets/js/auth-popup.js?v=20261102"></script>
+<script src="assets/js/shared-nav.js?v=20261104-adminnav3"></script>
+</body></html>

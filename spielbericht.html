@@ -1,0 +1,573 @@
+<!doctype html><html lang="de" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Badminton – Spielbericht</title>
+<link rel="stylesheet" href="assets/css/style.css?v=20261106-6">
+<link rel="stylesheet" href="assets/css/badminton-header.css?v=20261106-6">
+<link rel="stylesheet" href="assets/css/spielbericht-page.css?v=20261106-6">
+
+
+
+
+
+
+
+<link rel="stylesheet" href="assets/css/auth-popup.css?v=20261106-6">
+<script src="assets/js/auth-popup.js?v=20261106-6" defer></script>
+<script src="assets/js/shared-nav.js?v=20261106-6" defer></script>
+<style id="spielbericht-page-fallback">
+/* BadminOne – Spielbericht-Komponenten; Farben aus style.css */
+html[data-theme="dark"] { color-scheme:dark; }
+html,body { min-height:100%; }
+body { margin:0; background:var(--bg,#142337)!important; color:var(--text,#edf3fb)!important; }
+.wrap { width:min(100% - 28px,1020px); margin:0 auto; padding:22px 0 36px; }
+.card {
+  margin:0 0 16px; padding:20px; border:1px solid var(--border,#30465d);
+  border-radius:19px; background:var(--card,#17283b); color:var(--text,#edf3fb);
+  box-shadow:0 8px 24px #07111f24;
+}
+h1,h2,h3,h4,p,span,strong,small,label { color:inherit; }
+h1 { margin:0 0 10px; color:var(--text,#edf3fb); font-size:clamp(23px,4vw,30px); line-height:1.2; }
+h2 { margin:0 0 12px; color:var(--text,#edf3fb); font-size:clamp(19px,3vw,23px); }
+h3 { color:var(--text,#edf3fb); }
+.sub,.small { color:var(--muted,#b8c7d8); font-size:13px; line-height:1.5; }
+label { display:block; margin:12px 0 6px; color:var(--muted,#b8c7d8); font-size:13px; font-weight:750; }
+input,textarea,select {
+  display:block; width:100%; min-height:46px; box-sizing:border-box;
+  padding:11px 13px; border:1px solid var(--border,#30465d); border-radius:12px;
+  background:#0f1d2d!important; color:var(--text,#edf3fb)!important;
+  font:inherit; box-shadow:none;
+}
+input::placeholder,textarea::placeholder { color:var(--muted,#b8c7d8); opacity:.8; }
+input:focus,textarea:focus,select:focus { outline:2px solid var(--primary,#65b5ff); outline-offset:1px; }
+input[type="checkbox"] { display:inline-block; width:auto; min-height:0; }
+textarea { min-height:100px; resize:vertical; }
+.grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+button {
+  min-height:43px; border:1px solid transparent; border-radius:12px;
+  padding:10px 15px; color:var(--text,#edf3fb); font:inherit; font-weight:800; cursor:pointer;
+}
+button:disabled { opacity:.48; cursor:not-allowed; }
+.primary { background:#247bb8!important; border-color:#3288c8!important; color:#fff!important; }
+.secondary { background:#21374b!important; border-color:var(--border,#30465d)!important; color:var(--text,#edf3fb)!important; }
+.full { width:100%; }
+.hidden { display:none!important; }
+.status { margin-top:12px; padding:11px 13px; border:1px solid #426486; border-radius:12px; background:#1c3148; color:var(--text,#edf3fb); font-size:13px; }
+.status.ok,.status.success { background:#153d32; border-color:#28634f; color:#b9f4d8; }
+.status.bad,.status.error { background:#482729; border-color:#784044; color:#ffd1d1; }
+.status.warn { background:#443321; border-color:#765a31; color:#ffe0b3; }
+.match-list { display:grid; gap:11px; margin-top:14px; }
+.match {
+  display:block; width:100%; padding:16px; border:1px solid var(--border,#30465d);
+  border-radius:16px; background:#1d334a; color:var(--text,#edf3fb);
+  text-align:left; cursor:pointer;
+}
+.match:hover { border-color:#5a8ab3; background:#203b55; }
+.match-title { color:var(--text,#edf3fb); font-size:17px; font-weight:850; line-height:1.35; }
+.match-meta { margin-top:5px; color:var(--muted,#b8c7d8); font-size:13px; }
+.report-head { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:12px; align-items:center; text-align:center; }
+.team { color:var(--text,#edf3fb); font-size:17px; font-weight:850; }
+.big { color:var(--primary,#65b5ff); font-size:30px; font-weight:900; }
+.table-wrap { overflow-x:auto; border:1px solid var(--border,#30465d); border-radius:12px; }
+table { width:100%; min-width:700px; border-collapse:collapse; color:var(--text,#edf3fb); font-size:12px; }
+th,td { padding:8px 7px; border:1px solid var(--border,#30465d); text-align:center; vertical-align:middle; }
+th { background:#263b52; color:#f1f5fb; font-weight:850; }
+td { background:transparent; }
+td.name,.results-table td.player-home,.results-table td.player-away { text-align:left; min-width:125px; }
+.results-table { min-width:700px; }
+.results-table thead th { background:#263b52; border-bottom:2px solid #45627f; }
+.results-table tbody tr:nth-child(even) { background:#1c2939; }
+.results-table .total-row { background:#203d58; font-weight:900; }
+.results-table .set-score,.results-table .score-cell { white-space:nowrap; }
+.signature-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.sig-box { min-width:0; padding:14px; border:1px solid var(--border,#30465d); border-radius:15px; background:#1d334a; }
+.sig-box h3 { margin:0 0 8px; font-size:16px; }
+canvas { display:block; width:100%; height:170px; border:1px dashed #45627f; border-radius:11px; background:#f8fafc; touch-action:none; }
+.sig-preview { height:95px; cursor:pointer; }
+.sig-tools,.sig-modal-actions,.toolbar { display:flex; flex-wrap:wrap; gap:8px; }
+.sig-tools { margin-top:8px; }
+.sig-tools button { flex:1 1 110px; padding:9px; font-size:12px; }
+.toolbar button { flex:1 1 170px; }
+.confirm-label { display:flex; gap:9px; align-items:flex-start; }
+.confirm-checkbox { width:auto; min-height:0; margin-top:3px; flex:0 0 auto; }
+.modal { position:fixed; inset:0; z-index:1000; display:none; align-items:center; justify-content:center; padding:12px; background:#050b12bd; }
+.modal.open { display:flex; }
+.modal-panel {
+  width:min(100%,900px); max-height:94dvh; overflow:auto; padding:18px;
+  border:1px solid #45627f; border-radius:18px; background:#17283b;
+  color:var(--text,#edf3fb); box-shadow:0 20px 70px #0008;
+}
+.modal-head { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.sig-large { height:min(52vh,440px); margin:12px 0; border:2px solid #45627f; }
+.sig-modal-actions button { flex:1 1 120px; }
+.freeze-on { background:#b91c1c!important; color:#fff!important; }
+.sig-locked { opacity:.8; cursor:not-allowed; }
+.badge { display:inline-block; padding:5px 9px; border-radius:999px; background:#153d32; color:#b9f4d8; font-size:12px; font-weight:800; }
+
+.report-account-row { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.login-submit { margin-top:15px; }
+.signature-hint { margin-top:8px; }
+@media(max-width:600px) {
+  .wrap { width:calc(100% - 24px); padding:14px 0 28px; }
+  .card { padding:16px; border-radius:17px; }
+  .grid,.signature-grid,.report-head { grid-template-columns:1fr; }
+  .big { font-size:26px; }
+  .toolbar button { flex-basis:100%; }
+  .modal-panel { padding:13px; }
+  .sig-large { height:48vh; }
+}
+
+/* Fallback overrides: Spielbericht-Kontrast unabhängig von allgemeinen Seitenregeln */
+html[data-theme="dark"] body .wrap,
+html[data-theme="dark"] body .wrap * { color: #edf3fb; }
+html[data-theme="dark"] body .wrap .sub,
+html[data-theme="dark"] body .wrap .small,
+html[data-theme="dark"] body .wrap label { color: #b8c7d8 !important; }
+html[data-theme="dark"] body .wrap h1,
+html[data-theme="dark"] body .wrap h2,
+html[data-theme="dark"] body .wrap h3 { color: #edf3fb !important; }
+html[data-theme="dark"] body .wrap .card {
+  background: #17283b !important; border: 1px solid #30465d !important;
+  color: #edf3fb !important;
+}
+html[data-theme="dark"] body .wrap input:not([type="checkbox"]),
+html[data-theme="dark"] body .wrap textarea,
+html[data-theme="dark"] body .wrap select {
+  background: #0f1d2d !important; color: #edf3fb !important;
+  border: 1px solid #40566d !important; -webkit-text-fill-color: #edf3fb !important;
+}
+html[data-theme="dark"] body .wrap input::placeholder,
+html[data-theme="dark"] body .wrap textarea::placeholder { color: #b8c7d8 !important; }
+html[data-theme="dark"] body .wrap button.secondary { background:#21374b !important; color:#edf3fb !important; }
+html[data-theme="dark"] body .wrap .match { background:#1d334a !important; color:#edf3fb !important; }
+html[data-theme="dark"] body .wrap .match-title { color:#edf3fb !important; }
+html[data-theme="dark"] body .wrap .match-meta { color:#b8c7d8 !important; }
+
+
+
+
+/* Berechtigungsfilter für Vereins- und Mannschaftsverwalter */
+html body .wrap .match-filters { display:grid; grid-template-columns:1fr; gap:12px; margin:18px 0 20px; padding:16px; border:1px solid #344b63; border-radius:16px; background:#20364c; }
+html body .wrap .match-filters label { display:block; margin:0 0 7px; color:#c5d2e0 !important; font-weight:700; }
+html body .wrap .match-filters select { width:100%; min-height:48px; border-radius:12px; padding:10px 13px; background:#0e1b2a !important; color:#edf3fb !important; border:1px solid #40566d !important; }
+html body .wrap .match-filters .small { color:#b8c7d8 !important; }
+@media(min-width:700px){ html body .wrap .match-filters { grid-template-columns:1fr 1fr; } html body .wrap .match-filters #filterHint { grid-column:1/-1; } }
+/* Spielbericht: festes BadminOne-Dark-Design, unabhängig von globaler Theme-Auswahl */
+html, html body { background:#142337 !important; color:#edf3fb !important; color-scheme:dark !important; }
+html body .wrap { background:transparent !important; color:#edf3fb !important; }
+html body .wrap .card,
+html body .wrap #loginCard,
+html body .wrap #selectCard,
+html body .wrap #reportCard {
+  background:#1b2d42 !important; color:#edf3fb !important;
+  border:1px solid #344b63 !important; box-shadow:0 8px 24px #07111f35 !important;
+}
+html body .wrap h1, html body .wrap h2, html body .wrap h3,
+html body .wrap p, html body .wrap strong, html body .wrap span,
+html body .wrap div:not(.status) { color:inherit; }
+html body .wrap .sub, html body .wrap .small,
+html body .wrap label, html body .wrap .match-meta { color:#b8c7d8 !important; }
+html body .wrap h1, html body .wrap h2, html body .wrap h3,
+html body .wrap .match-title { color:#edf3fb !important; }
+html body .wrap input:not([type=checkbox]),
+html body .wrap textarea, html body .wrap select {
+  background:#0e1b2a !important; color:#edf3fb !important;
+  border:1px solid #40566d !important; -webkit-text-fill-color:#edf3fb !important;
+}
+html body .wrap input::placeholder, html body .wrap textarea::placeholder {
+  color:#aebed0 !important; -webkit-text-fill-color:#aebed0 !important;
+}
+html body .wrap button.secondary {
+  background:#263b52 !important; border:1px solid #40566d !important;
+  color:#edf3fb !important; -webkit-text-fill-color:#edf3fb !important;
+}
+html body .wrap button.primary {
+  background:#318dcc !important; border:1px solid #429ddd !important;
+  color:#fff !important; -webkit-text-fill-color:#fff !important;
+}
+html body .wrap .match {
+  background:#20384f !important; border:1px solid #40566d !important;
+  color:#edf3fb !important; -webkit-text-fill-color:#edf3fb !important;
+}
+html body .wrap .match * { color:inherit !important; }
+html body .wrap .status { color:#edf3fb !important; }
+html body .wrap 
+
+</style>
+</head><body>
+
+<nav id="platformNav" aria-label="Hauptnavigation">
+  <div class="pn-brandbar">
+    <a class="pn-brand" href="index.html" aria-label="BadminOne – Startseite"><span class="pn-logo">🏸</span><span class="pn-brandtext"><strong>BadminOne</strong><small>ALL YOUR GAME IN ONE</small></span></a>
+    <div class="pn-actions">
+      <div class="pn-profile-wrap">
+        <button class="pn-profile-btn" id="profileBtn" type="button" aria-label="Profil und Anmeldung" aria-expanded="false" title="Profil">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>
+        </button>
+        <div class="pn-profile-menu" id="profileMenu" hidden>
+          <button type="button" id="profileLogin" data-auth-open="login">Anmelden</button>
+          <button type="button" id="profileRegister" data-auth-open="register">Konto erstellen</button>
+          <a href="profil.html" id="profileManage" hidden>Profil / Kontoeinstellungen</a>
+          <button type="button" id="logoutBtn" hidden>Abmelden</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pn-tiles" id="navInner" aria-label="Hauptbereiche"></div>
+</nav>
+<div class="wrap">
+<div id="loginCard" class="card"><h1>📋 Spielbericht</h1><div class="sub">Geschützter Bereich für Moderator/Admin.</div><label>E-Mail</label><input id="email" type="email" autocomplete="username"><label>Passwort</label><input id="password" type="password" autocomplete="current-password"><button id="loginBtn" class="primary full login-submit">Anmelden</button><div id="loginStatus" class="status hidden"></div></div>
+<div id="app" class="hidden"><div class="card"><div class="report-account-row"><div><h1>📋 Spielbericht</h1><div id="userInfo" class="sub"></div></div></div></div>
+<div id="selectCard" class="card"><h2>Begegnung auswählen</h2><div class="sub">Ergebnisse und Paarungen werden automatisch aus Supabase übernommen.</div>
+<div id="matchFilters" class="match-filters hidden">
+  <div><label for="clubFilter">Verein</label><select id="clubFilter"><option value="all">Alle berechtigten Vereine</option></select></div>
+  <div><label for="teamFilter">Mannschaft</label><select id="teamFilter"><option value="all">Alle Mannschaften</option></select></div>
+  <div id="filterHint" class="small"></div>
+</div>
+<div id="matches" class="match-list"></div><div id="appStatus" class="status hidden"></div></div>
+<div id="reportCard" class="hidden">
+<div class="card"><div id="reportHeader"></div></div>
+<div class="card"><h2>Angaben zum Spielbericht</h2><div class="grid"><div><label>Bezeichnung der Staffel</label><input id="staffel"></div><div><label>Staffel-Nr.</label><input id="staffelNr"></div><div><label>Datum</label><input id="reportDate" type="date"></div><div><label>Uhrzeit Spielbeginn</label><input id="reportTime" type="time"></div><div><label>Ort / Hallenbezeichnung</label><input id="venue"></div><div><label>Spieltag</label><input id="matchday"></div></div></div>
+<div class="card"><h2>Spielergebnisse</h2><div class="sub">Schreibgeschützt aus dem Moderatorbereich.</div><div class="table-wrap"><table id="resultsTable" class="results-table"></table></div></div>
+<div class="card"><h2>Bemerkungen / besondere Vorkommnisse</h2><textarea id="incidents"></textarea><label>Protestvorbehalt gem. SpO</label><select id="protest"><option value="nein">Nein</option><option value="ja">Ja</option></select><label>Protestgrund</label><textarea id="protestReason"></textarea><label>Eingesetzte Ersatzspieler</label><textarea id="substitutes" placeholder="Namen der eingesetzten Ersatzspieler eintragen"></textarea></div>
+<div class="card"><h2>Mannschaftsführer</h2><div class="signature-grid"><div class="sig-box"><h3 id="signatureHomeTeam">Heimmannschaft</h3><label>Unterschrift</label><canvas id="sigHome" class="sig-preview" onclick="openSignature('home')"></canvas><div class="sig-tools"><button class="secondary" onclick="openSignature('home')">✍️ Unterschreiben / bearbeiten</button><button class="secondary" id="freezeHome" onclick="toggleFreeze('home')">🔒 Feld sperren</button><button class="secondary" onclick="clearSig('home')">Löschen</button></div></div><div class="sig-box"><h3 id="signatureAwayTeam">Gastmannschaft</h3><label>Unterschrift</label><canvas id="sigAway" class="sig-preview" onclick="openSignature('away')"></canvas><div class="sig-tools"><button class="secondary" onclick="openSignature('away')">✍️ Unterschreiben / bearbeiten</button><button class="secondary" id="freezeAway" onclick="toggleFreeze('away')">🔒 Feld sperren</button><button class="secondary" onclick="clearSig('away')">Löschen</button></div></div></div><label class="confirm-label"><input id="confirmData" type="checkbox" class="confirm-checkbox"> <span>Beide Mannschaftsführer bestätigen die Richtigkeit der Angaben und dass das Spiel unter Beachtung der Spielordnung stattgefunden hat.</span></label><div id="confirmedAt" class="small"></div></div>
+<div class="card"><div class="toolbar"><button class="secondary" onclick="saveReport()">💾 Spielbericht speichern</button><button class="primary" onclick="generatePDF()">📄 PDF erzeugen</button><button class="secondary" onclick="backToMatches()">← Andere Begegnung</button></div><div id="reportStatus" class="status hidden"></div></div>
+</div></div></div>
+<div id="signatureModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="signatureTitle"><div class="modal-panel"><div class="modal-head"><div><h2 id="signatureTitle">Unterschrift</h2><div class="small">Mit Finger oder Stift im großen Feld unterschreiben.</div></div><button class="secondary" onclick="closeSignature(false)">✕ Schließen</button></div><canvas id="signaturePad" class="sig-large"></canvas><div class="sig-modal-actions"><button class="secondary" onclick="clearPad()">🧹 Neu beginnen</button><button class="secondary" id="freezePadBtn" onclick="togglePadFreeze()">🔒 Feld sperren</button><button class="primary" onclick="closeSignature(true)">✓ Unterschrift übernehmen</button></div><div id="signatureHint" class="small" class="small signature-hint">Feld ist entsperrt.</div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script>
+const SUPABASE_URL="https://apsarswjmsrmffoyxsgr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const ORDER=["HD1","HD2","DD","HE1","HE2","HE3","DE","GD"],LABELS={HD1:"1. HD",HD2:"2. HD",DD:"DD",HE1:"1. HE",HE2:"2. HE",HE3:"3. HE",DE:"DE",GD:"GD"};let user,profile,matches=[],selected,games=[],managedClubs=[],managedTeams=[],allFinishedMatches=[],accessMode="";
+const $=id=>document.getElementById(id),esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));function msg(e,t,c=""){e.textContent=t;e.className="status "+c}function dateDE(v){return v?new Date(v+"T00:00:00").toLocaleDateString("de-DE"):""}function completedSetScore(x,y){if(x==null||y==null)return false;x=Number(x);y=Number(y);if(!Number.isInteger(x)||!Number.isInteger(y)||x<0||y<0||x>30||y>30||x===y)return false;let hi=Math.max(x,y),lo=Math.min(x,y);return(hi===21&&lo<=19)||(hi>=22&&hi<=29&&hi-lo===2)||(hi===30&&lo>=28)}function wins(g){let h=0,a=0;for(let n=1;n<=3;n++){let x=g["set"+n+"_home"],y=g["set"+n+"_away"];if(!completedSetScore(x,y))continue;if(+x>+y)h++;if(+y>+x)a++}return{h,a}}function winner(g){let s=wins(g);return s.h>=2?"home":s.a>=2?"away":null}function gamePoints(g){let h=0,a=0;for(let n=1;n<=3;n++){let x=g["set"+n+"_home"],y=g["set"+n+"_away"];if(x==null||y==null)continue;h+=Number(x);a+=Number(y)}return{h,a}}function total(){let h=0,a=0,sh=0,sa=0,ph=0,pa=0;games.forEach(g=>{let w=winner(g),s=wins(g),p=gamePoints(g);if(w=="home")h++;if(w=="away")a++;sh+=s.h;sa+=s.a;ph+=p.h;pa+=p.a});return{h,a,sh,sa,ph,pa}}
+let activeSignatureSide=null;const signatureFrozen={home:false,away:false,pad:false};
+function initCanvas(id){let c=$(id),x=c.getContext("2d"),down=false,last;c.width=900;c.height=500;function p(e){let r=c.getBoundingClientRect(),q=e;return{x:(q.clientX-r.left)*c.width/r.width,y:(q.clientY-r.top)*c.height/r.height}}function d(e){if(c.dataset.readonly==="true"||c.classList.contains("sig-preview"))return;e.preventDefault();down=true;last=p(e);try{c.setPointerCapture(e.pointerId)}catch(_){}}function m(e){if(!down)return;e.preventDefault();let q=p(e);x.beginPath();x.moveTo(last.x,last.y);x.lineTo(q.x,q.y);x.lineWidth=4;x.lineCap="round";x.lineJoin="round";x.stroke();last=q}function u(){down=false;last=null}c.addEventListener("pointerdown",d);c.addEventListener("pointermove",m);c.addEventListener("pointerup",u);c.addEventListener("pointercancel",u)}
+function openSignature(side){if(signatureFrozen[side])return msg($("reportStatus"),"Dieses Unterschriftenfeld ist gesperrt. Bitte zuerst entsperren.","warn");activeSignatureSide=side;const src=$(side==="home"?"sigHome":"sigAway"),pad=$("signaturePad");pad.width=1200;pad.height=600;pad.getContext("2d").clearRect(0,0,pad.width,pad.height);if(hasInk(side)){const im=new Image();im.onload=()=>pad.getContext("2d").drawImage(im,0,0,pad.width,pad.height);im.src=src.toDataURL("image/png")}signatureFrozen.pad=false;updatePadFreeze();$("signatureTitle").textContent="Unterschrift – "+(side==="home"?selected.home_team:selected.away_team);$("signatureModal").classList.add("open");}
+function closeSignature(save){if(save&&activeSignatureSide){const pad=$("signaturePad"),dest=$(activeSignatureSide==="home"?"sigHome":"sigAway"),ctx=dest.getContext("2d");ctx.clearRect(0,0,dest.width,dest.height);ctx.drawImage(pad,0,0,dest.width,dest.height)}$("signatureModal").classList.remove("open");activeSignatureSide=null;}
+function clearPad(){if(signatureFrozen.pad)return;const c=$("signaturePad");c.getContext("2d").clearRect(0,0,c.width,c.height)}
+function togglePadFreeze(){signatureFrozen.pad=!signatureFrozen.pad;updatePadFreeze()}
+function updatePadFreeze(){const c=$("signaturePad"),b=$("freezePadBtn");c.dataset.readonly=signatureFrozen.pad?"true":"false";c.classList.toggle("sig-locked",signatureFrozen.pad);b.textContent=signatureFrozen.pad?"🔓 Feld entsperren":"🔒 Feld sperren";b.classList.toggle("freeze-on",signatureFrozen.pad);$("signatureHint").textContent=signatureFrozen.pad?"Feld ist gesperrt. Zum Weiterzeichnen entsperren.":"Feld ist entsperrt."}
+function toggleFreeze(side){signatureFrozen[side]=!signatureFrozen[side];const b=$(side==="home"?"freezeHome":"freezeAway"),c=$(side==="home"?"sigHome":"sigAway");b.textContent=signatureFrozen[side]?"🔓 Feld entsperren":"🔒 Feld sperren";b.classList.toggle("freeze-on",signatureFrozen[side]);c.classList.toggle("sig-locked",signatureFrozen[side]);c.dataset.readonly=signatureFrozen[side]?"true":"false"}
+function clearSig(side){if(signatureFrozen[side])return msg($("reportStatus"),"Das Unterschriftenfeld ist gesperrt. Bitte zuerst entsperren.","warn");let c=$(side==="home"?"sigHome":"sigAway");c.getContext("2d").clearRect(0,0,c.width,c.height)}
+function sig(side){return $(side==="home"?"sigHome":"sigAway").toDataURL("image/png")}
+
+async function enter(u){
+  try{
+    user=u;
+    let q=await sb.from("profiles").select("id,display_name,role").eq("id",u.id).single();
+    if(q.error)throw q.error;
+    profile=q.data;
+    const role=String(profile?.role||"").toLowerCase();
+    const isGlobal=["moderator","admin"].includes(role);
+    const managerQ=await sb.from("club_managers").select("club_id").eq("user_id",u.id);
+    if(managerQ.error && !isGlobal)throw managerQ.error;
+    const managedIds=[...new Set((managerQ.data||[]).map(x=>x.club_id).filter(Boolean))];
+    if(!isGlobal && !managedIds.length){
+      await sb.auth.signOut();
+      throw new Error("Für dieses Konto ist keine Berechtigung als Vereinsmanager, Moderator oder Admin hinterlegt.");
+    }
+    accessMode=isGlobal?"global":"club";
+    managedClubs=[];
+    managedTeams=[];
+    const [clubsQ,teamsQ]=isGlobal?await Promise.all([
+      sb.from("clubs").select("id,name").order("name"),
+      sb.from("club_teams").select("id,name,club_id").eq("is_active",true).order("name")
+    ]):await Promise.all([
+      sb.from("clubs").select("id,name").in("id",managedIds).order("name"),
+      sb.from("club_teams").select("id,name,club_id").in("club_id",managedIds).eq("is_active",true).order("name")
+    ]);
+    if(clubsQ.error)throw clubsQ.error;
+    if(teamsQ.error)throw teamsQ.error;
+    managedClubs=clubsQ.data||[];
+    managedTeams=teamsQ.data||[];
+    if(!isGlobal&&!managedClubs.length)throw new Error("Die verwalteten Vereine konnten nicht geladen werden.");
+    $("loginCard").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    $("userInfo").textContent=(profile.display_name||u.email)+" · "+(isGlobal?role:"Vereinsmanager");
+    await loadMatches();
+  }catch(e){
+    $("app").classList.add("hidden");
+    $("loginCard").classList.remove("hidden");
+    msg($("loginStatus"),e?.message||"Anmeldung fehlgeschlagen.","bad");
+  }
+}
+async function login(){
+  const email=$("email").value.trim(),password=$("password").value;
+  if(!email||!password)return msg($("loginStatus"),"Bitte E-Mail und Passwort eingeben.","bad");
+  $("loginBtn").disabled=true;
+  msg($("loginStatus"),"Anmeldung läuft …");
+  try{
+    const q=await sb.auth.signInWithPassword({email,password});
+    if(q.error){msg($("loginStatus"),"Login fehlgeschlagen: "+q.error.message,"bad");return;}
+    await enter(q.data.user);
+  }catch(e){
+    msg($("loginStatus"),e?.message||"Anmeldung fehlgeschlagen.","bad");
+  }finally{
+    $("loginBtn").disabled=false;
+  }
+}
+async function loadMatches(){
+  let q=await sb.from("matches").select("*").eq("status","finished").order("match_date",{ascending:false}).limit(500);
+  if(q.error)return msg($("appStatus"),q.error.message,"bad");
+  allFinishedMatches=q.data||[];
+  setupMatchFilters();
+  applyMatchFilters();
+}
+function setupMatchFilters(){
+  const box=$("matchFilters");
+  box.classList.remove("hidden");
+  const clubLabel=accessMode==="global"?"Alle Vereine":"Alle berechtigten Vereine";
+  $("clubFilter").innerHTML=`<option value="all">${clubLabel}</option>`+managedClubs.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+  $("clubFilter").value="all";
+  $("clubFilter").onchange=()=>{populateTeamFilter();applyMatchFilters();};
+  $("teamFilter").onchange=applyMatchFilters;
+  populateTeamFilter();
+  $("filterHint").textContent=accessMode==="global"
+    ?"Alle beendeten Begegnungen oder gezielt nach Verein und Mannschaft filtern."
+    :"Es werden nur Begegnungen angezeigt, an denen mindestens eine deiner berechtigten Mannschaften beteiligt ist.";
+}
+function populateTeamFilter(){
+  const clubId=$("clubFilter").value;
+  const teams=clubId==="all"?managedTeams:managedTeams.filter(t=>String(t.club_id)===String(clubId));
+  $("teamFilter").innerHTML='<option value="all">Alle Mannschaften</option>'+teams.map(t=>`<option value="${esc(t.id)}">${esc(t.name)}</option>`).join("");
+  $("teamFilter").value="all";
+}
+function applyMatchFilters(){
+  const clubId=$("clubFilter").value;
+  const teamId=$("teamFilter").value;
+  let allowedTeams=managedTeams;
+  if(clubId!=="all")allowedTeams=allowedTeams.filter(t=>String(t.club_id)===String(clubId));
+  if(teamId!=="all")allowedTeams=allowedTeams.filter(t=>String(t.id)===String(teamId));
+  // Global roles see every match when no filter is selected. Club managers
+  // are always restricted to their assigned clubs/teams.
+  const noFilter=clubId==="all"&&teamId==="all";
+  if(accessMode==="global"&&noFilter){
+    matches=allFinishedMatches;
+  }else{
+    const ids=new Set(allowedTeams.map(t=>String(t.id)));
+    const names=new Set(allowedTeams.map(t=>normTeamName(t.name)));
+    matches=allFinishedMatches.filter(m=>{
+      const homeId=String(m.home_team_id||""),awayId=String(m.away_team_id||"");
+      return ids.has(homeId)||ids.has(awayId)||
+        (!homeId&&names.has(normTeamName(m.home_team)))||
+        (!awayId&&names.has(normTeamName(m.away_team)));
+    });
+  }
+  $("matches").innerHTML=matches.map(m=>`<button class="match" onclick="selectMatch('${esc(m.id)}')" ><div class="match-title">${esc(m.home_team)} – ${esc(m.away_team)}</div><div class="match-meta">${dateDE(m.match_date)}${m.match_time?" · "+String(m.match_time).slice(0,5)+" Uhr":""} · beendet</div></button>`).join("")||"<div class=small>Keine beendeten Begegnungen für diese Berechtigung bzw. Filterauswahl.</div>";
+}
+function normTeamName(v){return String(v||"").toLocaleLowerCase("de").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^a-z0-9]/g,"");}
+async function selectMatch(id){selected=matches.find(m=>m.id===id);if(!selected)return;let q=await sb.from("match_games").select("*").eq("match_id",id);if(q.error)return msg($("appStatus"),q.error.message,"bad");games=(q.data||[]).sort((a,b)=>ORDER.indexOf(a.position)-ORDER.indexOf(b.position));$("staffel").value="";$("staffelNr").value="";$("venue").value=selected.venue||"";render();await loadSavedReport();}
+function render(){
+ let r=total();
+ $("selectCard").classList.add("hidden");$("reportCard").classList.remove("hidden");
+ $("reportHeader").innerHTML=`<div class=report-head><div class=team>${esc(selected.home_team)}</div><div><div class=big>${r.h} : ${r.a}</div><span class=badge>${r.h>r.a?"Sieger: "+esc(selected.home_team):r.a>r.h?"Sieger: "+esc(selected.away_team):"Ergebnis: Unentschieden"}</span></div><div class=team>${esc(selected.away_team)}</div></div>`;
+ $("signatureHomeTeam").textContent=selected.home_team||"Heimmannschaft";$("signatureAwayTeam").textContent=selected.away_team||"Gastmannschaft";$("reportDate").value=selected.match_date||"";$("reportTime").value=selected.match_time?String(selected.match_time).slice(0,5):"";
+ let rows=games.map(g=>{
+   let st=wins(g),w=winner(g),p=gamePoints(g),gamesHome=w==="home"?1:0,gamesAway=w==="away"?1:0;
+   const score=(a,b)=>`${a??"–"} : ${b??"–"}`;
+   return `<tr><td>${LABELS[g.position]||esc(g.position)}</td><td class="player-home">${esc((g.player1||"–")+(g.player2?" / "+g.player2:""))}</td><td class="player-away">${esc((g.opponent_player1||"–")+(g.opponent_player2?" / "+g.opponent_player2:""))}</td><td class="set-score">${score(g.set1_home,g.set1_away)}</td><td class="set-score">${score(g.set2_home,g.set2_away)}</td><td class="set-score">${score(g.set3_home,g.set3_away)}</td><td class="numeric-score group-start">${p.h}</td><td class="numeric-score">${p.a}</td><td class="numeric-score group-start">${st.h}</td><td class="numeric-score">${st.a}</td><td class="numeric-score group-start">${gamesHome}</td><td class="numeric-score">${gamesAway}</td></tr>`
+ }).join("");
+ $("resultsTable").innerHTML=`<thead><tr><th rowspan="2">Spiel</th><th rowspan="2">Heimspieler</th><th rowspan="2">Gastspieler</th><th rowspan="2">1. Satz</th><th rowspan="2">2. Satz</th><th rowspan="2">3. Satz</th><th colspan="2">Satzpunkte</th><th colspan="2">Satzergebnis</th><th colspan="2">Spielergebnis</th></tr><tr><th>Heim</th><th>Gast</th><th>Heim</th><th>Gast</th><th>Heim</th><th>Gast</th></tr></thead><tbody>${rows}</tbody><tfoot><tr class="total-row"><th colspan="6">Gesamtsumme</th><th>${r.ph}</th><th>${r.pa}</th><th>${r.sh}</th><th>${r.sa}</th><th>${r.h}</th><th>${r.a}</th></tr></tfoot>`;
+}
+
+function payload(){return{match_id:selected.id,staffel:$("staffel").value.trim()||null,staffel_nr:$("staffelNr").value.trim()||null,report_date:$("reportDate").value||null,report_time:$("reportTime").value||null,venue:$("venue").value.trim()||null,matchday:$("matchday").value.trim()||null,incidents:$("incidents").value.trim()||null,protest:$("protest").value||"nein",protest_reason:$("protestReason").value.trim()||null,captain_home:null,captain_away:null,signature_home:sig("home"),signature_away:sig("away"),confirmed:true,confirmed_at:new Date().toISOString(),updated_by:user.id}}
+async function loadTeamSettings(onlyMissing=false){
+  if(!selected)return;
+  // Die Liga-/Staffelangaben liegen direkt an der Mannschaft in club_teams.
+  // Match-IDs sind zuverlässiger als Teamnamen (Schreibweisen können abweichen).
+  const teamIds=[selected.home_team_id,selected.away_team_id].filter(Boolean);
+  let rows=[],error=null;
+  if(teamIds.length){
+    const q=await sb.from("club_teams").select("id,name,season,league,league_level").in("id",teamIds);
+    rows=q.data||[];error=q.error;
+  }
+  if(error){console.warn("Mannschaftsdaten konnten nicht geladen werden:",error.message);return;}
+  let cfg=rows.find(x=>x.id===selected.home_team_id)||rows.find(x=>x.id===selected.away_team_id);
+  // Fallback für ältere Begegnungen ohne verknüpfte club_team-ID.
+  if(!cfg){
+    const q=await sb.from("club_teams").select("id,name,season,league,league_level").eq("is_active",true);
+    if(q.error){console.warn("Mannschaftsdaten konnten nicht geladen werden:",q.error.message);return;}
+    const norm=v=>String(v||"").toLowerCase().replace(/\s+/g,"").replace(/-/g,"");
+    const home=(q.data||[]).find(x=>norm(x.name)===norm(selected.home_team));
+    const away=(q.data||[]).find(x=>norm(x.name)===norm(selected.away_team));
+    cfg=home||away;
+  }
+  if(cfg){
+    const staffel=cfg.league||"";
+    const level=String(cfg.league_level||"").split(/\s+–\s+/).pop().trim();
+    if(!onlyMissing||!$("staffel").value)$("staffel").value=staffel;
+    if(!onlyMissing||!$("staffelNr").value)$("staffelNr").value=level;
+  }
+  // Die konkrete Hallenadresse der Begegnung hat Vorrang. Falls sie fehlt,
+  // wird eine ggf. für die Mannschaft gespeicherte Standardhalle verwendet.
+  if(!onlyMissing||!$("venue").value){
+    let venue=selected.venue||"";
+    if(!venue&&cfg?.name){
+      const q=await sb.from("team_venues").select("venue").eq("team",cfg.name).limit(1);
+      if(!q.error&&q.data?.length)venue=q.data[0].venue||"";
+    }
+    $("venue").value=venue;
+  }
+}
+async function loadSavedReport(){
+  const {data,error}=await sb.from("match_reports").select("*").eq("match_id",selected.id).maybeSingle();
+  if(error){msg($("reportStatus"),"Gespeicherter Spielbericht konnte nicht geladen werden: "+error.message,"bad");return;}
+  if(!data){await loadTeamSettings();return;}
+  $("staffel").value=data.staffel||"";$("staffelNr").value=data.staffel_nr||"";$("reportDate").value=data.report_date||selected.match_date||"";$("reportTime").value=data.report_time?String(data.report_time).slice(0,5):(selected.match_time?String(selected.match_time).slice(0,5):"");$("venue").value=data.venue||selected.venue||"";$("matchday").value=data.matchday||"";$("incidents").value=data.incidents||"";$("protest").value=data.protest||"nein";$("protestReason").value=data.protest_reason||"";$("substitutes").value=data.substitutes||"";$("confirmData").checked=!!data.confirmed;$("confirmedAt").textContent=data.confirmed_at?"Bestätigt am: "+new Date(data.confirmed_at).toLocaleString("de-DE"):"";
+  if(!$("staffel").value || !$("staffelNr").value) await loadTeamSettings(true);
+  setTimeout(()=>{loadSig("home",data.signature_home);loadSig("away",data.signature_away)},50);
+  if(data.pdf_path)msg($("reportStatus"),"Spielbericht gespeichert. PDF ist im Spielplan verfügbar.","ok");
+}
+function loadSig(side,data){if(!data)return;const img=new Image();img.onload=()=>{const c=$(side==="home"?"sigHome":"sigAway"),x=c.getContext("2d");x.clearRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height)};img.src=data}
+async function saveReport(){
+  if(selected.status!=="finished")return msg($("reportStatus"),"Ein Spielbericht kann erst nach Beendigung der Begegnung erstellt werden.","warn");
+  if(!$("confirmData").checked)return msg($("reportStatus"),"Bitte die Richtigkeitsbestätigung aktivieren.","warn");
+  if(!hasInk("home")||!hasInk("away"))return msg($("reportStatus"),"Bitte beide Mannschaftsführer unterschreiben.","warn");
+  let q=await sb.from("match_reports").upsert(payload(),{onConflict:"match_id"}).select().single();
+  if(q.error)return msg($("reportStatus"),"Speichern fehlgeschlagen: "+q.error.message,"bad");
+  msg($("reportStatus"),"Spielbericht gespeichert. Jetzt PDF erzeugen.","ok");$("confirmedAt").textContent="Bestätigt am: "+new Date().toLocaleString("de-DE");
+}
+function hasInk(s){const c=$(s==="home"?"sigHome":"sigAway"),x=c.getContext("2d"),d=x.getImageData(0,0,c.width,c.height).data;for(let i=3;i<d.length;i+=4)if(d[i]>0)return true;return false}
+function backToMatches(){$("reportCard").classList.add("hidden");$("selectCard").classList.remove("hidden")}
+async function generatePDF(){
+  if(selected.status!=="finished")return msg($("reportStatus"),"Ein Spielbericht kann erst nach Beendigung der Begegnung erstellt werden.","warn");
+  if(!$("confirmData").checked)return msg($("reportStatus"),"Bitte zuerst bestätigen.","warn");
+  if(!hasInk("home")||!hasInk("away"))return msg($("reportStatus"),"Bitte beide Mannschaften unterschreiben.","warn");
+  let {jsPDF}=window.jspdf,doc=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"}),r=total();
+  doc.setFontSize(17);doc.text("Badminton-Spielbericht",148,14,{align:"center"});doc.setFontSize(9);doc.text("Staffel: "+($('staffel').value||"—"),10,23);doc.text("Staffel-Nr.: "+($('staffelNr').value||"—"),10,29);doc.text("Heim: "+selected.home_team,90,23);doc.text("Gast: "+selected.away_team,190,23);doc.text("Datum: "+($('reportDate').value||"—")+"   Beginn: "+($('reportTime').value||"—"),90,29);doc.text("Ort/Halle: "+($('venue').value||"—"),190,29);
+  let body=games.map(g=>{
+    const st=wins(g), win=winner(g), pts=gamePoints(g);
+    const gh=win==="home"?1:0, ga=win==="away"?1:0;
+    const homePlayers=(g.player1||"–")+(g.player2 ? " / "+g.player2 : "");
+    const awayPlayers=(g.opponent_player1||"–")+(g.opponent_player2 ? " / "+g.opponent_player2 : "");
+    return [LABELS[g.position]||g.position,homePlayers,awayPlayers,
+      (g.set1_home??"–")+" : "+(g.set1_away??"–"),(g.set2_home??"–")+" : "+(g.set2_away??"–"),
+      (g.set3_home??"–")+" : "+(g.set3_away??"–"),pts.h,pts.a,
+      st.h,st.a,gh,ga];
+  });
+  body.push(["Gesamtsumme","","","","","",r.ph,r.pa,r.sh,r.sa,r.h,r.a]);
+  doc.autoTable({startY:35,head:[[{content:"Spiel",rowSpan:2},{content:"Heimspieler",rowSpan:2},{content:"Gastspieler",rowSpan:2},{content:"1. Satz",rowSpan:2},{content:"2. Satz",rowSpan:2},{content:"3. Satz",rowSpan:2},{content:"Satzpunkte",colSpan:2},{content:"Satzergebnis",colSpan:2},{content:"Spielergebnis",colSpan:2}],["Heim","Gast","Heim","Gast","Heim","Gast"]],body,styles:{fontSize:6.3,cellPadding:1.4,lineColor:[71,85,105],lineWidth:.3,halign:"center"},headStyles:{fillColor:[219,234,254],textColor:[15,23,42],lineWidth:.5},alternateRowStyles:{fillColor:[241,245,249]},columnStyles:{1:{cellWidth:32,halign:"left"},2:{cellWidth:32,halign:"left"},3:{cellWidth:16},4:{cellWidth:16},5:{cellWidth:16}},didParseCell:function(data){if(data.section==="body"&&data.row.index===body.length-1){data.cell.styles.fontStyle="bold";data.cell.styles.fillColor=[219,234,254];}}});let y=doc.lastAutoTable.finalY+6;doc.setFontSize(11);const outcome=r.h>r.a?"Sieger der Begegnung: "+selected.home_team:r.a>r.h?"Sieger der Begegnung: "+selected.away_team:"Ergebnis der Begegnung: Unentschieden";doc.setFont(undefined,"bold");doc.text(outcome,10,y);doc.setFont(undefined,"normal");y+=8;doc.setFontSize(9);
+  doc.text("Besondere Vorkommnisse: "+($('incidents').value||"Keine."),10,y);y+=7;doc.text("Protestvorbehalt: "+$('protest').value,10,y);if($('protest').value=="ja")doc.text("Grund: "+($('protestReason').value||"—"),80,y);y+=7;doc.text("Eingesetzte Ersatzspieler:",10,y);y+=5;const subLines=doc.splitTextToSize($('substitutes').value||"—",270);doc.text(subLines,10,y);y+=Math.max(6,subLines.length*4)+2;doc.text("Heim: "+selected.home_team,10,y);doc.text("Gast: "+selected.away_team,150,y);y+=3;try{doc.addImage(sig("home"),"PNG",10,y,55,30);doc.addImage(sig("away"),"PNG",150,y,55,30)}catch(e){}y+=34;doc.text("Bestätigt: "+new Date().toLocaleString("de-DE"),10,y);
+  const blob=doc.output("blob");const path=selected.id+"/Spielbericht_"+selected.id+".pdf";
+  const up=await sb.storage.from("match-reports").upload(path,blob,{contentType:"application/pdf",upsert:true});
+  if(up.error)return msg($("reportStatus"),"PDF konnte nicht gespeichert werden: "+up.error.message,"bad");
+  const row=await sb.from("match_reports").upsert({...payload(),pdf_path:path,pdf_generated_at:new Date().toISOString()},{onConflict:"match_id"}).select().single();
+  if(row.error)return msg($("reportStatus"),"Bericht gespeichert, aber Datenbankaktualisierung fehlgeschlagen: "+row.error.message,"bad");
+  doc.save("Spielbericht_"+selected.home_team+"_"+selected.away_team+".pdf");msg($("reportStatus"),"PDF erzeugt und im Spielplan gespeichert.","ok");
+}
+$("loginBtn").onclick=login;$("password").onkeydown=e=>{if(e.key=="Enter")login()};$("confirmData").onchange=e=>$("confirmedAt").textContent=e.target.checked?"Bestätigt am: "+new Date().toLocaleString("de-DE"):"";initCanvas("sigHome");initCanvas("sigAway");initCanvas("signaturePad");(async()=>{let q=await sb.auth.getSession();if(q.data.session)enter(q.data.session.user).catch(e=>msg($("loginStatus"),e.message,"bad"))})();
+</script>
+<script>document.documentElement.dataset.theme="dark";</script>
+
+<script>
+
+(function(){
+ const root=document.getElementById('platformNav'); if(!root) return;
+ const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+ const items=[
+  {label:'Dashboard',href:'index.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Vereine',href:'vereine.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Mannschaften',href:'mannschaft.html',roles:['team_manager','moderator','admin','board','advisory']},
+  {label:'Spielplan',href:'spielplan.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Aufstellung',href:'aufstellung.html',roles:['team_manager','moderator','admin']},
+  {label:'Live',href:'live.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Moderator',href:'moderator.html',roles:['moderator','scorer','admin']},
+  {label:'Spielbericht',href:'spielbericht.html',roles:['team_manager','moderator','admin']},
+  {label:'Spielerstatistik',href:'spielerstatistik.html',roles:['player','team_manager','moderator','admin','board','advisory']},
+  {label:'Rangliste',href:'Rangliste.html',roles:['player','team_manager','moderator','admin','board','advisory']},
+  {label:'Administration',href:'admin.html',roles:['admin']}
+ ];
+ const primary=['Dashboard','Vereine','Mannschaften','Spielplan','Aufstellung','Live'];
+ const labels=new Set(primary);
+ function link(it){const a=document.createElement('a');a.href=it.href;a.textContent=it.label;if(current===it.href.toLowerCase())a.setAttribute('aria-current','page');return a}
+ const links=root.querySelector('.pn-links'); if(!links)return;
+ function render(role,loggedIn){
+   links.innerHTML='';
+   const allowed=items.filter(it=>it.roles.includes(role));
+   allowed.filter(it=>labels.has(it.label)).forEach(it=>links.appendChild(link(it)));
+   const more=allowed.filter(it=>!labels.has(it.label));
+   if(more.length){
+     const d=document.createElement('details');d.className='pn-more';
+     const s=document.createElement('summary');s.textContent='Mehr ▾';d.appendChild(s);
+     const menu=document.createElement('div');menu.className='pn-menu';more.forEach(it=>menu.appendChild(link(it)));d.appendChild(menu);links.appendChild(d);
+   }
+   const u=root.querySelector('.pn-user'); if(u)u.textContent=loggedIn?'Angemeldet':'Öffentlicher Bereich';
+ }
+ const toggle=root.querySelector('.pn-toggle');
+ if(toggle)toggle.addEventListener('click',()=>{const open=links.classList.toggle('pn-open');toggle.setAttribute('aria-expanded',String(open));toggle.textContent=open?'✕ Schließen':'☰ Menü';});
+ // Keep public access functional; logged-in roles receive a tailored menu.
+ const fallback=()=>render('player',false);
+ if(!window.supabase||!window.supabase.createClient){fallback();return}
+ const url='https://apsarswjmsrmffoyxsgr.supabase.co';
+ const key='sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj';
+ try{
+   const client=window.__platformNavClient||(window.__platformNavClient=window.supabase.createClient(url,key));
+   client.auth.getUser().then(async ({data,error})=>{
+     if(error||!data.user){fallback();return}
+     let role='player';
+     const {data:profile}=await client.from('profiles').select('role').eq('id',data.user.id).maybeSingle();
+     if(profile&&profile.role)role=String(profile.role).toLowerCase();
+     const {data:members}=await client.from('club_memberships').select('club_role,status').eq('user_id',data.user.id).eq('status','active');
+     const roles=(members||[]).map(x=>String(x.club_role||'').toLowerCase());
+     if(role!=='admin'&&roles.length){
+       if(roles.includes('team_manager'))role='team_manager';
+       else if(roles.includes('moderator'))role='moderator';
+       else if(roles.includes('board'))role='board';
+       else if(roles.includes('advisory'))role='advisory';
+     }
+     render(role,true);
+   }).catch(fallback);
+ }catch(e){fallback()}
+})();
+</script>
+
+<script id="spielbericht-profile-menu-fallback">
+(() => {
+  "use strict";
+  const init = () => {
+    const button = document.getElementById("profileBtn");
+    const menu = document.getElementById("profileMenu");
+    if (!button || !menu || button.dataset.menuFallbackReady === "1") return;
+    button.dataset.menuFallbackReady = "1";
+
+    const closeMenu = () => {
+      menu.hidden = true;
+      menu.style.display = "none";
+      button.setAttribute("aria-expanded", "false");
+    };
+    const openMenu = () => {
+      menu.hidden = false;
+      menu.style.display = "block";
+      button.setAttribute("aria-expanded", "true");
+    };
+
+    closeMenu();
+    button.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (menu.hidden || menu.style.display === "none") openMenu();
+      else closeMenu();
+    });
+
+    menu.addEventListener("click", event => {
+      const action = event.target.closest("button, a");
+      if (action) closeMenu();
+    });
+
+    document.addEventListener("click", event => {
+      if (!menu.contains(event.target) && !button.contains(event.target)) closeMenu();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        closeMenu();
+        button.focus();
+      }
+    });
+  };
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    init();
+  }
+})();
+</script>
+
+</body></html>

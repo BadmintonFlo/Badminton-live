@@ -1,0 +1,1064 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Badminton – Aufstellung</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="assets/css/style.css?v=20261103-lineup5">
+<link rel="stylesheet" href="assets/css/badminton-header.css?v=20261102">
+<link rel="stylesheet" href="assets/css/auth-popup.css?v=20261102">
+<link rel="stylesheet" href="assets/css/aufstellung.css?v=20261103-autorefresh1">
+
+<style id="badminone-lineup-player-picker">
+.lineup-player-picker{position:relative;width:100%;min-width:0}
+.lineup-player-native{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.lineup-player-trigger{
+  width:100%;min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:13px 16px;border:1px solid var(--line,#26384b);border-radius:16px;
+  background:var(--surface-2,#0b1724);color:var(--text,#f3f7fb);font:inherit;text-align:left;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);cursor:pointer;
+}
+.lineup-player-trigger:focus-visible{outline:2px solid var(--accent,#21b6a8);outline-offset:2px}
+.lineup-player-trigger:disabled{opacity:.55;cursor:not-allowed}
+.lineup-player-trigger>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lineup-player-chevron{color:var(--muted,#91a2b5);font-size:18px;transition:transform .16s ease}
+.lineup-player-trigger[aria-expanded="true"] .lineup-player-chevron{transform:rotate(180deg)}
+.lineup-player-menu{
+  position:absolute;z-index:80;top:calc(100% + 7px);left:0;right:0;max-height:min(320px,55vh);overflow-y:auto;
+  padding:7px;border:1px solid var(--line,#26384b);border-radius:16px;
+  background:var(--card,#101e2d);color:var(--text,#f3f7fb);
+  box-shadow:0 16px 40px rgba(0,0,0,.42);overscroll-behavior:contain;
+}
+.lineup-player-menu[hidden]{display:none!important}
+.lineup-player-group+.lineup-player-group{border-top:1px solid var(--line,#26384b);margin-top:7px;padding-top:7px}
+.lineup-player-group-title{padding:8px 10px 6px;color:var(--muted,#91a2b5);font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.lineup-player-option{
+  width:100%;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 11px;border:0;border-radius:10px;background:transparent;color:var(--text,#f3f7fb);
+  font:inherit;text-align:left;cursor:pointer;
+}
+.lineup-player-option:hover,.lineup-player-option:focus-visible{background:rgba(32,177,165,.13);outline:none}
+.lineup-player-option[aria-selected="true"]{background:rgba(32,177,165,.17);color:var(--accent,#36c5b5)}
+.lineup-player-option small{flex:none;color:var(--muted,#91a2b5);font-size:11px}
+.lineup-player-empty{padding:14px 11px;color:var(--muted,#91a2b5);font-size:13px}
+@media(max-width:600px){.lineup-player-menu{max-height:48vh}.lineup-player-trigger{min-height:50px}}
+</style>
+
+
+<style id="badminone-mobile-modal-fix">
+/* Mobile-friendly modal: the dialog itself scrolls and stays inside the visible screen. */
+#opponentModal{
+  position:fixed!important;inset:0!important;z-index:1000!important;
+  display:none;align-items:flex-start!important;justify-content:center!important;
+  box-sizing:border-box!important;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 12px calc(env(safe-area-inset-bottom,0px) + 10px)!important;
+  overflow-y:auto!important;overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+#opponentModal[style*="display: flex"],
+#opponentModal[style*="display:flex"]{display:flex!important}
+#opponentModal .modal-box{
+  width:min(100%,680px)!important;max-width:680px!important;
+  max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 20px)!important;
+  margin:auto!important;box-sizing:border-box!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+  overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;
+  padding:clamp(16px,4vw,24px)!important;
+  scroll-padding-block:20px 36px!important;
+}
+#opponentModal .modal-actions{
+  position:sticky!important;bottom:-1px!important;z-index:3!important;
+  display:flex!important;flex-wrap:wrap!important;gap:10px!important;
+  padding:12px 0 max(4px,env(safe-area-inset-bottom,0px))!important;
+  margin-top:14px!important;
+  background:var(--card,#14263a)!important;
+  border-top:1px solid var(--line,#344b62)!important;
+}
+#opponentModal .modal-actions button{flex:1 1 140px!important;min-width:0!important}
+#opponentModal #opponentFields{min-width:0!important}
+#opponentModal #opponentFields .opp-row{min-width:0!important}
+/* Keep the original opponent input layout from aufstellung.css. */
+#opponentModal #opponentFields input{width:100%!important;min-width:0!important;box-sizing:border-box!important}
+@media(min-width:620px){
+  #opponentModal{align-items:center!important;padding:20px!important}
+  #opponentModal .modal-box{max-height:calc(100dvh - 40px)!important}
+}
+@media(max-width:600px){
+  .lineup-player-menu{z-index:2000!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior:contain!important}
+}
+</style>
+
+
+<style id="badminone-manual-entry-focus">
+#opponentModal.manual-entry-active .modal-box>h2,
+#opponentModal.manual-entry-active .modal-box>.small,
+#opponentModal.manual-entry-active .modal-box>label[for="opponentRosterSearch"],
+#opponentModal.manual-entry-active #opponentRosterSearch,
+#opponentModal.manual-entry-active .modal-box>label[for="opponentRosterTeam"],
+#opponentModal.manual-entry-active #opponentRosterTeam{
+  display:none!important;
+}
+#opponentModal.manual-entry-active .modal-box{
+  scroll-padding-top:12px!important;
+}
+#opponentModal.manual-entry-active #opponentFields{
+  margin-top:0!important;
+}
+@media(max-width:600px){
+  #opponentModal.manual-entry-active .modal-box{
+    padding-top:12px!important;
+  }
+}
+</style>
+
+</head>
+<body class="lineup-page">
+
+<nav id="platformNav" aria-label="Hauptnavigation">
+  <div class="pn-brandbar">
+    <a class="pn-brand" href="index.html" aria-label="BadminOne – Startseite"><span class="pn-logo">🏸</span><span class="pn-brandtext"><strong>BadminOne</strong><small>ALL YOUR GAME IN ONE</small></span></a>
+    <div class="pn-actions">
+      <div class="pn-profile-wrap">
+        <button class="pn-profile-btn" id="profileBtn" type="button" aria-label="Profil und Anmeldung" aria-expanded="false" title="Profil">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>
+        </button>
+        <div class="pn-profile-menu" id="profileMenu" hidden>
+          <button type="button" id="profileLogin" data-auth-open="login">Anmelden</button>
+          <button type="button" id="profileRegister" data-auth-open="register">Konto erstellen</button>
+          <a href="profil.html" id="profileManage" hidden>Profil / Kontoeinstellungen</a>
+          <button type="button" id="logoutBtn" hidden>Abmelden</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pn-tiles" id="navInner" aria-label="Hauptbereiche"></div>
+</nav>
+
+<header class="lineup-page-header"><h1>BadminOne · Matchaufstellung</h1><p>Begegnung auswählen und Mannschaftsaufstellung erstellen</p></header>
+<main>
+
+<section class="card is-hidden" id="appCard">
+<div class="two grid filter-grid">
+<div class="lineup-filter-field"><label>Verein</label><div class="lineup-select" id="clubSelectCustom"><button type="button" class="lineup-select-trigger" aria-expanded="false"><span>– Verein auswählen –</span><span class="lineup-select-chevron">⌄</span></button><div class="lineup-select-menu" hidden></div></div><select id="clubSelect" class="lineup-native-select" aria-hidden="true" tabindex="-1"><option value="">– Verein auswählen –</option></select></div>
+<div class="lineup-filter-field"><label>Mannschaft</label><div class="lineup-select" id="teamSelectCustom"><button type="button" class="lineup-select-trigger" aria-expanded="false"><span>– Mannschaft auswählen –</span><span class="lineup-select-chevron">⌄</span></button><div class="lineup-select-menu" hidden></div></div><select id="teamSelect" class="lineup-native-select" aria-hidden="true" tabindex="-1"><option value="">– Mannschaft auswählen –</option></select></div>
+</div>
+<hr class="section-divider">
+<h2>Begegnung aus dem Spielplan</h2>
+<p class="small">Die Begegnungen werden zentral im Spielplan angelegt. Wähle hier eine deiner geplanten Begegnungen aus. Änderungen an Datum, Uhrzeit, Gegner oder Ort erfolgen ausschließlich im Spielplan.</p>
+<div class="two grid">
+  <div><label for="scheduledMatchSelect">Begegnung</label>
+<select id="scheduledMatchSelect" class="lineup-native-select" aria-hidden="true" tabindex="-1"><option value="">– Begegnung auswählen –</option></select>
+<div id="scheduledMatchSelectCustom" class="lineup-select">
+  <button type="button" class="lineup-select-trigger" aria-expanded="false"><span>– Begegnung auswählen –</span><b class="lineup-select-chevron">⌄</b></button>
+  <div class="lineup-select-menu" hidden></div>
+</div></div>
+  
+</div>
+<div id="matchStatus" class="status">Noch keine Begegnung ausgewählt.</div>
+<div id="matchInfo" class="matchinfo is-hidden"><div><div class="team" id="homeTeam">–</div><div class="small">Heim</div></div><div class="vs">–</div><div><div class="team" id="awayTeam">–</div><div class="small">Gast</div></div></div>
+</section>
+
+<section class="card is-hidden" id="lineupCard">
+<h2>Eigene Aufstellung</h2>
+<p class="small">Zuerst wird ausschließlich deine eigene Aufstellung festgelegt. Erst nach dem Speichern der vollständigen eigenen Aufstellung kannst du die Gegner in einem separaten Fenster eintragen. Bei einer eigenen kampflosen Abgabe bitte „Kein Spieler“ wählen; bei einem Doppel werden dadurch automatisch beide Positionen auf „Kein Spieler“ gesetzt. Im Gegner-Fenster kann zusätzlich „Gegner stellt keine Spieler“ angekreuzt werden. Wenn beide Mannschaften ein Spiel nicht besetzen können, entfällt es aus der Wertung.</p>
+<div class="slots" id="slots"></div>
+<div id="validation" class="validation">Noch keine Prüfung durchgeführt.</div>
+<div class="toolbar toolbar-lineup"><button type="button" class="secondary" onclick="validateLineup()">Aufstellung prüfen</button><button type="button" class="danger" onclick="clearLineup()">Leeren</button><button type="button" class="primary" onclick="saveLineup()">💾 Eigene Aufstellung speichern</button><button class="secondary" type="button" onclick="previewWhatsAppLineup()">📱 WhatsApp-Vorschau</button><button type="button" id="opponentButton" class="secondary" onclick="openOpponentModal()" disabled>👥 Gegner eintragen</button></div>
+<div id="saveStatus" class="status">Noch nicht gespeichert.</div>
+</section>
+
+<div id="opponentModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="opponentModalTitle">
+  <div class="modal-box">
+    <h2 id="opponentModalTitle">Gegner eintragen</h2>
+    <div class="small">Die eigene Aufstellung ist bereits gespeichert. Suche optional eine Mannschaft in BadminOne. Wenn sie nicht vorhanden oder nicht in der öffentlichen Rangliste ist, kannst du die Namen weiterhin manuell eintragen.</div>
+    <label for="opponentRosterSearch">Gegnerischen Verein oder Mannschaft suchen</label>
+    <input id="opponentRosterSearch" type="search" placeholder="Vereinsname oder Mannschaft …" oninput="filterOpponentRosterTeams()">
+    <label for="opponentRosterTeam">Gegnerische Mannschaft in BadminOne</label>
+    <select id="opponentRosterTeam" onchange="selectOpponentRosterTeam()"><option value="">– Mannschaft suchen oder manuell eintragen –</option></select>
+    <datalist id="opponentRosterList"></datalist>
+    <div id="opponentFields"></div>
+    <div class="modal-actions">
+      <button type="button" class="secondary" onclick="closeOpponentModal()">Abbrechen</button>
+      <button type="button" class="primary" onclick="saveOpponentModal()">💾 Gegner speichern</button>
+    </div>
+    <div id="opponentStatus" class="status is-hidden"></div>
+  </div>
+</div>
+
+<div id="whatsappModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="whatsappModalTitle">
+  <div class="modal-box">
+    <h2 id="whatsappModalTitle">WhatsApp-Vorschau</h2>
+    <p class="small">So wird die Aufstellung in WhatsApp aussehen. Das Format ist für alle Begegnungen einheitlich.</p>
+    <textarea id="whatsappPreview" class="whatsapp-preview" readonly></textarea>
+    <div class="modal-actions">
+      <button type="button" class="secondary" onclick="closeWhatsAppPreview()">Schließen</button>
+      <button type="button" class="primary" onclick="copyWhatsAppPreview(event)">📋 Text kopieren</button>
+    </div>
+    <div id="whatsappStatus" class="status is-hidden"></div>
+  </div>
+</div>
+
+<section class="card is-hidden" id="playersCard">
+<h2>Spieler der Mannschaft</h2>
+<div class="tablewrap"><table class="playerlist"><thead><tr><th>Spieler</th><th>Geschlecht</th><th class="right">Rang</th></tr></thead><tbody id="playerTable"></tbody></table></div>
+</section>
+</main>
+<script>
+"use strict";
+const SUPABASE_URL="https://apsarswjmsrmffoyxsgr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const ORDER=["HD1","HD2","DD","HE1","HE2","HE3","DE","GD"];
+const NO_PLAYER="Kein Spieler";
+const LABELS={HD1:"1. Herrendoppel",HD2:"2. Herrendoppel",DD:"Damendoppel",HE1:"1. Herreneinzel",HE2:"2. Herreneinzel",HE3:"3. Herreneinzel",DE:"Dameneinzel",GD:"Gemischtes Doppel"};
+let user=null,profile=null,players=[],matches=[],teamRecords=[],allTeamRecords=[],clubRecords=[],allowedClubIds=[],opponentRosterTeams=[],opponentRosterPlayers=[],selectedMatch=null,locked=false,selectedTeam="",selectedTeamId=null,selectedClubId=null,ownLineupSaved=false;
+let lineup={HD1:["",""],HD2:["",""],DD:["",""],HE1:"",HE2:"",HE3:"",DE:"",GD:["",""]};
+let opponents={HD1:["",""],HD2:["",""],DD:["",""],HE1:"",HE2:"",HE3:"",DE:"",GD:["",""]};
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function norm(s){return String(s??"").toLowerCase().trim().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[^a-z0-9]/g,"")}
+function num(v){let n=parseFloat(String(v??"").replace(",","."));return Number.isFinite(n)?n:null}
+function gender(v){
+  const x=norm(v);
+  if(["h","m","herr","herren","mann","maenner","maennlich","male","men"].includes(x))return"m";
+  if(["d","w","dame","damen","frau","frauen","weiblich","female","women"].includes(x))return"w";
+  return"";
+}
+function msg(e){return e?.message||e?.details||"Unbekannter Fehler"}
+function setStatus(id,text,type=""){let e=$(id);if(!e)return;e.className="status"+(type?" "+type:"");e.textContent=text}
+async function init(){let r=await sb.auth.getSession();user=r.data.session?.user||null;if(user)await afterLogin();sb.auth.onAuthStateChange(async(_e,s)=>{user=s?.user||null;if(user)await afterLogin()})}
+function renderLineupSelect(selectId,customId,placeholder){
+  const native=$(selectId),root=$(customId);
+  if(!native||!root)return;
+  const trigger=root.querySelector(".lineup-select-trigger");
+  const label=trigger.querySelector("span");
+  const menu=root.querySelector(".lineup-select-menu");
+  const selected=native.options[native.selectedIndex];
+  label.textContent=selected?.textContent||placeholder;
+  menu.innerHTML=[...native.options].map(o=>`<button type="button" class="lineup-select-option" data-value="${esc(o.value)}" aria-selected="${String(o.value===native.value)}">${esc(o.textContent)}</button>`).join("");
+  menu.querySelectorAll(".lineup-select-option").forEach(option=>{
+    option.addEventListener("click",()=>{
+      native.value=option.dataset.value;
+      label.textContent=option.textContent.trim();
+      menu.querySelectorAll(".lineup-select-option").forEach(x=>x.setAttribute("aria-selected",String(x===option)));
+      menu.hidden=true;trigger.setAttribute("aria-expanded","false");
+      native.dispatchEvent(new Event("change",{bubbles:true}));
+    });
+  });
+}
+function bindLineupSelects(){
+  // Die unsichtbaren nativen Selects bleiben die Datenquelle für die bestehende Logik.
+  // Ihre change-Handler müssen explizit gebunden werden, damit die Custom-Dropdowns
+  // Vereins-/Mannschaftswechsel und das Nachladen der Begegnungen auslösen.
+  const clubNative=$("clubSelect"),teamNative=$("teamSelect"),matchNative=$("scheduledMatchSelect");
+  if(matchNative&&matchNative.dataset.changeBound!=="1"){
+    matchNative.addEventListener("change",selectScheduledMatch);
+    matchNative.dataset.changeBound="1";
+  }
+  if(clubNative&&clubNative.dataset.changeBound!=="1"){
+    clubNative.addEventListener("change",clubChanged);
+    clubNative.dataset.changeBound="1";
+  }
+  if(teamNative&&teamNative.dataset.changeBound!=="1"){
+    teamNative.addEventListener("change",teamChanged);
+    teamNative.dataset.changeBound="1";
+  }
+  document.querySelectorAll(".lineup-select-trigger").forEach(trigger=>{
+    if(trigger.dataset.bound==="1")return;
+    trigger.dataset.bound="1";
+    trigger.addEventListener("click",()=>{
+      const root=trigger.closest(".lineup-select"),menu=root.querySelector(".lineup-select-menu"),opening=menu.hidden;
+      document.querySelectorAll(".lineup-select-menu").forEach(m=>m.hidden=true);
+      document.querySelectorAll(".lineup-select-trigger").forEach(b=>b.setAttribute("aria-expanded","false"));
+      menu.hidden=!opening;trigger.setAttribute("aria-expanded",String(opening));
+    });
+  });
+  if(!document.body.dataset.lineupSelectOutside){
+    document.addEventListener("click",e=>{
+      if(!e.target.closest(".lineup-select")){
+        document.querySelectorAll(".lineup-select-menu").forEach(m=>m.hidden=true);
+        document.querySelectorAll(".lineup-select-trigger").forEach(b=>b.setAttribute("aria-expanded","false"));
+      }
+    });
+    document.body.dataset.lineupSelectOutside="1";
+  }
+}
+async function afterLogin(){
+  $("appCard").style.display="block";
+  const {data:profileResult,error:profileError}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();
+  if(profileError){setStatus("matchStatus","Profil konnte nicht geladen werden: "+msg(profileError),"bad");return}
+  profile=profileResult;
+  const [{data:roleRows,error:roleError},{data:managerRows,error:managerError}]=await Promise.all([
+    sb.from("club_team_user_roles").select("team_id,club_id,role").eq("user_id",user.id).eq("status","active"),
+    sb.from("club_managers").select("club_id").eq("user_id",user.id)
+  ]);
+  if(roleError){setStatus("matchStatus","Teamrechte konnten nicht geladen werden: "+msg(roleError),"bad");return}
+  if(managerError){setStatus("matchStatus","Vereinsrechte konnten nicht geladen werden: "+msg(managerError),"bad");return}
+  const roles=roleRows||[],managedClubIds=(managerRows||[]).map(x=>String(x.club_id));
+  const roleTeamIds=[...new Set(roles.filter(r=>["team_manager","moderator"].includes(r.role)).map(r=>r.team_id).filter(Boolean))];
+  const roleClubIds=roles.filter(r=>["team_manager","moderator"].includes(r.role)).map(r=>String(r.club_id||"")).filter(Boolean);
+  if(!profile||!(profile.role==="admin"||profile.role==="team_manager"||roleTeamIds.length||managedClubIds.length)){
+    setStatus("matchStatus","Keine Berechtigung für die Mannschaftsaufstellung.","bad");return;
+  }
+  const [{data:clubs,error:clubsError},{data:allTeams,error:teamsError}]=await Promise.all([
+    sb.from("clubs").select("id,name,city,archived_at").is("archived_at",null).order("name"),
+    sb.from("club_teams").select("id,club_id,name,season,league,league_level,is_active").eq("is_active",true).order("name")
+  ]);
+  if(clubsError){setStatus("matchStatus","Vereine konnten nicht geladen werden: "+msg(clubsError),"bad");return}
+  if(teamsError){setStatus("matchStatus","Mannschaften konnten nicht geladen werden: "+msg(teamsError),"bad");return}
+  allTeamRecords=allTeams||[];
+  const isAdmin=profile.role==="admin";
+  if(isAdmin)allowedClubIds=(clubs||[]).map(c=>String(c.id));
+  else{
+    const inferred=allTeamRecords.filter(t=>roleTeamIds.some(id=>String(id)===String(t.id))).map(t=>String(t.club_id));
+    allowedClubIds=[...new Set([...managedClubIds,...roleClubIds,...inferred])];
+  }
+  clubRecords=(clubs||[]).filter(c=>allowedClubIds.includes(String(c.id)));
+  const roleTeamSet=new Set(roleTeamIds.map(String));
+  teamRecords=allTeamRecords.filter(t=>{
+    if(!allowedClubIds.includes(String(t.club_id)))return false;
+    if(isAdmin||managedClubIds.includes(String(t.club_id)))return true;
+    return roleTeamSet.has(String(t.id));
+  });
+  if(!clubRecords.length||!teamRecords.length){setStatus("matchStatus","Für deinen Zugriff wurden keine berechtigten Vereine oder Mannschaften gefunden.","warn");return}
+  const clubSel=$("clubSelect");
+  clubSel.innerHTML='<option value="">– Verein auswählen –</option>'+clubRecords.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}${c.city?' · '+esc(c.city):''}</option>`).join("");
+  if(clubRecords.length===1)clubSel.value=String(clubRecords[0].id);
+  selectedClubId=clubSel.value||null;
+  bindLineupSelects();
+  renderLineupSelect("clubSelect","clubSelectCustom","– Verein auswählen –");
+  const roleTeam=teamRecords.find(t=>roleTeamSet.has(String(t.id))&&(!selectedClubId||String(t.club_id)===selectedClubId));
+  const clubTeams=teamRecords.filter(t=>!selectedClubId||String(t.club_id)===selectedClubId);
+  const initial=clubTeams.length===1?clubTeams[0]:roleTeam;
+  selectedTeamId=initial?.id||null;selectedTeam=initial?.name||"";
+  populateTeamSelect();
+  await loadPlayers();
+  await loadScheduledMatches();
+}
+function teamsForSelectedClub(){return teamRecords.filter(t=>!selectedClubId||String(t.club_id)===String(selectedClubId))}
+function populateTeamSelect(){
+  const sel=$("teamSelect"),list=teamsForSelectedClub();
+  sel.innerHTML='<option value="">– Mannschaft auswählen –</option>'+list.map(t=>`<option value="${esc(t.id)}">${esc(t.name)}${t.season?' · '+esc(t.season):''}</option>`).join("");
+  if(selectedTeamId&&list.some(t=>String(t.id)===String(selectedTeamId)))sel.value=String(selectedTeamId);
+  else if(list.length===1){selectedTeamId=list[0].id;selectedTeam=list[0].name;sel.value=String(list[0].id)}
+  else{selectedTeamId=null;selectedTeam="";sel.value=""}
+  bindLineupSelects();
+  renderLineupSelect("teamSelect","teamSelectCustom","– Mannschaft auswählen –");
+}
+async function clubChanged(){
+  selectedClubId=$("clubSelect").value||null;selectedTeamId=null;selectedTeam="";
+  populateTeamSelect();await loadPlayers();await loadScheduledMatches();
+}
+async function teamChanged(){
+  selectedTeamId=$("teamSelect").value||null;
+  const t=teamRecords.find(x=>String(x.id)===String(selectedTeamId));
+  selectedTeam=t?.name||"";
+  if(t){selectedClubId=String(t.club_id);$("clubSelect").value=selectedClubId;renderLineupSelect("clubSelect","clubSelectCustom","– Verein auswählen –")}
+  await loadPlayers();await loadScheduledMatches();
+}
+async function loadPlayers(){
+  players=[];
+  if(!selectedTeamId){renderPlayers();return}
+  const teamIds=[selectedTeamId];
+  const {data:assignments,error:assignmentError}=await sb.from("club_team_players").select("team_id,player_id").in("team_id",teamIds);
+  if(assignmentError){setStatus("matchStatus","Mannschaftszuordnungen konnten nicht geladen werden: "+msg(assignmentError),"bad");return}
+  const playerIds=[...new Set((assignments||[]).map(a=>a.player_id))];
+  if(!playerIds.length){renderPlayers();return}
+  const {data:playerRows,error}=await sb.from("players").select("id,name,ranking_position,gender,active").in("id",playerIds).eq("active",true);
+  if(error){setStatus("matchStatus","Spieler konnten nicht aus Supabase geladen werden: "+msg(error),"bad");return}
+  const teamById=new Map(teamRecords.map(t=>[String(t.id),t])),playerById=new Map((playerRows||[]).map(p=>[String(p.id),p]));
+  players=(assignments||[]).map(a=>{const p=playerById.get(String(a.player_id)),t=teamById.get(String(a.team_id));return p&&t?{id:p.id,name:p.name,rank:p.ranking_position,gender:gender(p.gender),team:t.name,team_id:t.id,club_id:t.club_id,season:t.season}:null}).filter(Boolean);
+  renderPlayers();
+}
+function ownPlayers(){return players.filter(p=>p.team_id===selectedTeamId)}
+function teamNumber(team){const m=String(team||"").match(/(\d+)\s*$/);return m?parseInt(m[1],10):null}
+function lowerTeams(){const base=teamNumber(selectedTeam);if(base==null)return [];return teamRecords.filter(t=>t.club_id===selectedClubId&&t.season===teamRecords.find(x=>x.id===selectedTeamId)?.season&&teamNumber(t.name)>base).map(t=>t.id)}
+function substitutePlayers(){const lower=new Set(lowerTeams());return players.filter(p=>lower.has(p.team_id))}
+function eligiblePlayers(g){return ownPlayers().filter(p=>!g||p.gender===g)}
+function eligibleSubstitutes(g){return substitutePlayers().filter(p=>!g||p.gender===g)}
+function optionGroup(list,v){return list.map(p=>`<option value="${esc(p.id)}" ${String(p.id)===String(v)?"selected":""}>${esc(p.name)}${p.rank!=null?" · Rang "+p.rank:""}${p.team!==selectedTeam?" · "+esc(p.team):""}</option>`).join("")}
+function renderPlayers(){if(!selectedTeam)return;let ps=ownPlayers();$("playersCard").style.display="block";$("playerTable").innerHTML=ps.map(p=>`<tr><td>${esc(p.name)}</td><td>${p.gender==="m"?"H":p.gender==="w"?"D":"–"}</td><td class="right">${p.rank??"–"}</td></tr>`).join("")||'<tr><td colspan="3">Keine Spieler für diese Mannschaft gefunden.</td></tr>'}
+async function loadScheduledMatches(){
+  const sel=$("scheduledMatchSelect");
+  if(!sel)return;
+  sel.innerHTML='<option value="">– Begegnung auswählen –</option>';
+  renderLineupSelect("scheduledMatchSelect","scheduledMatchSelectCustom","– Begegnung auswählen –");
+  selectedMatch=null; locked=false; ownLineupSaved=false;
+  $("lineupCard").style.display="none";
+  $("matchInfo").style.display="none";
+  if(!selectedTeam){setStatus("matchStatus","Bitte zuerst eine Mannschaft auswählen.");return}
+  const {data,error}=await sb.from("matches").select("id,home_team,away_team,home_team_id,away_team_id,managed_by_team_id,match_date,match_time,status,venue,season,updated_at").order("match_date",{ascending:true}).order("match_time",{ascending:true});
+  if(error){setStatus("matchStatus","Spielplan konnte nicht geladen werden: "+msg(error),"bad");return}
+  // In der Auswahl nur Begegnungen anzeigen, die noch nicht beendet/geschlossen sind.
+  // Beendete Begegnungen bleiben in der Datenbank erhalten, sind hier aber nicht mehr auswählbar.
+  matches=(data||[]).filter(m=>((String(m.home_team_id||"")===String(selectedTeamId)||String(m.away_team_id||"")===String(selectedTeamId))||(!m.home_team_id&&!m.away_team_id&&(m.home_team===selectedTeam||m.away_team===selectedTeam)))
+    && !["finished","completed","closed"].includes(String(m.status||"").toLowerCase().trim()));
+  const label=m=>{
+    const d=m.match_date?new Date(m.match_date+"T00:00:00").toLocaleDateString("de-DE"):"ohne Datum";
+    const t=m.match_time?String(m.match_time).slice(0,5):"";
+    const state=m.status||"planned";
+    const stateLabel=state==="finished"?" · beendet":state==="in_progress"?" · läuft":" · geplant";
+    return `${d}${t?" · "+t:""} · ${m.home_team} – ${m.away_team}${stateLabel}`;
+  };
+  sel.innerHTML+=[...matches].sort((a,b)=>String(a.match_date||"").localeCompare(String(b.match_date||""))||String(a.match_time||"").localeCompare(String(b.match_time||""))).map(m=>`<option value="${esc(m.id)}">${esc(label(m))}</option>`).join("");
+  renderLineupSelect("scheduledMatchSelect","scheduledMatchSelectCustom","– Begegnung auswählen –");
+  bindLineupSelects();
+  setStatus("matchStatus",matches.length?`${matches.length} Begegnung${matches.length===1?"":"en"} aus dem Spielplan geladen.`:"Keine Begegnungen für diese Mannschaft gefunden.",matches.length?"ok":"warn");
+}
+
+async function selectScheduledMatch(){
+  const id=$("scheduledMatchSelect").value;
+  if(!id){selectedMatch=null;$("lineupCard").style.display="none";$("matchInfo").style.display="none";setStatus("matchStatus","Noch keine Begegnung ausgewählt.");return}
+  selectedMatch=matches.find(m=>String(m.id)===String(id));
+  if(!selectedMatch)return;
+  locked=["finished","completed","closed"].includes(String(selectedMatch.status||"").toLowerCase());
+  ownLineupSaved=false;
+  $("lineupCard").style.display="block";
+  $("matchInfo").style.display="grid";
+  $("homeTeam").textContent=selectedMatch.home_team;
+  $("awayTeam").textContent=selectedMatch.away_team;
+  resetLineup();
+  if(locked){
+    setStatus("matchStatus","Diese Begegnung ist bereits beendet und für die Aufstellung gesperrt.","warn");
+    await loadSavedLineup();
+    setStatus("saveStatus","Begegnung beendet – Aufstellung nur noch zur Ansicht.","warn");
+  } else {
+    setStatus("matchStatus",`${selectedMatch.match_date?new Date(selectedMatch.match_date+"T00:00:00").toLocaleDateString("de-DE"):""}${selectedMatch.match_time?" · "+String(selectedMatch.match_time).slice(0,5):""} · ${selectedMatch.home_team} – ${selectedMatch.away_team}`,"ok");
+    await loadSavedLineup();
+  }
+  $("lineupCard").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function prepareNewMatchForm(){
+  if(!selectedTeam)return;
+  const home=$("homeTeamInput"),away=$("awayTeamInput");
+  if(profile?.role==="admin") {
+    if(!home.value && !away.value) home.value=selectedTeam;
+  } else {
+    home.value=selectedTeam;
+    home.readOnly=true;
+  }
+  setStatus("matchStatus","Bitte Gegner, Datum und Beginn eintragen und dann die Begegnung anlegen.");
+}
+function ensureOwnTeamSide(){
+  const home=$("homeTeamInput").value.trim(), away=$("awayTeamInput").value.trim();
+  if(!home || !away) return {error:"Bitte Heim- und Gastmannschaft eintragen."};
+  if(home===away) return {error:"Heim- und Gastmannschaft dürfen nicht identisch sein."};
+  if(home!==selectedTeam && away!==selectedTeam) return {error:"Die ausgewählte Mannschaft muss an der Begegnung beteiligt sein."};
+  const opponentName=home===selectedTeam?away:home;
+  const opponentMatches=teamRecords.filter(t=>t.name===opponentName&&t.id!==selectedTeamId);
+  const opponentTeam=opponentMatches.length===1?opponentMatches[0]:null;
+  return {home,away,homeTeamId:home===selectedTeam?selectedTeamId:(opponentTeam?.id||null),awayTeamId:away===selectedTeam?selectedTeamId:(opponentTeam?.id||null),managedByTeamId:selectedTeamId};
+}
+async function createMatchAndStartLineup(){
+  if(!selectedTeam){setStatus("matchStatus","Bitte zuerst eine Mannschaft auswählen.","bad");return}
+  if(selectedMatch){setStatus("matchStatus","Diese Begegnung wurde bereits angelegt. Die Aufstellung kann unten bearbeitet werden.","ok");$("lineupCard").scrollIntoView({behavior:"smooth",block:"start"});return}
+  const check=ensureOwnTeamSide();
+  if(check.error){setStatus("matchStatus",check.error,"bad");return}
+  const date=$("matchDate").value||null,time=$("matchTime").value||null;
+  if(!date){setStatus("matchStatus","Bitte ein Datum eintragen.","bad");return}
+  if(!time){setStatus("matchStatus","Bitte eine Beginnzeit eintragen.","bad");return}
+  setStatus("matchStatus","Begegnung wird angelegt …");
+  const {data:match,error}=await sb.from("matches").insert({home_team:check.home,away_team:check.away,home_team_id:check.homeTeamId,away_team_id:check.awayTeamId,managed_by_team:selectedTeam,managed_by_team_id:check.managedByTeamId,match_date:date,match_time:time,status:"planned",created_by:user.id}).select("id,home_team,away_team,home_team_id,away_team_id,managed_by_team_id,match_date,match_time,status,is_public").single();
+  if(error){setStatus("matchStatus","Begegnung konnte nicht angelegt werden: "+msg(error),"bad");return}
+  const games=ORDER.map(position=>({match_id:match.id,position,status:"planned"}));
+  const {error:gameError}=await sb.from("match_games").insert(games);
+  if(gameError){await sb.from("matches").delete().eq("id",match.id);setStatus("matchStatus","Begegnung wurde nicht vollständig angelegt: "+msg(gameError),"bad");return}
+  selectedMatch=match;locked=false;ownLineupSaved=false;resetLineup();
+  $("lineupCard").style.display="block";$("matchInfo").style.display="grid";
+  $("homeTeam").textContent=match.home_team;$("awayTeam").textContent=match.away_team;
+  setStatus("matchStatus",(date?new Date(date+"T00:00:00").toLocaleDateString("de-DE"):"")+" · "+time+" · Begegnung angelegt.","ok");
+  setStatus("saveStatus","Jetzt die 8 Spiele besetzen und anschließend die Aufstellung speichern.");
+  $("lineupCard").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function resetLineup(){lineup={HD1:["",""],HD2:["",""],DD:["",""],HE1:"",HE2:"",HE3:"",DE:"",GD:["",""]};opponents={HD1:["",""],HD2:["",""],DD:["",""],HE1:"",HE2:"",HE3:"",DE:"",GD:["",""]};ownLineupSaved=false;renderSlots();updateOpponentButton();setStatus("saveStatus","Noch nicht gespeichert.")}
+async function ensureMatchGames(){
+  if(!selectedMatch)return true;
+  const {data,error}=await sb.from("match_games").select("id,position").eq("match_id",selectedMatch.id);
+  if(error){setStatus("saveStatus","Spiele konnten nicht geprüft werden: "+msg(error),"bad");return false}
+  const existing=new Set((data||[]).map(g=>g.position));
+  const missing=ORDER.filter(position=>!existing.has(position)).map(position=>({match_id:selectedMatch.id,position,status:"planned"}));
+  if(missing.length){
+    const {error:insError}=await sb.from("match_games").insert(missing);
+    if(insError){setStatus("saveStatus","Spiele konnten nicht angelegt werden: "+msg(insError),"bad");return false}
+  }
+  return true;
+}
+async function loadSavedLineup(){
+  if(!selectedMatch)return;
+  if(!(await ensureMatchGames()))return;
+  let{data,error}=await sb.from("match_games").select("position,player1,player2,opponent_player1,opponent_player2,home_player1_id,home_player2_id,away_player1_id,away_player2_id").eq("match_id",selectedMatch.id);
+  if(error){setStatus("saveStatus","Gespeicherte Aufstellung konnte nicht geladen werden: "+msg(error),"bad");return}
+  const mineIsHome=mySideIsHome();
+  for(const g of data||[]){
+    const mine=mineIsHome?[restorePlayerValue(g.home_player1_id,g.player1),restorePlayerValue(g.home_player2_id,g.player2)]:[restorePlayerValue(g.away_player1_id,g.opponent_player1),restorePlayerValue(g.away_player2_id,g.opponent_player2)];
+    const opp=mineIsHome?[g.opponent_player1||"",g.opponent_player2||""]:[g.player1||"",g.player2||""];
+    if(Array.isArray(lineup[g.position])){lineup[g.position]=mine;opponents[g.position]=opp;}
+    else if(g.position in lineup){lineup[g.position]=mine[0]||"";opponents[g.position]=opp[0]||"";}
+  }
+  ownLineupSaved = data?.length ? validateLineup() : false;
+  renderSlots();
+  updateOpponentButton();
+  setStatus("saveStatus",data?.length?"Gespeicherte Aufstellung geladen.":"Noch keine Aufstellung gespeichert.");
+}
+function opts(g,v){let own=eligiblePlayers(g),subs=eligibleSubstitutes(g);let html='<option value="">– auswählen –</option>';if(own.length)html+='<optgroup label="Eigene Mannschaft">'+optionGroup(own,v)+'</optgroup>';if(subs.length)html+='<optgroup label="Ersatzspieler aus unteren Mannschaften">'+optionGroup(subs,v)+'</optgroup>';html+='<optgroup label="Kampflos"><option value="'+NO_PLAYER+'" '+(v===NO_PLAYER?"selected":"")+'>'+NO_PLAYER+'</option></optgroup>';return html}
+function playerPickerOptions(g,v){
+  const own=eligiblePlayers(g),subs=eligibleSubstitutes(g);
+  const option=(p)=>`<button type="button" class="lineup-player-option" role="option" data-value="${esc(p.id)}" aria-selected="${String(p.id)===String(v)}"><span>${esc(p.name)}</span>${p.rank!=null?`<small>Rang ${esc(p.rank)}</small>`:""}</button>`;
+  let html="";
+  if(own.length)html+=`<div class="lineup-player-group"><div class="lineup-player-group-title">Eigene Mannschaft</div>${own.map(option).join("")}</div>`;
+  if(subs.length)html+=`<div class="lineup-player-group"><div class="lineup-player-group-title">Ersatzspieler aus unteren Mannschaften</div>${subs.map(option).join("")}</div>`;
+  html+=`<div class="lineup-player-group"><div class="lineup-player-group-title">Kampflos</div><button type="button" class="lineup-player-option" role="option" data-value="${NO_PLAYER}" aria-selected="${String(v)===NO_PLAYER}"><span>Kein Spieler</span></button></div>`;
+  return html||'<div class="lineup-player-empty">Keine passenden Spieler in diesem Kader gefunden.</div>';
+}
+function playerPickerLabel(v,g){
+  if(v===NO_PLAYER)return "Kein Spieler";
+  if(!v)return "– auswählen –";
+  const p=[...eligiblePlayers(g),...eligibleSubstitutes(g)].find(x=>String(x.id)===String(v));
+  return p?.name||"– auswählen –";
+}
+function selectSlot(id,g,v){
+  const disabled=locked?"disabled":"";
+  return `<div class="lineup-player-picker" data-picker="${id}">
+    <button type="button" class="lineup-player-trigger" aria-expanded="false" ${disabled}>
+      <span>${esc(playerPickerLabel(v,g))}</span><span class="lineup-player-chevron">⌄</span>
+    </button>
+    <div class="lineup-player-menu" role="listbox" hidden>${playerPickerOptions(g,v)}</div>
+    <select id="${id}" class="lineup-player-native" tabindex="-1" aria-hidden="true" ${disabled}>${opts(g,v)}</select>
+  </div>`;
+}
+function bindPlayerPickers(){
+  document.querySelectorAll(".lineup-player-picker").forEach(root=>{
+    const trigger=root.querySelector(".lineup-player-trigger");
+    const menu=root.querySelector(".lineup-player-menu");
+    const native=root.querySelector(".lineup-player-native");
+    if(!trigger||!menu||!native)return;
+    trigger.addEventListener("click",()=>{
+      if(trigger.disabled)return;
+      const opening=menu.hidden;
+      document.querySelectorAll(".lineup-player-menu").forEach(m=>{m.hidden=true;m.style.position="";m.style.top="";m.style.left="";m.style.width="";m.style.maxHeight="";});
+      document.querySelectorAll(".lineup-player-trigger").forEach(b=>b.setAttribute("aria-expanded","false"));
+      if(!opening){menu.hidden=true;trigger.setAttribute("aria-expanded","false");return;}
+      const rect=trigger.getBoundingClientRect();
+      const viewportH=window.visualViewport?.height||window.innerHeight;
+      const gap=8, edge=10;
+      const below=viewportH-rect.bottom-edge-gap;
+      const above=rect.top-edge-gap;
+      const openUp=below<190&&above>below;
+      const available=Math.max(140,Math.min(360,(openUp?above:below)));
+      menu.style.position="fixed";
+      menu.style.left=Math.max(edge,Math.min(rect.left,window.innerWidth-rect.width-edge))+"px";
+      menu.style.width=Math.min(rect.width,window.innerWidth-edge*2)+"px";
+      menu.style.maxHeight=available+"px";
+      menu.style.top=(openUp?Math.max(edge,rect.top-available-gap):rect.bottom+gap)+"px";
+      menu.hidden=false;
+      trigger.setAttribute("aria-expanded","true");
+    });
+    menu.querySelectorAll(".lineup-player-option").forEach(option=>{
+      option.addEventListener("click",()=>{
+        const value=option.dataset.value||"";
+        native.value=value;
+        menu.querySelectorAll(".lineup-player-option").forEach(x=>x.setAttribute("aria-selected",String(x===option)));
+        trigger.querySelector("span").textContent=option.querySelector("span")?.textContent||"– auswählen –";
+        menu.hidden=true;
+        trigger.setAttribute("aria-expanded","false");
+        setSlot(native.id,value);
+      });
+    });
+  });
+}
+function slot(k,controls,sub){return `<div class="slot"><h3>${LABELS[k]}</h3><div class="sub">${sub}</div>${controls.join("")}</div>`}
+function pairSlot(k,a,b,ga,gb){return slot(k,[selectSlot(k+"a",ga,lineup[k][0]),selectSlot(k+"b",gb,lineup[k][1])],ga===gb?subForGender(ga):"Mixed")}
+function singleSlot(k,g){return slot(k,[selectSlot(k,g,lineup[k])],g==="m"?"Herren":"Damen")}
+function subForGender(g){return g==="m"?"Herren":g==="w"?"Damen":""}
+function renderSlots(){
+  $("slots").innerHTML=[
+    pairSlot("HD1",0,1,"m","m"),pairSlot("HD2",0,1,"m","m"),pairSlot("DD",0,1,"w","w"),
+    singleSlot("HE1","m"),singleSlot("HE2","m"),singleSlot("HE3","m"),singleSlot("DE","w"),
+    pairSlot("GD",0,1,"m","w")
+  ].join("");
+  bindPlayerPickers();
+  updateOpponentButton();
+}
+function opponentLineupComplete(){
+  return ORDER.every(k=>{
+    const v=opponents[k];
+    return Array.isArray(v)?v.length===2&&v.every(x=>String(x||"").trim()!=="") : String(v||"").trim()!=="";
+  });
+}
+function updateOpponentButton(){
+  const b=$("opponentButton");
+  if(!b)return;
+  b.disabled=locked||!ownLineupSaved;
+  b.textContent="👥 Gegner eintragen";
+}
+function setSlot(id,v){
+  const map={HD1a:["HD1",0],HD1b:["HD1",1],HD2a:["HD2",0],HD2b:["HD2",1],DDa:["DD",0],DDb:["DD",1],GDa:["GD",0],GDb:["GD",1]};
+  if(map[id]){
+    const [k,i]=map[id];
+    lineup[k][i]=v;
+    // Ein kampflos abgegebenes Doppel hat auf beiden Positionen "Kein Spieler".
+    if(v===NO_PLAYER) lineup[k]=[NO_PLAYER,NO_PLAYER];
+  } else lineup[id]=v;
+  if(map[id]&&v===NO_PLAYER) renderSlots();
+  setStatus("saveStatus","Änderung noch nicht gespeichert.","warn")
+}
+function opponentRowsHtml(){
+  const player=(name)=>`<div class="opp-player">${esc(name||"–")}</div>`;
+  const pair=(k)=>{
+    const noOpponent=opponents[k]?.[0]===NO_PLAYER&&opponents[k]?.[1]===NO_PLAYER;
+    return `<div class="opp-row"><h3>${LABELS[k]}</h3><div class="opp-side own"><div class="opp-side-title">Eigene Mannschaft</div><div class="opp-players">${player(playerLabel(lineup[k][0]))}${player(playerLabel(lineup[k][1]))}</div></div><div class="opp-side opponent-side"><div class="opp-side-title">Gegner</div><div class="opp-inputs"><input id="opp_${k}_0" value="${esc(noOpponent?NO_PLAYER:(opponents[k][0]||""))}" placeholder="Gegner 1" list="opponentRosterList" ${noOpponent?"disabled":""}><input id="opp_${k}_1" value="${esc(noOpponent?NO_PLAYER:(opponents[k][1]||""))}" placeholder="Gegner 2" list="opponentRosterList" ${noOpponent?"disabled":""}></div><label class="opp-none-label"><input type="checkbox" id="opp_${k}_none" ${noOpponent?"checked":""} onchange="toggleOpponentNoPlayer('${k}',2)"> <span>Gegner stellt für dieses Spiel keine Spieler</span></label></div></div>`;
+  };
+  const single=(k)=>{
+    const noOpponent=opponents[k]===NO_PLAYER;
+    return `<div class="opp-row"><h3>${LABELS[k]}</h3><div class="opp-side own"><div class="opp-side-title">Eigene Mannschaft</div><div class="opp-players opp-players-single">${player(playerLabel(lineup[k]))}</div></div><div class="opp-side opponent-side"><div class="opp-side-title">Gegner</div><div class="opp-inputs opp-inputs-single"><input id="opp_${k}_0" value="${esc(noOpponent?NO_PLAYER:(opponents[k]||""))}" placeholder="Gegner" list="opponentRosterList" ${noOpponent?"disabled":""}></div><label class="opp-none-label"><input type="checkbox" id="opp_${k}_none" ${noOpponent?"checked":""} onchange="toggleOpponentNoPlayer('${k}',1)"> <span>Gegner stellt für dieses Spiel keine Spieler</span></label></div></div>`;
+  };
+  return [pair("HD1"),pair("HD2"),pair("DD"),single("HE1"),single("HE2"),single("HE3"),single("DE"),pair("GD")].join("");
+}
+function toggleOpponentNoPlayer(k,count){
+  const checked=$("opp_"+k+"_none").checked;
+  for(let i=0;i<count;i++){
+    const input=$("opp_"+k+"_"+i);
+    if(!input)continue;
+    input.disabled=checked;
+    input.value=checked?NO_PLAYER:"";
+  }
+}
+function keepOpponentInputVisible(input){
+  if(!input)return;
+  const reveal=()=>{
+    const modal=$("opponentModal"),box=modal?.querySelector(".modal-box");
+    if(!modal||!box)return;
+    const visibleHeight=window.visualViewport?.height||window.innerHeight;
+    modal.style.height=visibleHeight+"px";
+    box.style.maxHeight=Math.max(180,visibleHeight-20)+"px";
+    const r=input.getBoundingClientRect(),b=box.getBoundingClientRect();
+    if(r.bottom>b.bottom-72)box.scrollBy({top:r.bottom-(b.bottom-72),behavior:"smooth"});
+    else if(r.top<b.top+12)box.scrollBy({top:r.top-(b.top+12),behavior:"smooth"});
+  };
+  setTimeout(reveal,100);
+  setTimeout(reveal,350);
+  setTimeout(reveal,650);
+}
+async function loadOpponentRosterTeams(){
+  const select=$("opponentRosterTeam");
+  select.innerHTML='<option value="">– Mannschaft suchen oder manuell eintragen –</option>';
+  opponentRosterTeams=[];opponentRosterPlayers=[];
+  const {data,error}=await sb.from("public_ranking_view").select("club_id,club_name,season,team_name,source_club_team_id,ranking_team_id,player_id,player_name,gender,rank_position").order("club_name").order("season",{ascending:false}).order("team_name").order("rank_position");
+  if(error){setStatus("opponentStatus","Öffentliche Gegnerkader konnten nicht geladen werden. Manuelle Eingabe bleibt möglich.","warn");return}
+  const groups=new Map();
+  (data||[]).forEach(row=>{
+    const key=[row.club_id,row.season,row.team_name].join("|");
+    if(!groups.has(key))groups.set(key,{key,club_id:row.club_id,club_name:row.club_name,season:row.season,team_name:row.team_name,source_club_team_id:row.source_club_team_id,ranking_team_id:row.ranking_team_id,players:[]});
+    groups.get(key).players.push({id:row.player_id,name:row.player_name,gender:gender(row.gender),rank:row.rank_position});
+  });
+  opponentRosterTeams=[...groups.values()];
+  filterOpponentRosterTeams();
+}
+function filterOpponentRosterTeams(){
+  const query=($("opponentRosterSearch")?.value||"").trim().toLocaleLowerCase("de-DE");
+  const current=$("opponentRosterTeam")?.value||"";
+  const filtered=opponentRosterTeams.filter(t=>!query||[t.club_name,t.team_name,t.season].join(" ").toLocaleLowerCase("de-DE").includes(query));
+  $("opponentRosterTeam").innerHTML='<option value="">– Mannschaft suchen oder manuell eintragen –</option>'+filtered.map(t=>`<option value="${esc(t.key)}">${esc(t.club_name)} · ${esc(t.team_name)} · ${esc(t.season)}</option>`).join("");
+  if(filtered.some(t=>t.key===current))$("opponentRosterTeam").value=current;
+  else if(current){opponentRosterPlayers=[];$("opponentRosterList").innerHTML="";}
+}
+function refreshOpponentSuggestions(){
+  const list=$("opponentRosterList");
+  if(!list)return;
+  const names=new Map();
+  // First offer all players from the selected BadminOne opponent roster.
+  opponentRosterPlayers.forEach(p=>{
+    const name=String(p.name||"").trim();
+    if(name)names.set(name.toLocaleLowerCase("de-DE"),name);
+  });
+  // Also offer names already typed in another game slot.
+  document.querySelectorAll('#opponentFields input[id^="opp_"]:not([type="checkbox"])').forEach(input=>{
+    const name=String(input.value||"").trim();
+    if(name&&name!==NO_PLAYER)names.set(name.toLocaleLowerCase("de-DE"),name);
+  });
+  list.innerHTML=[...names.values()].sort((a,b)=>a.localeCompare(b,"de")).map(name=>`<option value="${esc(name)}">`).join("");
+}
+function selectOpponentRosterTeam(){
+  const team=opponentRosterTeams.find(t=>t.key===$("opponentRosterTeam").value);
+  opponentRosterPlayers=team?.players||[];
+  refreshOpponentSuggestions();
+  const status=$("opponentStatus");
+  if(status){status.style.display="block";status.className="status";status.textContent=team?`${team.players.length} öffentliche Spieler aus ${team.club_name} · ${team.team_name} geladen. Du kannst Namen auswählen oder weiterhin frei eingeben. Bereits eingetragene Namen werden ebenfalls vorgeschlagen.`:"Keine Gegnerliste ausgewählt. Manuelle Eingabe ist möglich. Bereits eingetragene Namen werden ebenfalls vorgeschlagen.";}
+}
+function opponentPlayerId(name){
+  if(!name||name===NO_PLAYER)return null;
+  const found=opponentRosterPlayers.filter(p=>p.name===name);
+  return found.length===1?found[0].id:null;
+}
+function openOpponentModal(){
+  if(!ownLineupSaved){setStatus("saveStatus","Bitte zuerst die vollständige eigene Aufstellung speichern.","bad");return}
+  $("opponentModal").classList.remove("manual-entry-active");
+  $("opponentModalTitle").textContent="Gegner eintragen";
+  $("opponentFields").innerHTML=opponentRowsHtml();
+  $("opponentStatus").style.display="none";
+  $("opponentModal").style.display="flex";
+  document.body.dataset.opponentModalOpen="1";
+  const modalBox=$("opponentModal").querySelector(".modal-box");
+  if(modalBox){modalBox.scrollTop=0;modalBox.style.maxHeight="";}
+  $("opponentModal").style.height=(window.visualViewport?.height||window.innerHeight)+"px";
+  loadOpponentRosterTeams();
+  const fields=$("opponentFields");
+  fields.querySelectorAll("input:not([type=checkbox])").forEach(input=>{
+    input.addEventListener("focus",()=>{
+      $("opponentModal").classList.add("manual-entry-active");
+      refreshOpponentSuggestions();
+      keepOpponentInputVisible(input);
+    });
+    input.addEventListener("input",refreshOpponentSuggestions);
+    input.addEventListener("change",refreshOpponentSuggestions);
+    input.addEventListener("blur",()=>{
+      refreshOpponentSuggestions();
+      setTimeout(()=>{
+        const active=document.activeElement;
+        if(!active||!active.matches('#opponentFields input:not([type="checkbox"])')){
+          $("opponentModal").classList.remove("manual-entry-active");
+        }
+      },180);
+    });
+  });
+  refreshOpponentSuggestions();
+}
+function closeOpponentModal(){
+  $("opponentModal").classList.remove("manual-entry-active");
+  $("opponentModal").style.display="none";
+  $("opponentModal").style.height="";
+  const box=$("opponentModal").querySelector(".modal-box");
+  if(box)box.style.maxHeight="";
+  delete document.body.dataset.opponentModalOpen;
+}
+async function saveOpponentModal(){
+  if(!selectedMatch||locked)return;
+  const oppNone=k=>$('opp_'+k+'_none')?.checked;
+  const pairValue=k=>oppNone(k)?[NO_PLAYER,NO_PLAYER]:[$('opp_'+k+'_0').value.trim(),$('opp_'+k+'_1').value.trim()];
+  const singleValue=k=>oppNone(k)?NO_PLAYER:$('opp_'+k+'_0').value.trim();
+  const next={HD1:pairValue("HD1"),HD2:pairValue("HD2"),DD:pairValue("DD"),HE1:singleValue("HE1"),HE2:singleValue("HE2"),HE3:singleValue("HE3"),DE:singleValue("DE"),GD:pairValue("GD")};
+  const mineIsHome=mySideIsHome();
+  $("opponentStatus").style.display="block";$("opponentStatus").textContent="Speichere …";
+  for(const position of ORDER){
+    const value=next[position];
+    const first=Array.isArray(value)?value[0]:value;
+    const second=Array.isArray(value)?value[1]:null;
+    // Manuell eingegebene Gegner bleiben bewusst ohne Spieler-ID.
+    const firstId=opponentPlayerId(first),secondId=opponentPlayerId(second);
+    const patch=mineIsHome
+      ?{opponent_player1:first||null,opponent_player2:second||null,away_player1_id:firstId,away_player2_id:secondId}
+      :{player1:first||null,player2:second||null,home_player1_id:firstId,home_player2_id:secondId};
+    const {error}=await sb.from("match_games").update(patch).eq("match_id",selectedMatch.id).eq("position",position);
+    if(error){$("opponentStatus").className="status bad";$("opponentStatus").textContent="Speichern fehlgeschlagen: "+msg(error);return}
+  }
+  const selectedOpponent=opponentRosterTeams.find(t=>t.key===$("opponentRosterTeam").value);
+  if(selectedOpponent?.source_club_team_id && selectedOpponent.source_club_team_id!==selectedTeamId){
+    const teamPatch=mineIsHome?{away_team_id:selectedOpponent.source_club_team_id,away_team:selectedOpponent.team_name}:{home_team_id:selectedOpponent.source_club_team_id,home_team:selectedOpponent.team_name};
+    const {error:teamError}=await sb.from("matches").update(teamPatch).eq("id",selectedMatch.id);
+    if(teamError){$("opponentStatus").className="status warn";$("opponentStatus").textContent="Spielernamen gespeichert, aber die Gegner-Mannschaft konnte nicht verknüpft werden: "+msg(teamError);return}
+    Object.assign(selectedMatch,teamPatch);
+  }
+  opponents=next;updateOpponentButton();
+  $("opponentStatus").className="status ok";$("opponentStatus").textContent="✔ Gegner gespeichert.";
+  setStatus("saveStatus","✔ Gegner gespeichert.","ok");
+  setTimeout(closeOpponentModal,500);
+}
+function mySideIsHome(){return selectedMatch?.home_team_id===selectedTeamId || (!selectedMatch?.home_team_id&&!selectedMatch?.away_team_id&&selectedMatch?.home_team===selectedTeam)}
+function isForfeit(position){
+  const v=lineup[position];
+  return Array.isArray(v)?v.length===2&&v[0]===NO_PLAYER&&v[1]===NO_PLAYER:v===NO_PLAYER;
+}
+
+function allEligiblePlayers(){return [...ownPlayers(),...substitutePlayers()]}
+function playerByName(value){const byId=allEligiblePlayers().find(p=>String(p.id)===String(value));if(byId)return byId;const same=allEligiblePlayers().filter(p=>p.name===value);return same.length===1?same[0]:null}
+function restorePlayerValue(id,name){
+  if(name===NO_PLAYER)return NO_PLAYER;
+  if(id)return String(id);
+  const same=allEligiblePlayers().filter(p=>p.name===name);
+  return same.length===1?String(same[0].id):(name||"");
+}
+function playerLabel(value){if(!value)return "";if(value===NO_PLAYER)return NO_PLAYER;return playerByName(value)?.name||String(value)}
+function assignments(){let a=[];["HD1","HD2","DD","GD"].forEach(k=>lineup[k].forEach((n,i)=>{if(n&&n!==NO_PLAYER)a.push({name:n,slot:k,index:i})}));["HE1","HE2","HE3","DE"].forEach(k=>{if(lineup[k]&&lineup[k]!==NO_PLAYER)a.push({name:lineup[k],slot:k,index:0})});return a}
+function validateLineup(){
+  let errors=[],warnings=[],used={};
+  if(!selectedTeam)errors.push("Bitte eine Mannschaft auswählen.");
+  if(!selectedMatch)errors.push("Bitte zuerst eine Begegnung aus dem Spielplan auswählen.");
+  assignments().forEach(a=>{if(!playerByName(a.name))errors.push("Ein ausgewählter Spieler ist nicht mehr eindeutig der Supabase-Mannschaft zugeordnet.");(used[a.name]??=[]).push(a.slot)});
+  Object.entries(used).forEach(([n,slots])=>{
+    if(slots.length>2)errors.push((playerLabel(n)||n)+": mehr als 2 Einsätze.");
+    let d=slots.map(s=>s.startsWith("HE")?"HE":s==="DE"?"DE":s.startsWith("HD")?"HD":s);
+    if(new Set(d).size<d.length)errors.push((playerLabel(n)||n)+": mehr als ein Einsatz in derselben Disziplin.")
+  });
+  const pairReq=(k,label)=>{
+    const a=lineup[k];
+    const complete=a.every(Boolean);
+    const forfeit=a[0]===NO_PLAYER&&a[1]===NO_PLAYER;
+    if(!complete)errors.push(label+": nicht vollständig besetzt.");
+    if(complete&&!forfeit&&(a[0]===NO_PLAYER||a[1]===NO_PLAYER))errors.push(label+": Bei einer kampflosen Abgabe müssen beide Positionen „Kein Spieler“ sein.");
+  };
+  pairReq("HD1","1. Herrendoppel");
+  pairReq("HD2","2. Herrendoppel");
+  pairReq("DD","Damendoppel");
+  pairReq("GD","Gemischtes Doppel");
+  [["HE1","1. Herreneinzel"],["HE2","2. Herreneinzel"],["HE3","3. Herreneinzel"],["DE","Dameneinzel"]].forEach(([k,label])=>{if(!lineup[k])errors.push(label+": nicht vollständig besetzt.")});
+  if(lineup.GD[0]!==NO_PLAYER&&lineup.GD[1]!==NO_PLAYER){
+    if(lineup.GD[0]&&playerByName(lineup.GD[0])?.gender!=="m")errors.push("Mixed: erste Position muss ein Herr sein.");
+    if(lineup.GD[1]&&playerByName(lineup.GD[1])?.gender!=="w")errors.push("Mixed: zweite Position muss eine Dame sein.");
+  }
+  let s=["HE1","HE2","HE3"].map(k=>playerByName(lineup[k]));
+  for(let i=1;i<s.length;i++)if(s[i-1]?.rank!=null&&s[i]?.rank!=null&&s[i-1].rank>s[i].rank)errors.push("Herreneinzel: Reihenfolge entspricht nicht den Ranglistenplätzen.");
+  let pr=k=>lineup[k].reduce((sum,n)=>sum+(playerByName(n)?.rank??Infinity),0);
+  if(lineup.HD1.every(Boolean)&&lineup.HD2.every(Boolean)&&lineup.HD1[0]!==NO_PLAYER&&lineup.HD2[0]!==NO_PLAYER&&pr("HD1")>pr("HD2"))warnings.push("Herrendoppel: Ranglistensumme des 1. HD ist größer als die des 2. HD.");
+  $("validation").innerHTML=(errors.length?errors.map(e=>`<div class="badtxt">✖ ${esc(e)}</div>`).join(""):'<div class="oktxt">✔ Die eingebaute Prüfung meldet keinen Verstoß.</div>')+warnings.map(w=>`<div class="warntxt">⚠ ${esc(w)}</div>`).join("");
+  return !errors.length
+}
+async function saveLineup(){
+  if(locked)return;
+  if(!selectedMatch)return;
+  const mineIsHome=mySideIsHome();
+  if(!validateLineup())return;
+  let rows=ORDER.map(position=>{
+    const v=lineup[position],a=Array.isArray(v)?v[0]:v,b=Array.isArray(v)?v[1]:null;
+    const pa=a&&a!==NO_PLAYER?playerByName(a):null;
+    const pb=b&&b!==NO_PLAYER?playerByName(b):null;
+    // WICHTIG: "Kein Spieler" als expliziten Marker speichern.
+    // Bisher wurde der Marker wie ein fehlender Spieler zu NULL umgewandelt.
+    const storedA=a===NO_PLAYER?NO_PLAYER:(pa?.name||null);
+    const storedB=b===NO_PLAYER?NO_PLAYER:(pb?.name||null);
+    return{
+      position,
+      homeName:mineIsHome?storedA:null,
+      homeName2:mineIsHome?storedB:null,
+      awayName:!mineIsHome?storedA:null,
+      awayName2:!mineIsHome?storedB:null,
+      homeId:mineIsHome?(pa?.id||null):null,
+      homeId2:mineIsHome?(pb?.id||null):null,
+      awayId:!mineIsHome?(pa?.id||null):null,
+      awayId2:!mineIsHome?(pb?.id||null):null
+    };
+  });
+  for(const row of rows){
+    const patch=mineIsHome?{player1:row.homeName,player2:row.homeName2,home_player1_id:row.homeId,home_player2_id:row.homeId2}:{opponent_player1:row.awayName,opponent_player2:row.awayName2,away_player1_id:row.awayId,away_player2_id:row.awayId2};
+    let{error}=await sb.from("match_games").update(patch).eq("match_id",selectedMatch.id).eq("position",row.position);
+    if(error){setStatus("saveStatus","Speichern fehlgeschlagen bei "+LABELS[row.position]+": "+msg(error),"bad");return}
+  }
+  ownLineupSaved=true;updateOpponentButton();
+  const forfeits=ORDER.filter(isForfeit).length;
+  setStatus("saveStatus",forfeits?`✔ Eigene Aufstellung gespeichert. ${forfeits} Spiel${forfeits===1?"":"e"} ist/sind als kampflos markiert („Kein Spieler“). Jetzt kannst du über „Gegner eintragen“ die Gegner erfassen.`:"✔ Eigene Aufstellung gespeichert. Jetzt kannst du über „Gegner eintragen“ die Gegner in einem separaten Fenster erfassen.","ok");
+}
+function buildWhatsAppLineupText(){
+  if(!selectedMatch)return "";
+  const date=selectedMatch.match_date?new Date(selectedMatch.match_date+"T00:00:00").toLocaleDateString("de-DE"):"Datum offen";
+  const time=selectedMatch.match_time?String(selectedMatch.match_time).slice(0,5)+" Uhr":"Uhrzeit offen";
+  const val=v=>Array.isArray(v)?v.map(n=>playerLabel(n)||"–").join(" / "):playerLabel(v)||"–";
+  const section=(title,keys)=>["*"+title+"*",...keys.map(k=>"• "+LABELS[k]+": "+val(lineup[k]))];
+  return ["🏸 *MANNSCHAFTSAUFSTELLUNG*","", "*"+selectedMatch.home_team+" – "+selectedMatch.away_team+"*", "📅 "+date+" · 🕒 "+time, "", ...section("DOPPEL",["HD1","HD2","DD","GD"]), "", ...section("EINZEL",["HE1","HE2","HE3","DE"]), ""].join("\n");
+}
+function previewWhatsAppLineup(){
+  if(!selectedMatch){setStatus("saveStatus","Bitte zuerst eine Begegnung auswählen.","bad");return;}
+  $("whatsappPreview").value=buildWhatsAppLineupText();
+  $("whatsappModal").style.display="flex";
+  $("whatsappStatus").style.display="none";
+}
+function closeWhatsAppPreview(){ $("whatsappModal").style.display="none"; }
+async function copyWhatsAppPreview(event){
+  if(event){event.preventDefault();event.stopPropagation();}
+  const preview=$("whatsappPreview");
+  const text=preview.value;
+  if(!text){setStatus("whatsappStatus","Kein Text zum Kopieren vorhanden.","bad");return;}
+  const status=$("whatsappStatus");
+  status.style.display="block";
+  status.className="status";
+  status.textContent="Kopiere Text …";
+  // Clipboard API funktioniert nur in sicheren Kontexten. Auf Android/content://
+  // versuchen wir execCommand mit einem unsichtbaren Feld, damit nicht die ganze
+  // Vorschau markiert wird und die Begegnungsauswahl unverändert bleibt.
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+    }else{
+      const temp=document.createElement("textarea");
+      temp.value=text;
+      temp.setAttribute("readonly","");
+      temp.setAttribute("aria-hidden","true");
+      temp.style.position="fixed";
+      temp.style.left="-10000px";
+      temp.style.top="0";
+      temp.style.width="1px";
+      temp.style.height="1px";
+      temp.style.opacity="0";
+      document.body.appendChild(temp);
+      temp.focus({preventScroll:true});
+      temp.select();
+      temp.setSelectionRange(0,temp.value.length);
+      let copied=false;
+      try{copied=document.execCommand("copy");}catch(_){copied=false;}
+      temp.remove();
+      if(!copied){
+        setStatus("whatsappStatus","Automatisches Kopieren wird von diesem Browser blockiert. Bitte tippe in das Textfeld, markiere den Nachrichtentext und wähle im Android-Menü „Kopieren“. Die Begegnung bleibt ausgewählt.","bad");
+        return;
+      }
+    }
+    setStatus("whatsappStatus","Text wurde kopiert. Du kannst ihn jetzt in WhatsApp einfügen.","ok");
+  }catch(e){
+    setStatus("whatsappStatus","Automatisches Kopieren wird von diesem Browser blockiert. Bitte kopiere den Text manuell aus dem Vorschaufeld. Die Begegnung bleibt ausgewählt.","bad");
+  }
+}
+
+function clearLineup(){if(locked)return;resetLineup();setStatus("validation","Aufstellung geleert.","warn")}
+init();
+
+// Bei Rückkehr zur bereits geöffneten Seite (z. B. Browser-Zurück oder App-Wechsel)
+// die Begegnungen erneut aus Supabase laden. Beim normalen Seitenaufruf erledigt
+// dies bereits afterLogin(), daher hier nur bei Wiederherstellung aus dem BFCache.
+window.addEventListener("pageshow",event=>{
+  if(event.persisted&&user&&selectedTeamId){
+    loadScheduledMatches();
+  }
+});
+</script>
+
+
+<script>
+
+(function(){
+ const root=document.getElementById('platformNav'); if(!root) return;
+ const current=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+ const items=[
+  {label:'Dashboard',href:'index.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Vereine',href:'vereine.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Mannschaften',href:'mannschaft.html',roles:['team_manager','moderator','admin','board','advisory']},
+  {label:'Spielplan',href:'spielplan.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Aufstellung',href:'aufstellung.html',roles:['team_manager','moderator','admin']},
+  {label:'Live',href:'live.html',roles:['player','team_manager','moderator','scorer','admin','board','advisory']},
+  {label:'Moderator',href:'moderator.html',roles:['moderator','scorer','admin']},
+  {label:'Spielbericht',href:'spielbericht.html',roles:['moderator','admin']},
+  {label:'Spielerstatistik',href:'spielerstatistik.html',roles:['player','team_manager','moderator','admin','board','advisory']},
+  {label:'Rangliste',href:'Rangliste.html',roles:['player','team_manager','moderator','admin','board','advisory']},
+  {label:'Administration',href:'admin.html',roles:['admin']}
+ ];
+ const primary=['Dashboard','Vereine','Mannschaften','Spielplan','Aufstellung','Live'];
+ const labels=new Set(primary);
+ function link(it){const a=document.createElement('a');a.href=it.href;a.textContent=it.label;if(current===it.href.toLowerCase())a.setAttribute('aria-current','page');return a}
+ const links=root.querySelector('.pn-links'); if(!links)return;
+ function render(role,loggedIn,extraRoles=[]){
+   links.innerHTML='';
+   const roleSet=new Set([role,...extraRoles]);
+   const allowed=items.filter(it=>it.roles.some(r=>roleSet.has(r)));
+   allowed.filter(it=>labels.has(it.label)).forEach(it=>links.appendChild(link(it)));
+   const more=allowed.filter(it=>!labels.has(it.label));
+   if(more.length){
+     const d=document.createElement('details');d.className='pn-more';
+     const s=document.createElement('summary');s.textContent='Mehr ▾';d.appendChild(s);
+     const menu=document.createElement('div');menu.className='pn-menu';more.forEach(it=>menu.appendChild(link(it)));d.appendChild(menu);links.appendChild(d);
+   }
+   const u=root.querySelector('.pn-user'); if(u)u.textContent=loggedIn?'Angemeldet':'Öffentlicher Bereich';
+ }
+ const toggle=root.querySelector('.pn-toggle');
+ if(toggle)toggle.addEventListener('click',()=>{const open=links.classList.toggle('pn-open');toggle.setAttribute('aria-expanded',String(open));toggle.textContent=open?'✕ Schließen':'☰ Menü';});
+ // Keep public access functional; logged-in roles receive a tailored menu.
+ const fallback=()=>render('player',false);
+ if(!window.supabase||!window.supabase.createClient){fallback();return}
+ const url='https://apsarswjmsrmffoyxsgr.supabase.co';
+ const key='sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj';
+ try{
+   const client=window.__platformNavClient||(window.__platformNavClient=window.supabase.createClient(url,key));
+   client.auth.getUser().then(async ({data,error})=>{
+     if(error||!data.user){fallback();return}
+     let role='player';
+     const {data:profile}=await client.from('profiles').select('role').eq('id',data.user.id).maybeSingle();
+     if(profile&&profile.role)role=String(profile.role).toLowerCase();
+     const [{data:members},{data:teamRoles},{data:clubManagers}]=await Promise.all([
+      client.from('club_memberships').select('club_role,status').eq('user_id',data.user.id).eq('status','active'),
+      client.from('club_team_user_roles').select('role,status').eq('user_id',data.user.id).eq('status','active'),
+      client.from('club_managers').select('club_id').eq('user_id',data.user.id)
+     ]);
+     const roles=[...(members||[]).map(x=>String(x.club_role||'').toLowerCase()),...(teamRoles||[]).map(x=>String(x.role||'').toLowerCase())];
+     if((clubManagers||[]).length)roles.push('team_manager');
+     if(role!=='admin'&&roles.length){
+       if(roles.includes('team_manager'))role='team_manager';
+       else if(roles.includes('moderator'))role='moderator';
+       else if(roles.includes('board'))role='board';
+       else if(roles.includes('advisory'))role='advisory';
+     }
+     render(role,true,roles);
+   }).catch(fallback);
+ }catch(e){fallback()}
+})();
+
+</script>
+
+
+<script id="badminone-lineup-picker-outside">
+document.addEventListener("click",event=>{
+  if(!event.target.closest(".lineup-player-picker")){
+    document.querySelectorAll(".lineup-player-menu").forEach(menu=>menu.hidden=true);
+    document.querySelectorAll(".lineup-player-trigger").forEach(button=>button.setAttribute("aria-expanded","false"));
+  }
+});
+</script>
+
+
+<script id="badminone-opponent-visual-viewport">
+(function(){
+  const sync=()=>{
+    const modal=document.getElementById("opponentModal");
+    if(!modal||modal.style.display==="none")return;
+    const h=window.visualViewport?.height||window.innerHeight;
+    modal.style.height=h+"px";
+    const box=modal.querySelector(".modal-box");
+    if(box)box.style.maxHeight=Math.max(180,h-20)+"px";
+  };
+  window.visualViewport?.addEventListener("resize",sync);
+  window.visualViewport?.addEventListener("scroll",sync);
+  window.addEventListener("orientationchange",()=>setTimeout(sync,180));
+})();
+</script>
+
+<script id="aufstellung-profile-menu-fix">
+(function(){
+  const button=document.getElementById("profileBtn");
+  const menu=document.getElementById("profileMenu");
+  const login=document.getElementById("profileLogin");
+  const register=document.getElementById("profileRegister");
+  const manage=document.getElementById("profileManage");
+  const logout=document.getElementById("logoutBtn");
+  if(!button||!menu)return;
+
+  function closeMenu(){menu.hidden=true;button.setAttribute("aria-expanded","false");}
+  function openMenu(){menu.hidden=false;button.setAttribute("aria-expanded","true");}
+  button.addEventListener("click",function(event){
+    event.preventDefault();event.stopPropagation();
+    if(menu.hidden)openMenu();else closeMenu();
+  });
+  menu.addEventListener("click",function(event){event.stopPropagation();});
+  document.addEventListener("click",function(event){if(!event.target.closest(".pn-profile-wrap"))closeMenu();});
+  document.addEventListener("keydown",function(event){if(event.key==="Escape")closeMenu();});
+
+  if(login)login.addEventListener("click",function(){location.href="login.html?return=aufstellung.html";});
+  if(register)register.addEventListener("click",function(){location.href="login.html?mode=register&return=aufstellung.html";});
+  if(logout)logout.addEventListener("click",async function(){
+    logout.disabled=true;
+    try{const result=await sb.auth.signOut();if(result.error)throw result.error;location.href="index.html";}
+    catch(error){logout.disabled=false;alert("Abmelden fehlgeschlagen: "+(error?.message||"Unbekannter Fehler"));}
+  });
+
+  function showAuthState(session){
+    const signedIn=!!session?.user;
+    if(login)login.hidden=signedIn;
+    if(register)register.hidden=signedIn;
+    if(manage)manage.hidden=!signedIn;
+    if(logout)logout.hidden=!signedIn;
+  }
+  sb.auth.getSession().then(({data,error})=>{
+    if(error)console.warn("Profilstatus konnte nicht gelesen werden:",error.message);
+    showAuthState(data?.session||null);
+  }).catch(error=>console.warn("Profilstatus konnte nicht gelesen werden:",error));
+  sb.auth.onAuthStateChange((_event,session)=>showAuthState(session));
+})();
+</script>
+<script src="assets/js/shared-nav.js?v=20261104-adminnav3"></script>
+</body>
+</html>
