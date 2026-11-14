@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101722">
+<title>BadminOne · Mein Profil</title>
+<link rel="stylesheet" href="assets/css/style.css?v=20261102">
+<link rel="stylesheet" href="assets/css/badminton-header.css?v=20261102">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="assets/css/profil.css?v=20261102">
+<link rel="stylesheet" href="assets/css/auth-popup.css?v=20261106-profilemenu1">
+</head>
+<body>
+<nav id="platformNav" aria-label="Hauptnavigation">
+  <div class="pn-brandbar">
+    <a class="pn-brand" href="index.html" aria-label="BadminOne – Startseite">
+      <span class="pn-logo">🏸</span><span class="pn-brandtext"><strong>BadminOne</strong><small>ALL YOUR GAME IN ONE</small></span>
+    </a>
+    <div class="pn-actions">
+      <div class="pn-profile-wrap">
+        <button class="pn-profile-btn" id="profileBtn" type="button"
+                aria-label="Profil und Kontoeinstellungen" aria-expanded="false" title="Profil">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>
+        </button>
+        <div class="pn-profile-menu" id="profileMenu" hidden>
+          <a href="profil.html" id="profileManage" aria-current="page">Profil / Kontoeinstellungen</a>
+          <button type="button" id="topLogoutBtn">Abmelden</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pn-tiles" id="navInner" aria-label="Hauptbereiche"></div>
+</nav>
+
+<main class="profile-page">
+  <section class="profile-hero">
+    <p class="eyebrow">BADMINTON · VEREINSPLATTFORM</p>
+    <h1>Mein Profil</h1>
+    <p>Hier findest du deine Kontoinformationen und deinen persönlichen BadminOne-Code für die sichere Zuordnung zu einem Spielerprofil.</p>
+  </section>
+
+  <div id="profileMessage" class="profile-message" role="status" aria-live="polite" hidden></div>
+
+  <section class="profile-grid" aria-label="Kontoinformationen">
+    <article class="profile-card">
+      <h2>Persönliche Angaben</h2>
+      <span class="profile-label">Name</span>
+      <div class="profile-value" id="profileName">Wird geladen …</div>
+      <div class="profile-field-spacer"></div>
+      <span class="profile-label">E-Mail-Adresse</span>
+      <div class="profile-value" id="profileEmail">Wird geladen …</div>
+      <div class="profile-field-spacer"></div>
+      <span class="profile-label">Kontostatus</span>
+      <div class="profile-status" id="profileStatus">Prüfung läuft</div>
+      <div class="profile-actions">
+        <button class="profile-btn" id="logoutBtn" type="button">Abmelden</button>
+      </div>
+    </article>
+
+    <article class="profile-card">
+      <h2>Dein BadminOne-Code</h2>
+      <p class="profile-muted">Mit diesem persönlichen Code kann dich deine Vereinsverwaltung deinem bestehenden Spielerprofil zuordnen. Teile ihn nur mit Personen, denen du vertraust.</p>
+      <div class="profile-code" id="accountCode">Wird geladen …</div>
+      <div class="profile-actions">
+        <button class="profile-btn primary" id="copyCodeBtn" type="button" disabled>Code kopieren</button>
+      </div>
+      <p class="profile-muted profile-code-note">Der Code bleibt deinem Konto zugeordnet und ändert sich nicht bei einer erneuten Anmeldung.</p>
+    </article>
+
+    <article class="profile-card">
+      <h2>Spielerprofile &amp; Familie</h2>
+      <p class="profile-muted">Die Verknüpfung deiner Konten mit Spielerprofilen und Familienmitgliedern wird hier später ergänzt.</p>
+      <ul class="profile-list">
+        <li>Spielerprofil zuordnen lassen</li>
+        <li>Weitere Familienprofile verwalten</li>
+        <li>Berechtigungen und Freigaben einsehen</li>
+      </ul>
+    </article>
+
+    <article class="profile-card">
+      <h2>Kontosicherheit</h2>
+      <p class="profile-muted">Deine Anmeldung und dein persönlicher Code werden über BadminOne und Supabase verwaltet.</p>
+      <div class="profile-actions">
+        <a class="profile-btn" href="passwort.html">Passwort / Kontoeinstellungen</a>
+        <a class="profile-btn" href="index.html">Zur Startseite</a>
+      </div>
+    </article>
+  </section>
+</main>
+<footer class="footer">BadminOne · All Your Game in One</footer>
+
+<script>
+(() => {
+  "use strict";
+  const SUPABASE_URL = "https://apsarswjmsrmffoyxsgr.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj";
+  const $ = id => document.getElementById(id);
+  const client = window.supabase?.createClient
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+    : null;
+  let currentCode = "";
+
+  function message(text, ok=false) {
+    const el = $("profileMessage");
+    el.textContent = text;
+    el.hidden = false;
+    el.classList.toggle("ok", ok);
+  }
+
+  async function init() {
+    if (!client) {
+      message("Der Anmeldedienst konnte nicht geladen werden. Bitte lade die Seite erneut.");
+      return;
+    }
+    const {data:{session},error:sessionError} = await client.auth.getSession();
+    if (sessionError || !session) {
+      const back = encodeURIComponent("profil.html");
+      location.replace("login.html?return=" + back);
+      return;
+    }
+
+    const user = session.user;
+    const metadata = user.user_metadata || {};
+    $("profileName").textContent = metadata.full_name || metadata.name || "Kein Name hinterlegt";
+    $("profileEmail").textContent = user.email || "Keine E-Mail-Adresse hinterlegt";
+    $("profileStatus").textContent = user.email_confirmed_at ? "E-Mail bestätigt" : "E-Mail noch nicht bestätigt";
+
+    const {data:code,error:codeError} = await client.rpc("get_my_badminone_code");
+    if (codeError || !code) {
+      $("accountCode").textContent = "Code derzeit nicht verfügbar";
+      message("Dein BadminOne-Code konnte nicht geladen werden. Bitte versuche es später erneut.");
+      return;
+    }
+    currentCode = code;
+    $("accountCode").textContent = code;
+    $("copyCodeBtn").disabled = false;
+  }
+
+  $("copyCodeBtn").addEventListener("click", async () => {
+    if (!currentCode) return;
+    try {
+      await navigator.clipboard.writeText(currentCode);
+      message("Dein BadminOne-Code wurde kopiert.", true);
+    } catch (_) {
+      message("Kopieren war nicht möglich. Du kannst den Code markieren und manuell kopieren.");
+    }
+  });
+
+  async function logout() {
+    $("logoutBtn").disabled = true;
+    $("topLogoutBtn").disabled = true;
+    const {error} = await client.auth.signOut();
+    if (error) {
+      $("logoutBtn").disabled = false;
+      $("topLogoutBtn").disabled = false;
+      message("Abmelden war nicht möglich: " + error.message);
+      return;
+    }
+    location.replace("index.html");
+  }
+
+  $("logoutBtn").addEventListener("click", logout);
+  $("topLogoutBtn").addEventListener("click", logout);
+
+  const profileBtn = $("profileBtn");
+  const profileMenu = $("profileMenu");
+  function closeProfileMenu() {
+    profileMenu.hidden = true;
+    profileBtn.setAttribute("aria-expanded", "false");
+  }
+  profileBtn.addEventListener("click", () => {
+    const opening = profileMenu.hidden;
+    profileMenu.hidden = !opening;
+    profileBtn.setAttribute("aria-expanded", String(opening));
+  });
+  document.addEventListener("click", event => {
+    if (!event.target.closest(".pn-profile-wrap")) closeProfileMenu();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      closeProfileMenu();
+      profileBtn.focus();
+    }
+  });
+
+  init();
+})();
+</script>
+<script src="assets/js/shared-nav.js?v=20261104-adminnav3"></script>
+</body>
+</html>

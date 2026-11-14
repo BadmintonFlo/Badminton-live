@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spieler erstellen / importieren – BadminOne</title>
+<link rel="stylesheet" href="assets/css/style.css?v=20261112">
+<link rel="stylesheet" href="assets/css/badminton-header.css?v=20261112">
+<link rel="stylesheet" href="assets/css/auth-popup.css?v=20261112">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.player-page{max-width:1100px;margin:0 auto}
+.player-page .player-section{margin:18px 0}
+.player-page .player-section details.admin-nav-group{margin:14px 0}
+.player-page .player-section .inline-style-2{padding:16px 4px}
+.player-page .player-context{margin:14px 0;padding:12px 16px;border:1px solid var(--border,#34465a);border-radius:12px;color:var(--text-muted,#aebdce)}
+.player-page .inline-style-11{overflow-x:auto;margin-top:14px}
+.player-page table{width:100%;border-collapse:collapse}
+.player-page th,.player-page td{padding:10px;text-align:left;border-bottom:1px solid var(--border,#34465a);vertical-align:top}
+.player-page .preflight-note{margin-top:5px}
+.player-page .empty{padding:14px;border:1px dashed var(--border,#52677c);border-radius:10px}
+
+
+/* Kachel-Darstellung wie in funktionen.html */
+.player-page .player-create-tile{
+  margin:18px 0;
+  padding:0;
+  overflow:hidden;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface);
+}
+.player-page .player-create-tile>summary{
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr) 22px;
+  align-items:center;
+  gap:11px;
+  min-height:76px;
+  padding:14px 16px;
+  cursor:pointer;
+  list-style:none;
+  font-size:inherit;
+}
+.player-page .player-create-tile>summary::-webkit-details-marker{display:none}
+.player-page .player-create-tile>summary:after{content:none!important}
+.player-page .player-tile-icon{
+  width:38px;height:38px;display:grid;place-items:center;
+  border-radius:11px;background:#203d58;color:#8ecbff;
+  font-size:25px;font-weight:700;
+}
+.player-page .player-import-icon{background:#173b54;color:#39bce9;font-size:23px}\n.player-page .player-tile-copy{display:grid;gap:3px;min-width:0}
+.player-page .player-tile-copy strong{font-size:16px;font-weight:800;line-height:1.25}
+.player-page .player-tile-copy small{font-size:12px;line-height:1.35;color:var(--muted)}
+.player-page .player-tile-chevron{font-size:22px;color:var(--muted);text-align:center}
+.player-page .player-create-tile[open] .player-tile-chevron{transform:rotate(45deg)}
+.player-page .player-create-tile[open]>.inline-style-2{
+  padding:8px 16px 18px;
+  border-top:1px solid var(--border);
+}
+
+
+.player-page.functions-page{max-width:1120px}
+.player-page .functions-hero{margin-bottom:18px}
+
+/* Kacheltexte immer untereinander: Titel oben, Beschreibung darunter */
+.player-page details.player-create-tile > summary > .player-tile-copy {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+.player-page details.player-create-tile > summary > .player-tile-copy > strong,
+.player-page details.player-create-tile > summary > .player-tile-copy > small {
+  display: block !important;
+  position: static !important;
+  float: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  white-space: normal !important;
+  text-align: left !important;
+}
+.player-page details.player-create-tile > summary > .player-tile-copy > strong {
+  line-height: 1.25 !important;
+}
+.player-page details.player-create-tile > summary > .player-tile-copy > small {
+  line-height: 1.4 !important;
+}
+
+</style>
+</head>
+<body>
+<nav id="platformNav" aria-label="Hauptnavigation">
+ <div class="pn-brandbar"><a class="pn-brand" href="index.html"><span class="pn-logo">🏸</span><span class="pn-brandtext"><strong>BadminOne</strong><small>ALL YOUR GAME IN ONE</small></span></a><div class="pn-actions"><div class="pn-profile-wrap"><button id="profileMenuBtn" class="pn-profile-btn" type="button" aria-label="Profil und Anmeldung" aria-expanded="false" title="Profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></button><div id="profileMenu" class="pn-profile-menu" hidden><a id="profileLogin" href="#anmelden" data-auth-open="login">Anmelden</a><a id="profileRegister" href="#registrieren" data-auth-open="register">Konto erstellen</a><a id="profileManage" href="passwort.html" hidden>Profil / Kontoeinstellungen</a><button id="profileLogout" type="button" hidden>Abmelden</button></div></div></div></div>
+ <div class="pn-tiles" aria-label="Hauptbereiche"><a href="index.html" class="pn-tile"><span class="pn-icon">⌂</span><span>Home</span></a><a href="vereine.html" class="pn-tile"><span class="pn-icon pn-vereine-icon-wrap" aria-hidden="true"></span><span>Vereine</span></a><a href="live.html" class="pn-tile"><span class="pn-icon pn-live">●</span><span>Live</span></a><a href="mannschaft.html" class="pn-tile" data-feature="teams"><span class="pn-icon pn-teams-icon-wrap"></span><span>Teams</span></a><details class="pn-more"><summary><span class="pn-icon">•••</span><span>Mehr</span></summary><div class="pn-menu"><a href="spielplan.html">Spielplan</a><a href="aufstellung.html">Aufstellungen</a><a href="spielbericht.html">Spielberichte</a><a href="spielerstatistik.html">Spieler</a><a href="rangliste.html">Rangliste</a><a href="funktionen.html">Funktionen</a></div></details></div>
+</nav>
+<main class="page functions-page player-page">
+ <section class="welcome functions-hero">
+  <div class="welcome-copy">
+   <p class="eyebrow">BADMINTON · DEIN BEREICH</p>
+   <h1>Spieler erstellen / importieren</h1>
+   <p>Lege einzelne Spielerdatensätze für deinen Verein an oder übernimm den Kader von turnier.de.</p>
+  </div>
+  <div class="welcome-mark" aria-hidden="true">♟</div>
+ </section>
+ <div id="accessStatus" class="player-context" role="status">Vereinszugriff wird geprüft …</div>
+ <section class="player-section"><details class="admin-nav-group player-create-tile"><summary>
+ <span class="player-tile-icon" aria-hidden="true">＋</span>
+ <span class="player-tile-copy"><strong>Spieler erstellen</strong><small>Einzelnen Spieler für den ausgewählten Verein anlegen</small></span>
+ <span class="player-tile-chevron" aria-hidden="true">＋</span>
+ </summary><div class="inline-style-2">
+ <p class="small">Legt einen neuen Spielerdatensatz direkt für den übernommenen Verein an. Das Speichern wird durch die Supabase-Berechtigungen geprüft.</p>
+ <form id="createClubPlayerForm">
+ <div class="field"><label for="newPlayerName">Spielername *</label><input id="newPlayerName" name="name" required maxlength="160" autocomplete="off" placeholder="Vorname Nachname"></div>
+ <div class="field"><label for="newPlayerTeam">Mannschaft / Zuordnung</label><input id="newPlayerTeam" name="team" maxlength="120" placeholder="z. B. 1. Mannschaft"></div>
+ <div class="field"><label for="newPlayerGender">Geschlecht</label><select id="newPlayerGender" name="gender"><option value="">Nicht angegeben</option><option value="Männlich">Männlich</option><option value="Weiblich">Weiblich</option><option value="Divers">Divers</option></select></div>
+ <div class="field"><label for="newPlayerRanking">Ranglistenposition</label><input id="newPlayerRanking" name="ranking_position" type="number" min="1" step="1" inputmode="numeric" placeholder="Optional"></div>
+ <div class="form-actions"><button type="submit" class="primary" id="createClubPlayerButton">Spieler erstellen</button></div></form>
+ <div id="createClubPlayerStatus" class="status" role="status" hidden></div></div></details></section>
+ <section class="player-section"><details class="admin-nav-group player-create-tile player-import-tile"><summary>
+ <span class="player-tile-icon player-import-icon" aria-hidden="true">🌐</span>
+ <span class="player-tile-copy"><strong>turnier.de Import</strong><small>Spielerkader von turnier.de laden, prüfen und übernehmen</small></span>
+ <span class="player-tile-chevron" aria-hidden="true">＋</span>
+ </summary><div class="inline-style-2">
+ <p class="small">Die Liste wird über die vorhandene Supabase Edge Function <code>turnierde-preview</code> geladen. Nach der Vorschau können die Datensätze zum Import vorbereitet und einzeln bestätigt werden. Erst die Bestätigung legt einen neuen Spieler an oder verknüpft einen eindeutigen vorhandenen Spieler.</p>
+ <div class="status" role="note"><strong>Wichtiger Hinweis:</strong> Importiere ausschließlich Spieler, die tatsächlich Mitglied des übernommenen Vereins sind. Spieler eines Partnervereins gehören nicht automatisch zu deinem Verein. Im Zweifel zuerst die Vereinszugehörigkeit prüfen. Die Vorschau speichert noch keine Daten.</div>
+ <div class="field"><label for="turnierClubUrl">Turnier.de-Adresse der Vereins-Spielerseite *</label><input id="turnierClubUrl" type="url" inputmode="url" placeholder="https://www.turnier.de/..." autocomplete="url" required><p class="small">Bitte eine vollständige HTTPS-Adresse von turnier.de einfügen.</p></div>
+ <div class="form-actions"><button type="button" class="primary" id="loadTurnierPreview">Spielerliste laden / aktualisieren</button></div>
+ <div id="turnierPreviewStatus" class="status" role="status">Noch nicht geladen. Tippe auf „Spielerliste laden / aktualisieren“.</div><div id="turnierPreviewCount" class="small"></div><div id="turnierPreviewTableWrap"></div>
+ <div class="form-actions"><button type="button" class="primary" id="stageTurnierImport" disabled>Kontrolle der Spielerimporte</button><button type="button" class="secondary" id="reloadTurnierStaging">Offene Import-Einträge anzeigen</button><button type="button" class="primary" id="confirmAllSafeImports" disabled>Alle eindeutigen Importe bestätigen</button></div>
+ <div id="turnierStagingStatus" class="status" role="status" hidden></div><div id="turnierStagingTableWrap" hidden></div></div></details></section>
+</main>
+<script>
+const SUPABASE_URL='https://apsarswjmsrmffoyxsgr.supabase.co';
+const SUPABASE_KEY='sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=null,isAdmin=false,isClubManager=false,managedClubIds=[],activeClubId='';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function message(el,text,type=''){el.className='status'+(type?' '+type:'');el.textContent=text;el.hidden=false;}
+const params=new URLSearchParams(location.search);const requestedClubId=params.get('club_id');
+try{activeClubId=requestedClubId||sessionStorage.getItem('badminone_active_club_id')||'';}catch(_){activeClubId=requestedClubId||'';}
+function refreshProfileMenu(){const logged=!!currentUser;document.getElementById('profileLogin').hidden=logged;document.getElementById('profileRegister').hidden=logged;document.getElementById('profileManage').hidden=!logged;document.getElementById('profileLogout').hidden=!logged;}
+document.getElementById('profileMenuBtn').addEventListener('click',()=>{const menu=document.getElementById('profileMenu'),open=menu.hidden;menu.hidden=!open;document.getElementById('profileMenuBtn').setAttribute('aria-expanded',String(open));});
+document.addEventListener('click',e=>{if(!e.target.closest('.pn-profile-wrap')){document.getElementById('profileMenu').hidden=true;document.getElementById('profileMenuBtn').setAttribute('aria-expanded','false');}});
+async function initializePage(){
+ const {data:{session},error:sessionError}=await sb.auth.getSession();if(sessionError)throw sessionError;currentUser=session?.user||null;isAdmin=false;isClubManager=false;managedClubIds=[];refreshProfileMenu();
+ const access=document.getElementById('accessStatus');
+ if(!currentUser){message(access,'Bitte melde dich an, um Spieler zu erstellen oder zu importieren.','error');return;}
+ const [{data:profile,error:profileError},{data:managerRows,error:managerError}]=await Promise.all([sb.from('profiles').select('role').eq('id',currentUser.id).maybeSingle(),sb.from('club_managers').select('club_id').eq('user_id',currentUser.id)]);
+ if(profileError||managerError)throw profileError||managerError;
+ isAdmin=profile?.role==='admin';managedClubIds=(managerRows||[]).map(x=>x.club_id).filter(Boolean);isClubManager=managedClubIds.length>0;
+ if(!activeClubId){message(access,'Es wurde kein Verein übergeben. Bitte öffne diese Funktion über die Vereinsauswahl auf der vorherigen Seite.','error');return;}
+ if(!isAdmin&&!managedClubIds.includes(activeClubId)){message(access,'Du hast keine Verwaltungsrechte für den übernommenen Verein. Bitte kehre zur vorherigen Seite zurück und wähle einen berechtigten Verein.','error');return;}
+ const {data:club,error:clubError}=await sb.from('clubs').select('id,name,city').eq('id',activeClubId).is('archived_at',null).maybeSingle();
+ if(clubError)throw clubError;if(!club){message(access,'Der übergebene Verein wurde nicht gefunden oder ist archiviert.','error');return;}
+ try{sessionStorage.setItem('badminone_active_club_id',activeClubId);}catch(_){}
+ message(access,'Ausgewählter Verein: '+club.name+(club.city?' – '+club.city:''),'success');await loadTurnierStaging();
+}
+sb.auth.onAuthStateChange(()=>{initializePage().catch(err=>message(document.getElementById('accessStatus'),'Zugriff konnte nicht geprüft werden: '+(err?.message||String(err)),'error'));});
+document.getElementById('profileLogout').addEventListener('click',async()=>{const {error}=await sb.auth.signOut();if(error){alert('Abmelden fehlgeschlagen: '+error.message);return;}await initializePage();});
+document.getElementById('createClubPlayerForm').addEventListener('submit',async e=>{
+ e.preventDefault();const status=document.getElementById('createClubPlayerStatus'),button=document.getElementById('createClubPlayerButton');const clubId=activeClubId,name=document.getElementById('newPlayerName').value.trim(),team=document.getElementById('newPlayerTeam').value.trim(),gender=document.getElementById('newPlayerGender').value,rankingRaw=document.getElementById('newPlayerRanking').value.trim();
+ if(!currentUser){message(status,'Bitte zuerst anmelden.','error');return;}if(!clubId){message(status,'Bitte öffne die Funktion über die Vereinsauswahl auf der vorherigen Seite.','error');return;}if(!isAdmin&&!managedClubIds.includes(clubId)){message(status,'Du hast keine Verwaltungsrechte für diesen Verein.','error');return;}if(!name){message(status,'Bitte einen Spielernamen eingeben.','error');return;}const ranking=rankingRaw===''?null:Number(rankingRaw);if(ranking!==null&&(!Number.isInteger(ranking)||ranking<1)){message(status,'Die Ranglistenposition muss eine positive ganze Zahl sein.','error');return;}if(!confirm('Spieler „'+name+'“ für den übernommenen Verein erstellen?'))return;
+ button.disabled=true;button.textContent='Wird gespeichert …';try{const {data,error}=await sb.from('players').insert({club_id:clubId,name,team:team||null,gender:gender||null,ranking_position:ranking,active:true}).select('id,name').single();if(error)throw error;message(status,'Spieler „'+(data?.name||name)+'“ wurde erstellt.','success');document.getElementById('createClubPlayerForm').reset();}catch(err){message(status,'Spieler konnte nicht erstellt werden: '+(err?.message||String(err)),'error');}finally{button.disabled=false;button.textContent='Spieler erstellen';}
+});
+let turnierPreviewRequestId=0,currentTurnierPreviewPlayers=[];
+function clearTurnierPreview(text='Noch nicht geladen. Tippe auf „Spielerliste laden / aktualisieren“.'){const b=document.getElementById('loadTurnierPreview');b.disabled=false;b.textContent='Spielerliste laden / aktualisieren';document.getElementById('turnierPreviewTableWrap').innerHTML='';document.getElementById('turnierPreviewCount').textContent='';message(document.getElementById('turnierPreviewStatus'),text,'');currentTurnierPreviewPlayers=[];document.getElementById('stageTurnierImport').disabled=true;}
+document.getElementById('turnierClubUrl').addEventListener('input',()=>{turnierPreviewRequestId++;clearTurnierPreview('Adresse geändert. Lade die Spielerliste erneut, um eine neue Vorschau zu erhalten.');});
+function renderTurnierPreview(players){currentTurnierPreviewPlayers=Array.isArray(players)?players:[];const wrap=document.getElementById('turnierPreviewTableWrap'),count=document.getElementById('turnierPreviewCount'),rows=currentTurnierPreviewPlayers;count.textContent=rows.length+' Spieler in der Vorschau. Es wurden keine Daten gespeichert.';if(!rows.length){wrap.innerHTML='<div class="empty">Die Funktion hat keine Spieler zurückgegeben. Bitte die Statusmeldung prüfen.</div>';return;}const cols=[['name','Name'],['playerId','Spieler-ID'],['gender','Geschlecht'],['birthYear','Geburtsjahr'],['ageClass','Altersklasse']];wrap.innerHTML='<div class="inline-style-11"><table><thead><tr><th>Auswahl</th>'+cols.map(c=>'<th>'+c[1]+'</th>').join('')+'</tr></thead><tbody>'+rows.map((p,i)=>'<tr><td><input type="checkbox" class="turnierImportSelect" data-index="'+i+'" aria-label="Import '+esc(p?.name||'Spieler')+'" checked></td>'+cols.map(c=>'<td>'+(c[0]==='name'?esc(p?.[c[0]]??'—')+'<div class="small preflight-note" data-index="'+i+'">Noch nicht geprüft</div>':esc(p?.[c[0]]??'—'))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';document.getElementById('stageTurnierImport').disabled=!rows.length;}
+async function loadTurnierPreview(){const button=document.getElementById('loadTurnierPreview'),status=document.getElementById('turnierPreviewStatus'),wrap=document.getElementById('turnierPreviewTableWrap'),count=document.getElementById('turnierPreviewCount'),requestId=++turnierPreviewRequestId,requestedUrl=document.getElementById('turnierClubUrl').value.trim(),clubId=activeClubId;wrap.innerHTML='';count.textContent='';if(!currentUser||(!isAdmin&&!isClubManager)){message(status,'Bitte als Vereinsmanager oder Admin anmelden.','error');return;}if(!clubId){message(status,'Bitte öffne die Funktion über die Vereinsauswahl auf der vorherigen Seite.','error');return;}button.disabled=true;button.textContent='Spielerliste wird geladen …';message(status,'Turnier.de-Spielerliste wird abgerufen. Es werden keine Daten gespeichert.','');try{if(!requestedUrl)throw new Error('Bitte zuerst die Turnier.de-Adresse eingeben.');let parsed;try{parsed=new URL(requestedUrl)}catch{throw new Error('Bitte eine gültige vollständige URL eingeben.')}if(parsed.protocol!=='https:'||!/(^|\.)turnier\.de$/i.test(parsed.hostname))throw new Error('Bitte eine HTTPS-Adresse von turnier.de eingeben.');const {data,error}=await sb.functions.invoke('turnierde-preview',{body:{url:requestedUrl,clubId}});if(requestId!==turnierPreviewRequestId||document.getElementById('turnierClubUrl').value.trim()!==requestedUrl)return;if(error)throw error;const result=data?.data&&typeof data.data==='object'?data.data:data;if(!result||result.success===false)throw new Error(result?.error||result?.message||'Die Vorschau-Funktion meldet keinen Erfolg.');const players=Array.isArray(result.players)?result.players:(Array.isArray(result.data?.players)?result.data.players:null);if(!players)throw new Error('Die erwartete Spielerliste fehlt in der Antwort.');renderTurnierPreview(players);message(status,'Vorschau erfolgreich geladen. Es wurden keine Daten importiert oder gespeichert.','success');}catch(err){if(requestId===turnierPreviewRequestId){message(status,'Spielerliste konnte nicht geladen werden: '+(err?.message||String(err))+(err?.context?.status?' HTTP '+err.context.status:''),'error');count.textContent='Bitte URL und Verbindung prüfen und erneut laden.';}}finally{if(requestId===turnierPreviewRequestId){button.disabled=false;button.textContent='Spielerliste laden / aktualisieren';}}}
+document.getElementById('loadTurnierPreview').addEventListener('click',loadTurnierPreview);
+async function loadTurnierStaging(){
+const clubId=activeClubId,status=document.getElementById('turnierStagingStatus'),wrap=document.getElementById('turnierStagingTableWrap');
+if(!clubId){wrap.innerHTML='';return;}
+message(status,'Spieler werden mit dem Vereinsbestand abgeglichen …','');
+try{
+const norm=v=>(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().split(/\s+/).filter(Boolean).sort().join(' ');
+const {data:existingData,error:existingError}=await sb.from('players').select('id,name,turnierde_player_id').eq('club_id',clubId);
+if(existingError)throw existingError;
+const existing=existingData||[];
+const preview=document.getElementById('turnierPreviewTableWrap');
+const previewRows=preview.querySelectorAll('tbody tr');
+let duplicateCount=0;
+previewRows.forEach((tr,i)=>{
+const p=currentTurnierPreviewPlayers[i]||{};
+const ext=String(p.playerId||p.external_player_id||p.id||'').trim();
+const name=String(p.name||'').trim();
+const idMatch=!!ext&&existing.some(x=>String(x.turnierde_player_id||'').trim()===ext);
+const nameMatches=!!name&&existing.filter(x=>norm(x.name)===norm(name));
+const duplicate=idMatch||nameMatches.length>0;
+const note=tr.querySelector('.preflight-note');
+if(!note)return;
+if(idMatch){
+note.textContent='Duplikat: Turnier.de-Spieler-ID bereits im Verein vorhanden';
+note.style.color='#f87171';
+}else if(nameMatches.length){
+note.textContent='Duplikat: Name bereits im Verein vorhanden';
+note.style.color='#f87171';
+}else{
+note.textContent='Kein Duplikat im aktuellen Vereinsbestand erkannt';
+note.style.color='#4ade80';
+}
+note.style.fontWeight='700';
+if(duplicate)duplicateCount++;
+});
+const {data,error}=await sb.from('turnierde_import_staging')
+.select('id,player_name,external_player_id,gender,birth_year,age_class,status')
+.eq('club_id',clubId).in('status',['pending','possible_duplicate']).order('player_name');
+if(error)throw error;
+const rows=data||[];
+if(!rows.length){
+wrap.innerHTML='<div class="empty">Keine offenen Import-Einträge.</div>';
+wrap.hidden=false;
+document.getElementById('confirmAllSafeImports').disabled=true;
+message(status,previewRows.length
+?('Prüfung abgeschlossen: '+duplicateCount+' von '+previewRows.length+' Spielern sind bereits im Verein vorhanden. Es gibt keine offenen Import-Einträge.')
+:'Keine offenen Import-Einträge.', 'success');
+return;
+}
+const classified=rows.map(r=>{
+const idMatch=!!r.external_player_id&&existing.some(p=>String(p.turnierde_player_id||'').trim()===String(r.external_player_id).trim());
+const matches=existing.filter(p=>norm(p.name)===norm(r.player_name));
+return {...r,preflight:idMatch?'Turnier.de-Spieler-ID bereits vorhanden':matches.length?'Name bereits im Verein vorhanden':'Kein Duplikat erkannt',
+preflightColor:idMatch||matches.length?'#f87171':'#4ade80',safe:!idMatch&&!matches.length&&r.status!=='possible_duplicate'};
+});
+previewRows.forEach((tr,i)=>{
+const p=currentTurnierPreviewPlayers[i]||{},ext=String(p.playerId||p.external_player_id||p.id||''),name=String(p.name||'');
+const match=classified.find(r=>ext&&String(r.external_player_id||'')===ext)||classified.find(r=>norm(r.player_name)===norm(name));
+if(!match)return;
+const note=tr.querySelector('.preflight-note');
+let b=tr.querySelector('.confirmTurnierImport');
+if(!b){b=document.createElement('button');b.type='button';b.className='primary confirmTurnierImport';b.style.marginTop='8px';note?.insertAdjacentElement('afterend',b);}
+if(b){b.dataset.id=match.id;b.dataset.safe=match.safe?'1':'0';b.dataset.duplicate=match.status==='possible_duplicate'||!match.safe?'1':'0';b.textContent='Import bestätigen';}
+});
+wrap.innerHTML='';
+wrap.hidden=true;
+document.getElementById('confirmAllSafeImports').disabled=!classified.some(r=>r.safe);
+message(status,'Prüfung abgeschlossen: '+duplicateCount+' von '+previewRows.length+' Spielern sind bereits im Verein vorhanden. Grün = kein Duplikat erkannt, Rot = Duplikat. Mögliche Duplikate werden nicht automatisch importiert.','success');
+}catch(err){message(status,'Spielerprüfung fehlgeschlagen: '+(err?.message||String(err)),'error');}
+}
+document.getElementById('reloadTurnierStaging').addEventListener('click',loadTurnierStaging);
+document.getElementById('stageTurnierImport').addEventListener('click',async()=>{const clubId=activeClubId,sourceUrl=document.getElementById('turnierClubUrl').value.trim(),status=document.getElementById('turnierStagingStatus'),chosen=[...document.querySelectorAll('.turnierImportSelect:checked')].map(el=>currentTurnierPreviewPlayers[Number(el.dataset.index)]).filter(Boolean);if(!clubId){message(status,'Bitte öffne die Funktion über die Vereinsauswahl auf der vorherigen Seite.','error');return;}if(!sourceUrl||!chosen.length){message(status,'Bitte Turnier.de-Adresse und mindestens einen Spieler auswählen.','error');return;}const rows=chosen.map(p=>({playerId:p.playerId||p.external_player_id||p.id,name:p.name,gender:p.gender||'Männer',birthYear:p.birthYear||'',youth:p.youth||'',ageClass:p.ageClass||'',gamesPlayed:p.gamesPlayed||''}));message(status,'Import-Einträge werden vorbereitet …','');try{const {data,error}=await sb.rpc('stage_turnierde_players',{p_club_id:clubId,p_source_url:sourceUrl,p_rows:rows});if(error)throw error;message(status,'Import vorbereitet ('+String(data)+' Einträge verarbeitet). Noch keine Spieler wurden angelegt.','success');await loadTurnierStaging();}catch(err){message(status,'Import konnte nicht vorbereitet werden: '+(err?.message||String(err)),'error');}});
+document.getElementById('confirmAllSafeImports').addEventListener('click',async()=>{const buttons=[...document.querySelectorAll('.confirmTurnierImport[data-safe="1"]')];if(!buttons.length){message(document.getElementById('turnierStagingStatus'),'Keine eindeutig unauffälligen Import-Einträge. Bitte mögliche Duplikate einzeln prüfen.','error');return;}if(!confirm(buttons.length+' eindeutig geprüfte Spieler importieren? Mögliche Duplikate werden übersprungen.'))return;const st=document.getElementById('turnierStagingStatus');message(st,'Sammelimport läuft …','');let ok=0,fail=0;for(const b of buttons){b.disabled=true;try{const {error}=await sb.rpc('confirm_turnierde_player_import',{p_staging_id:Number(b.dataset.id),p_confirm_name_duplicate:false});if(error)throw error;ok++;}catch(_){fail++;b.disabled=false;}}message(st,'Sammelimport beendet: '+ok+' erfolgreich, '+fail+' fehlgeschlagen. Mögliche Duplikate wurden nicht automatisch importiert.',fail?'error':'success');await loadTurnierStaging();});
+document.getElementById('turnierPreviewTableWrap').addEventListener('click',async e=>{const b=e.target.closest('.confirmTurnierImport');if(!b)return;const id=Number(b.dataset.id),possible=b.dataset.duplicate==='1';if(possible&&!confirm('Dieser Name kann bereits existieren. Hast du Vereinszugehörigkeit und Identität geprüft und möchtest du trotzdem importieren?'))return;if(!confirm('Import wirklich bestätigen? Ein eindeutiger vorhandener Spieler wird verknüpft; andernfalls wird ein neuer Spieler angelegt.'))return;b.disabled=true;const status=document.getElementById('turnierStagingStatus');message(status,'Import wird bestätigt …','');try{const {data,error}=await sb.rpc('confirm_turnierde_player_import',{p_staging_id:id,p_confirm_name_duplicate:possible});if(error)throw error;message(status,'Import erfolgreich. Spieler-ID: '+String(data),'success');await loadTurnierStaging();}catch(err){message(status,'Import fehlgeschlagen: '+(err?.message||String(err)),'error');b.disabled=false;}});
+initializePage().catch(err=>message(document.getElementById('accessStatus'),'Seite konnte nicht initialisiert werden: '+(err?.message||String(err)),'error'));
+</script>
+<script src="assets/js/shared-nav.js?v=20261112"></script>
+<script src="assets/js/auth-popup.js?v=20261112"></script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101722"><title>BadminOne · Funktionen</title>
+<link rel="stylesheet" href="assets/css/style.css?v=20261102">
+<link rel="stylesheet" href="assets/css/badminton-header.css?v=20261102">
+<link rel="stylesheet" href="assets/css/auth-popup.css?v=20261102">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/funktionen.js?v=20261109-select-ui1" defer></script>
+</head>
+<body>
+<nav id="platformNav" aria-label="Hauptnavigation">
+ <div class="pn-brandbar">
+  <a class="pn-brand" href="index.html" aria-label="BadminOne – Startseite"><span class="pn-logo">🏸</span><span class="pn-brandtext"><strong>BadminOne</strong><small>ALL YOUR GAME IN ONE</small></span></a>
+  <div class="pn-actions"><div class="pn-profile-wrap"><button class="pn-profile-btn" type="button" data-auth-open="login" aria-label="Anmelden / Profil" title="Profil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg></button></div></div>
+ </div>
+ <div class="pn-tiles" id="navInner" aria-label="Hauptbereiche"></div>
+</nav>
+<main class="page functions-page">
+ <section class="welcome functions-hero">
+  <div class="welcome-copy"><p class="eyebrow">BADMINTON · DEIN BEREICH</p><h1>Funktionen</h1>
+   <p>Hier findest du alle Aktionen, die zu deinen Rollen passen. Noch fehlende Voraussetzungen zeigen wir dir direkt an.</p>
+   <p id="roleSummary" class="role-line">Berechtigungen werden geladen …</p>
+  </div><div class="welcome-mark" aria-hidden="true">▦</div>
+ </section>
+ <section id="clubContext" class="club-context" hidden>
+  <div class="club-context-copy"><strong>Aktiver Verein</strong><span id="clubContextHint">Wähle den Verein, dessen Daten du bearbeiten möchtest.</span></div>
+  <label class="sr-only" for="activeClubSelect">Verein auswählen</label>
+  <select id="activeClubSelect" aria-label="Aktiven Verein auswählen"><option value="">Vereine werden geladen …</option></select>
+ </section>
+ <div id="functionsMessage" class="functions-message" role="status" aria-live="polite">Funktionen und Voraussetzungen werden geprüft …</div>
+ <section class="favorites-panel" id="favoritesPanel">
+  <button type="button" class="favorites-head" id="favoritesToggle" aria-expanded="false" aria-controls="favoritesList">
+   <span class="favorites-head-icon">★</span>
+   <span class="favorites-head-copy"><strong>Meine Favoriten</strong><small>Deine persönlichen Schnellzugriffe</small></span>
+   <span class="favorites-count" id="favoritesCount">0</span>
+   <span class="favorites-chevron">⌄</span>
+  </button>
+  <div class="favorites-list" id="favoritesList" hidden><p class="favorites-empty">Noch keine Favoriten. Füge Funktionen über das Drei-Punkte-Menü hinzu.</p></div>
+ </section>
+ <section class="function-groups" aria-label="Funktionsbereiche">
+  <section class="function-group group-profile" id="section-profile" hidden><button class="function-group-head" type="button" aria-expanded="true" aria-controls="grid-profile"><span class="group-icon">♙</span><span class="group-heading"><strong>Mein Profil</strong><small>Deine persönlichen Kontodaten und Spielerdaten</small></span><span class="group-chevron">⌄</span></button><div class="function-group-body" id="grid-profile"></div></section>
+  <section class="function-group group-play" id="section-play" hidden><button class="function-group-head" type="button" aria-expanded="true" aria-controls="grid-play"><span class="group-icon">▦</span><span class="group-heading"><strong>Spielbetrieb</strong><small>Spielplan, Aufstellung und Spielberichte</small></span><span class="group-chevron">⌄</span></button><div class="function-group-body" id="grid-play"></div></section>
+  <section class="function-group group-stats" id="section-stats" hidden><button class="function-group-head" type="button" aria-expanded="true" aria-controls="grid-stats"><span class="group-icon">▥</span><span class="group-heading"><strong>Auswertungen</strong><small>Ranglisten und persönliche Statistiken</small></span><span class="group-chevron">⌄</span></button><div class="function-group-body" id="grid-stats"></div></section>
+  <section class="function-group group-club" id="section-club"><button class="function-group-head" type="button" aria-expanded="true" aria-controls="grid-club"><span class="group-icon">♟</span><span class="group-heading"><strong>Vereinsverwaltung</strong><small>Spieler, Mannschaften und Vereinsdaten</small></span><span class="group-chevron">⌄</span></button><div class="function-group-body" id="grid-club"></div></section>
+  <section class="function-group group-admin" id="section-admin" hidden><button class="function-group-head" type="button" aria-expanded="true" aria-controls="grid-admin"><span class="group-icon">⚙</span><span class="group-heading"><strong>Administration</strong><small>Benutzer, Rollen und Plattform</small></span><span class="group-chevron">⌄</span></button><div class="function-group-body" id="grid-admin"></div></section>
+ </section>
+ <section class="hidden-functions-panel" id="hiddenFunctionsPanel" hidden>
+  <button type="button" class="hidden-functions-toggle" id="hiddenFunctionsToggle" aria-expanded="false" aria-controls="hiddenFunctionsList">
+   <span>Ausgeblendete Funktionen <strong id="hiddenFunctionsCount">0</strong></span><span class="hidden-functions-chevron">⌄</span>
+  </button>
+  <div id="hiddenFunctionsList" class="hidden-functions-list" hidden></div>
+ </section>
+ <section class="next-steps-panel" id="nextStepsPanel">
+  <div class="next-steps-heading"><span class="next-steps-icon">◎</span><div><h2>Nächste Schritte</h2><p id="nextStepsSubtitle">Empfohlene Aufgaben für deinen Verein</p></div></div>
+  <div id="nextStepsList" class="next-steps-list"><p class="next-steps-empty">Voraussetzungen werden geladen …</p></div>
+ </section>
+ <p class="page-note">Die Anzeige hilft bei der Orientierung. Die tatsächliche Berechtigung wird weiterhin auf den jeweiligen Seiten und durch Supabase geprüft.</p>
+</main>
+<footer class="footer">BadminOne · All Your Game in One</footer>
+<style>
+.club-context{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:14px 0;padding:14px 16px;border:1px solid var(--border);border-radius:15px;background:var(--surface)}
+.club-context-copy{display:grid;gap:3px;min-width:0}.club-context-copy strong{font-size:14px}.club-context-copy span{font-size:12px;color:var(--muted)}
+#activeClubSelect{width:min(100%,360px);min-height:44px;padding:9px 12px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface);color:var(--text);font:inherit}
+.functions-page{max-width:1120px}.functions-hero{margin-bottom:18px}
+.functions-message{margin-top:14px;padding:10px 14px;border:1px solid var(--border);border-radius:13px;background:var(--surface);color:var(--muted);font-size:13px}
+.function-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
+.function-group{min-width:0;overflow:hidden;border:1px solid var(--border);border-radius:18px;background:var(--surface);box-shadow:0 8px 22px rgba(0,0,0,.10)}
+.function-group-head{width:100%;min-height:88px;display:flex;align-items:center;gap:13px;padding:16px;text-align:left;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer}
+.group-icon{width:48px;height:48px;flex:0 0 48px;display:grid;place-items:center;border-radius:14px;background:#203d58;color:#8ecbff;font-size:25px}
+.group-heading{display:grid;gap:4px;min-width:0;flex:1}.group-heading strong{font-size:17px;font-weight:850}.group-heading small{font-size:12px;line-height:1.4;color:var(--muted)}
+.group-chevron{font-size:23px;color:var(--muted);transition:transform .15s}
+.function-group.is-collapsed .group-chevron{transform:rotate(-90deg)}
+.function-group.is-collapsed .function-group-body{display:none}
+.group-club .group-icon{background:#153e4b;color:#59d6c7}.group-play .group-icon{background:#1b3d60;color:#79bdff}.group-stats .group-icon{background:#352957;color:#c4a2ff}.group-admin .group-icon{background:#4a3520;color:#ffc16c}
+.function-group-body{display:grid;gap:0;padding:7px 12px 12px}
+.function-tile{min-width:0;display:grid;grid-template-columns:40px minmax(0,1fr);gap:2px 11px;align-items:center;padding:12px 7px;border-bottom:1px solid rgba(130,155,180,.16);color:var(--text);text-decoration:none;transition:background .15s}
+.function-tile:last-child{border-bottom:0}.function-tile:hover{background:rgba(110,170,220,.07)}
+.function-icon{grid-column:1;grid-row:1/span 3;width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:#203d58;color:#8ecbff;font-size:19px}
+.function-title{font-size:14px;font-weight:800;line-height:1.25}.function-desc{font-size:11px;line-height:1.35;color:var(--muted)}
+.function-state{grid-column:2;margin-top:2px;font-size:11px;font-weight:750;color:#8fc7ff}
+.function-tile.is-disabled{border-radius:9px;background:rgba(95,110,125,.08);color:#a0adbd;cursor:default}
+.function-tile.is-disabled .function-icon{background:#283441;color:#77889b;filter:grayscale(1)}
+.function-tile.is-disabled .function-desc{color:#8997a8}.function-tile.is-disabled .function-state{color:#e0b86b}
+.next-steps-panel{margin-top:18px;padding:18px;border:1px solid var(--border);border-radius:18px;background:var(--surface)}
+.next-steps-heading{display:flex;align-items:center;gap:12px;margin-bottom:13px}
+.next-steps-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:13px;background:#203d58;color:#8ecbff;font-size:27px}
+.next-steps-heading h2{margin:0;font-size:19px}.next-steps-heading p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.next-steps-list{display:grid;gap:8px}
+.next-step{display:grid;grid-template-columns:112px minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:rgba(120,150,180,.045)}
+.next-step-status{display:inline-flex;justify-content:center;align-items:center;gap:6px;padding:7px 9px;border-radius:9px;font-size:11px;font-weight:800;white-space:nowrap}
+.next-step-status.done{background:rgba(40,170,110,.13);color:#65d6a0}.next-step-status.open{background:rgba(230,165,55,.13);color:#e9bd69}.next-step-status.wait{background:rgba(130,150,170,.14);color:#aab9c8}
+.next-step-copy{display:grid;gap:3px;min-width:0}.next-step-copy strong{font-size:13px}.next-step-copy small{font-size:11px;line-height:1.35;color:var(--muted)}
+.next-step-link{color:#8fc7ff;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap}.next-steps-empty{margin:0;color:var(--muted);font-size:12px}
+.function-group-head:focus-visible,.function-tile:focus-visible,.next-step-link:focus-visible{outline:3px solid #65aee7;outline-offset:3px}
+@media(max-width:760px){.function-groups{grid-template-columns:1fr}.next-step{grid-template-columns:94px minmax(0,1fr)}.next-step-link{grid-column:2;justify-self:start}}
+@media(max-width:640px){.club-context{align-items:stretch;flex-direction:column}#activeClubSelect{width:100%}.function-group-head{min-height:76px;padding:13px}.group-heading strong{font-size:16px}.function-group-body{padding:5px 10px 9px}.next-steps-panel{padding:14px}.next-step{gap:8px;padding:10px}.next-step-status{padding:6px 7px;font-size:10px}}
+
+/* Persönliche Favoriten und Funktionsmenüs */
+.function-group{align-self:start}
+.function-group.is-collapsed .function-group-body{display:none}
+.function-group.is-collapsed .group-chevron{transform:rotate(-90deg)}
+.function-tile-wrap{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 38px;align-items:center;gap:4px;border-bottom:1px solid rgba(130,155,180,.16)}
+.function-tile-wrap:last-child{border-bottom:0}
+.function-tile-wrap .function-tile{border-bottom:0;min-width:0}
+.function-more-button{width:36px;height:40px;display:grid;place-items:center;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--muted);font-size:22px;cursor:pointer;touch-action:manipulation}
+.function-more-button:hover,.function-more-button[aria-expanded="true"]{border-color:var(--border);background:rgba(120,150,180,.10);color:var(--text)}
+.function-more-button:focus-visible,.favorites-head:focus-visible,.hidden-functions-toggle:focus-visible,.function-menu button:focus-visible,.function-confirm button:focus-visible,.function-restore-button:focus-visible{outline:3px solid #65aee7;outline-offset:2px}
+.function-menu{position:absolute;z-index:30;right:5px;top:calc(100% - 5px);width:min(245px,calc(100vw - 76px));padding:6px;border:1px solid var(--border-strong);border-radius:12px;background:var(--surface);box-shadow:0 12px 30px rgba(0,0,0,.32)}
+.function-menu button{width:100%;display:flex;align-items:center;gap:10px;padding:11px 10px;border:0;border-radius:8px;background:transparent;color:var(--text);font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.function-menu button:hover{background:rgba(120,150,180,.12)}
+.function-menu[hidden]{display:none}
+.favorites-panel{margin:14px 0 18px;border:1px solid var(--border);border-radius:17px;background:var(--surface);overflow:hidden}
+.favorites-head{width:100%;min-height:76px;display:flex;align-items:center;gap:12px;padding:13px 16px;border:0;background:transparent;color:var(--text);text-align:left;cursor:pointer}
+.favorites-head-icon{width:43px;height:43px;display:grid;place-items:center;border-radius:13px;background:rgba(225,177,75,.14);color:#e9bd69;font-size:25px}
+.favorites-head-copy{display:grid;gap:3px;flex:1;min-width:0}.favorites-head-copy strong{font-size:16px}.favorites-head-copy small{font-size:11px;color:var(--muted)}
+.favorites-count{display:grid;place-items:center;min-width:25px;height:25px;padding:0 7px;border-radius:20px;background:rgba(120,150,180,.15);font-size:11px;font-weight:800}
+.favorites-chevron{font-size:21px;color:var(--muted);transition:transform .15s}
+.favorites-panel.is-open .favorites-chevron{transform:rotate(180deg)}
+.favorites-list{padding:0 13px 12px;display:grid;gap:0}
+.favorites-list[hidden]{display:none}
+.favorites-empty{margin:0;padding:10px 3px 5px;color:var(--muted);font-size:12px}
+.favorite-item{display:grid;grid-template-columns:minmax(0,1fr) 38px;align-items:center;gap:4px;border-top:1px solid rgba(130,155,180,.16)}
+.favorite-item .function-tile{border:0}
+.favorite-remove{width:34px;height:36px;border:0;border-radius:9px;background:transparent;color:#e9bd69;font-size:19px;cursor:pointer}
+.hidden-functions-panel{margin:14px 0;border:1px dashed var(--border-strong);border-radius:14px;background:rgba(100,130,160,.045);overflow:hidden}
+.hidden-functions-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;padding:13px 15px;border:0;background:transparent;color:var(--muted);font:inherit;text-align:left;cursor:pointer}
+.hidden-functions-toggle strong{display:inline-grid;place-items:center;min-width:23px;height:23px;margin-left:6px;padding:0 6px;border-radius:20px;background:rgba(120,150,180,.16);color:var(--text);font-size:11px}
+.hidden-functions-chevron{font-size:20px;transition:transform .15s}
+.hidden-functions-panel.is-open .hidden-functions-chevron{transform:rotate(180deg)}
+.hidden-functions-list{padding:0 12px 12px;display:grid;gap:7px}
+.hidden-function-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+.hidden-function-row strong{font-size:13px}.hidden-function-row small{display:block;margin-top:2px;color:var(--muted);font-size:11px}
+.function-restore-button{padding:7px 10px;border:1px solid var(--border-strong);border-radius:9px;background:transparent;color:var(--text);font:inherit;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
+.function-confirm-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.62)}
+.function-confirm{width:min(100%,390px);padding:20px;border:1px solid var(--border-strong);border-radius:17px;background:var(--surface);box-shadow:0 18px 50px rgba(0,0,0,.4)}
+.function-confirm h3{margin:0 0 8px;font-size:18px;color:var(--text)}
+.function-confirm p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+.function-confirm-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}
+.function-confirm-actions button{min-height:42px;padding:9px 14px;border:1px solid var(--border-strong);border-radius:10px;background:transparent;color:var(--text);font:inherit;font-size:13px;font-weight:750;cursor:pointer}
+.function-confirm-actions .confirm-hide{border-color:#286b9a;background:#245b86;color:#fff}
+@media(max-width:640px){.function-tile-wrap{grid-template-columns:minmax(0,1fr) 36px}.function-more-button{width:34px}.favorites-head{min-height:70px;padding:11px 13px}.hidden-function-row{align-items:flex-start}}
+
+/* Eigene BadminOne-Vereinsauswahl statt nativer Android-Auswahldialog */
+.club-context{position:relative;z-index:40}
+.club-select{position:relative;width:min(100%,360px);min-width:0}
+.club-select-trigger{
+  width:100%;min-height:48px;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:11px 14px;border:1px solid #526b82;border-radius:12px;
+  background:#101c2b;color:#edf4fb;font:inherit;font-size:15px;font-weight:700;
+  text-align:left;box-shadow:inset 0 1px 0 #ffffff0a;cursor:pointer
+}
+.club-select-trigger:focus-visible{outline:2px solid #78bdf0;outline-offset:3px}
+.club-select-trigger[aria-expanded="true"]{border-color:#78bdf0;border-bottom-left-radius:0;border-bottom-right-radius:0}
+.club-select-value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.club-select-chevron{flex:0 0 auto;color:#b9c9d9;font-size:20px;transition:transform .15s}
+.club-select-trigger[aria-expanded="true"] .club-select-chevron{transform:rotate(180deg)}
+.club-select-menu{
+  position:absolute;top:calc(100% - 1px);left:0;right:0;z-index:1000;
+  max-height:min(52vh,360px);overflow-y:auto;padding:6px;
+  border:1px solid #526b82;border-top-color:#405a72;border-radius:0 0 14px 14px;
+  background:#172a3e;color:#edf4fb;box-shadow:0 16px 36px #000b;
+  overscroll-behavior:contain;-webkit-overflow-scrolling:touch
+}
+.club-select-menu[hidden]{display:none!important}
+.club-select-option{
+  width:100%;min-height:48px;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:11px 12px;border:0;border-bottom:1px solid #ffffff12;border-radius:8px;
+  background:transparent;color:#eaf2fb;font:inherit;font-size:14px;font-weight:650;
+  text-align:left;cursor:pointer
+}
+.club-select-option:last-child{border-bottom:0}
+.club-select-option:hover,.club-select-option:focus-visible{background:#244763;outline:none}
+.club-select-option[aria-selected="true"]{background:#1e4968;color:#fff}
+.club-select-check{flex:0 0 auto;color:#72d8c7;font-size:18px;font-weight:900}
+#activeClubSelect.club-select-native{
+  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
+  overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
+  opacity:0!important;pointer-events:none!important
+}
+@media(max-width:640px){
+  .club-select{width:100%}
+  .club-select-menu{max-height:min(48vh,320px)}
+  .club-select-option{min-height:52px;font-size:15px}
+}
+
+</style>
+<script src="assets/js/auth-popup.js?v=20261102"></script>
+<script src="assets/js/shared-nav.js?v=20261108-functions"></script>
+</body></html>
