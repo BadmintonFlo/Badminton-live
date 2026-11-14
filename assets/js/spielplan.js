@@ -167,11 +167,13 @@ async function loadScheduleClubs(){
     adminTeams=[...new Set(scheduleClubTeams.map(t=>t.name))];
   }
   buildTeamFilter();
-  applySavedScheduleSelection();
 }
 async function loadAdminTeams(){return loadScheduleClubs();}
 function otherTeam(m,t){return m.home_team===t?m.away_team:m.home_team;}
+let loadUserPromise=null;
 async function loadUser(){
+  if(loadUserPromise)return loadUserPromise;
+  loadUserPromise=(async()=>{
   const {data:{user:u}}=await sb.auth.getUser();user=u;if(!u){showLoggedOut();return;}
   const [pr,ms,pa,tr,cm]=await Promise.all([
     sb.from('profiles').select('id,display_name,role').eq('id',u.id).maybeSingle(),
@@ -200,7 +202,13 @@ async function loadUser(){
     linkedPlayers=(linked||[]).map(p=>{const a=(assignments||[]).find(x=>Number(x.player_id)===Number(p.id));const t=playerTeams.find(x=>String(x.id)===String(a?.team_id));return {...p,team_id:a?.team_id||null,team:t?.name||''};});
   }
   await loadScheduleClubs();
-  showLoggedIn();
+  await showLoggedIn();
+  })();
+  try{
+    return await loadUserPromise;
+  }finally{
+    loadUserPromise=null;
+  }
 }
 function syncMoreMenuAccess(){
   const roles=new Set([String(profile?.role||'').toLowerCase(),...memberships.map(x=>String(x.role||'').toLowerCase())]);
@@ -219,7 +227,7 @@ function showLoggedOut(){
   $('controls').style.display='none';$('scheduleCard').style.display='none';$('availabilityModal').style.display='none';
   const menu=$('profileMenu');if(menu){$('profileLogin').hidden=false;$('profileLogout').hidden=true;}
 }
-function showLoggedIn(){
+async function showLoggedIn(){
   syncMoreMenuAccess();
   const teams=visibleTeams();
   $('accessInfo').hidden=!!(isAdmin()||teams.length);
@@ -239,7 +247,18 @@ function showLoggedIn(){
   const managerControls=isAdmin()||managedClubIds.length>0||memberships.some(x=>x.role==='team_manager');
   $('newBtn').style.display=managerControls?'':'none';$('turnierPlaydataOpen').style.display=managerControls?'':'none';$('icsFile').disabled=!managerControls;$('icsFile').parentElement.style.display=managerControls?'':'none';$('exportBtn').style.display='';
   const menu=$('profileMenu');if(menu){$('profileLogin').hidden=true;$('profileLogout').hidden=false;}
-  buildTeamFilter();updateTurnierPlaydataButton();loadVenueBook();if(teams.length||isAdmin())loadMatches();
+  // Einziger Initialisierungspfad für die Filter:
+  // 1. vollständige Vereins-/Mannschaftsdaten liegen bereits vor,
+  // 2. Admin-Suchliste und Filteroptionen aufbauen,
+  // 3. gespeicherte Auswahl wiederherstellen (ohne den Speicher zu überschreiben),
+  // 4. erst danach die Begegnungen laden.
+  if(isAdmin()) applyAdminSearch();
+  buildTeamFilter();
+  applySavedScheduleSelection(true);
+  updateTurnierPlaydataButton();
+  loadVenueBook();
+  if(isAdmin() || visibleTeams().length) await loadMatches();
+
 }
 function buildTeamFilter(){
   const teamSelect=$('teamFilter');
@@ -251,10 +270,21 @@ function buildTeamFilter(){
 }
 function schedulePreferenceKey(){return `badminone-schedule-selection:${user?.id||'guest'}`;}
 function readSchedulePreference(){try{return JSON.parse(localStorage.getItem(schedulePreferenceKey())||'{}')}catch{return {};}}
-function saveSchedulePreference(){try{localStorage.setItem(schedulePreferenceKey(),JSON.stringify({clubId:selectedClubId(),teamName:selectedTeamName()}));}catch{}}
+function saveSchedulePreference(){
+  try{
+    localStorage.setItem(schedulePreferenceKey(),JSON.stringify({
+      clubId:selectedClubId(),
+      teamName:selectedTeamName(),
+      season:String($('seasonFilter')?.value||'').trim()
+    }));
+  }catch{}
+}
 function applySavedScheduleSelection(useSaved=true){
   const clubSelect=$('clubFilter'),teamSelect=$('teamFilter');if(!clubSelect||!teamSelect)return;
-  const pref=readSchedulePreference(),scoped=seasonScopedTeams();
+  const pref=readSchedulePreference();
+  const seasonSelect=$('seasonFilter');
+  if(useSaved&&seasonSelect&&!seasonSelect.value&&pref.season)seasonSelect.value=String(pref.season);
+  const scoped=seasonScopedTeams();
   const validClub=id=>scheduleClubs.some(c=>String(c.id)===String(id));
   let club=clubSelect.value,team=teamSelect.value;
   if(useSaved&&!club&&pref.clubId&&validClub(pref.clubId))club=String(pref.clubId);
@@ -269,29 +299,49 @@ function applySavedScheduleSelection(useSaved=true){
   options=scoped.filter(t=>!club||String(t.club_id)===String(club));
   teamSelect.innerHTML='<option value="">Mannschaft auswählen …</option>'+options.map(t=>`<option value="${esc(t.name)}">${esc(adminTeamLabels.get(t.name)||t.name)}${t.season?' · '+esc(t.season):''}</option>`).join('');
   if(team&&options.some(t=>t.name===team))teamSelect.value=team;
-  saveSchedulePreference();
+  // Wiederherstellung bleibt strikt lesend. Gespeichert wird nur bei einer
+  // bewussten Filteränderung durch den Nutzer (Event-Handler).
 }
+let matchesLoadSequence=0;
 async function loadMatches(){
-  if(!selectedTeamName()){matches=[];renderMatches();return;}
+  const requestId=++matchesLoadSequence;
+  const requestedTeam=selectedTeamName();
+  const requestedClub=selectedClubId();
+  const requestedSeason=$('seasonFilter').value.trim();
+  if(!requestedTeam){matches=[];renderMatches();return;}
   let q=sb.from('matches').select('id,home_team,away_team,home_team_id,away_team_id,managed_by_team,managed_by_team_id,match_date,match_time,venue,status,season,is_public,ics_uid,schedule_version,updated_at').order('match_date',{ascending:true}).order('match_time',{ascending:true});
-  const sf=$('seasonFilter').value.trim();if(sf)q=q.eq('season',sf);
-  const {data,error}=await q;if(error){msg('Spielplan konnte nicht geladen werden: '+error.message,'bad');return;}
+  if(requestedSeason)q=q.eq('season',requestedSeason);
+  const {data,error}=await q;
+  if(requestId!==matchesLoadSequence)return;
+  if(error){msg('Spielplan konnte nicht geladen werden: '+error.message,'bad');return;}
   const teams=visibleTeams();
-  const selectedTeam=selectedTeamName();
+  const selectedTeam=requestedTeam;
   const selectedRecord=selectedTeam?teamRecordForName(selectedTeam):null;
   const allowedTeamIds=new Set([
     ...memberships.map(x=>x.team_id).filter(Boolean).map(String),
     ...currentPlayerTeamIds.map(String),
     ...scheduleClubTeams.filter(t=>managedClubIds.includes(String(t.club_id))).map(t=>String(t.id))
   ]);
-  const filteredTeamIds=new Set(selectedRecord?[String(selectedRecord.id)]:seasonScopedTeams().filter(t=>!selectedClubId()||String(t.club_id)===String(selectedClubId())).map(t=>String(t.id)));
+  const filteredTeamIds=new Set(selectedRecord?[String(selectedRecord.id)]:seasonScopedTeams().filter(t=>!requestedClub||String(t.club_id)===String(requestedClub)).map(t=>String(t.id)));
   const base=(data||[]).filter(m=>{
     const homeId=String(m.home_team_id||''),awayId=String(m.away_team_id||'');
-    if(isAdmin())return !selectedTeam&&!selectedClubId() || filteredTeamIds.has(homeId)||filteredTeamIds.has(awayId);
+    if(isAdmin()){
+      if(!selectedTeam&&!requestedClub)return true;
+      // Ältere Begegnungen besitzen teilweise noch keine home_team_id / away_team_id.
+      // In diesem Fall muss der ausgewählte Mannschaftsfilter über die gespeicherten
+      // Mannschaftsnamen greifen, damit diese Begegnungen nicht verschwinden.
+      const selectedLabel=normalizeTeamLabel(selectedTeam);
+      const nameMatches=!!selectedTeam&&(
+        normalizeTeamLabel(m.home_team)===selectedLabel||
+        normalizeTeamLabel(m.away_team)===selectedLabel||
+        normalizeTeamLabel(m.managed_by_team)===selectedLabel
+      );
+      return filteredTeamIds.has(homeId)||filteredTeamIds.has(awayId)||nameMatches;
+    }
     const own=allowedTeamIds.has(homeId)||allowedTeamIds.has(awayId)||teams.includes(m.home_team)||teams.includes(m.away_team);
     if(!own)return false;
     if(selectedTeam)return (selectedRecord?(homeId===String(selectedRecord.id)||awayId===String(selectedRecord.id)):(filteredTeamIds.has(homeId)||filteredTeamIds.has(awayId)))||(!homeId&&!awayId&&(m.home_team===selectedTeam||m.away_team===selectedTeam));
-    if(selectedClubId())return filteredTeamIds.has(homeId)||filteredTeamIds.has(awayId);
+    if(requestedClub)return filteredTeamIds.has(homeId)||filteredTeamIds.has(awayId);
     return true;
   });
   const ids=base.map(m=>m.id);
@@ -349,6 +399,7 @@ async function loadMatches(){
     const {data:reportRows,error:re}=await sb.from('match_reports').select('match_id,confirmed,pdf_path,pdf_generated_at').in('match_id',ids);
     if(!re) reports=reportRows||[];
   }
+  if(requestId!==matchesLoadSequence)return;
   matches=base.map(m=>({...m,_avs:avs.filter(a=>a.match_id===m.id),_games:playedRows.filter(g=>g.match_id===m.id),_report:reports.find(r=>r.match_id===m.id)||null}));
   const releasedIds=new Set((avs||[]).filter(a=>a.user_id===user.id&&a.is_substitute).map(a=>a.match_id));
   matches.forEach(m=>{m._releasedToMe=releasedIds.has(m.id);m._subTeam=m._avs.find(a=>a.user_id===user.id&&a.is_substitute)?.team||null});
@@ -601,6 +652,7 @@ $('clubFilter').onchange=()=>{
   applySavedScheduleSelection(false);saveSchedulePreference();updateTurnierPlaydataButton();loadMatches();
 };
 $('teamFilter').onchange=()=>{saveSchedulePreference();updateTurnierPlaydataButton();loadMatches();};
+window.addEventListener('pagehide',saveSchedulePreference);
 $('adminScheduleSearch').oninput=()=>{
   const oldClub=selectedClubId(),oldTeam=selectedTeamName();
   applyAdminSearch();
@@ -613,7 +665,7 @@ $('seasonFilter').onchange=async()=>{
     const rows=seasonScopedTeams().filter(t=>!cid||String(t.club_id)===String(cid));
     $('teamFilter').innerHTML='<option value="">Alle Mannschaften</option>'+rows.map(t=>`<option value="${esc(t.name)}">${esc(t.name)}${t.season?' · '+t.season:''}</option>`).join('');
   }
-  applySavedScheduleSelection();saveSchedulePreference();
+  applySavedScheduleSelection(false);saveSchedulePreference();
   await loadMatches();
 };
 if($('scheduleLoginForm')) $('scheduleLoginForm').addEventListener('submit',async event=>{
@@ -850,7 +902,19 @@ $('importIcs').onclick=async()=>{
 $('exportBtn').onclick=()=>{const team=$('teamFilter').value;const list=matches.filter(m=>!team||m.home_team===team||m.away_team===team||m.managed_by_team===team||m._releasedToMe);if(!list.length){alert('Keine Begegnungen zum Exportieren.');return}const stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z');let out=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Badminton Mannschaftsplan//DE','CALSCALE:GREGORIAN'];for(const m of list){const uid=m.ics_uid||('match-'+m.id+'@badminton');const start=(m.match_date||'').replaceAll('-','')+'T'+(m.match_time||'18:00').replace(':','')+'00';let end=start;if(m.match_time){const [h,min]=m.match_time.split(':').map(Number);const d=new Date(2000,0,1,h,min);d.setHours(d.getHours()+2);end=(m.match_date||'').replaceAll('-','')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00'}out.push('BEGIN:VEVENT','UID:'+uid,'DTSTAMP:'+stamp,'DTSTART:'+start,'DTEND:'+end,'SUMMARY:'+escapeIcs('Badminton – '+m.home_team+' – '+m.away_team));if(m.venue)out.push('LOCATION:'+escapeIcs(m.venue));out.push('END:VEVENT')}out.push('END:VCALENDAR');const blob=new Blob([out.join('\r\n')+'\r\n'],{type:'text/calendar;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='spielplan.ics';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 function escapeIcs(s){return String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n')}
 
-sb.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;if(user)loadUser();else showLoggedOut()});
+sb.auth.onAuthStateChange((event,session)=>{
+  if(event==='SIGNED_OUT'){
+    user=null;profile=null;memberships=[];managedClubIds=[];
+    currentPlayerIds=[];currentPlayerTeams=[];currentPlayerTeamIds=[];
+    linkedPlayers=[];playerAccounts=[];adminTeams=[];scheduleClubTeams=[];
+    showLoggedOut();
+    return;
+  }
+  if(event==='SIGNED_IN'){
+    user=session?.user||null;
+    loadUser();
+  }
+});
 // DBV Turnier Playdata: Vorschau und manueller Import ohne Ergebnisdaten.
 let turnierPlaydataMatches=[];
 let turnierPlaydataBusy=false;
@@ -984,6 +1048,11 @@ $('turnierPlaydataImport').addEventListener('click',async()=>{
 });
 
 loadUser();
+
+// Nach dem Zurückkehren aus dem Browser-Cache Filter und Begegnungen gemeinsam neu initialisieren.
+window.addEventListener('pageshow',event=>{
+  if(event.persisted) window.setTimeout(()=>loadUser(),0);
+});
 
 (function(){
   const key='badminton-theme';
