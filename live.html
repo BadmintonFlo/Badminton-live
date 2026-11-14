@@ -61,7 +61,7 @@ const LABELS={
 };
 let channel=null;
 let currentId=null;
-let currentUser=null, isAdmin=false, showFinished=false, chatChannel=null;
+let currentUser=null, isAdmin=false, statusFilter="live", tickerSearch="", chatChannel=null;
 
 function esc(v){
  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -184,22 +184,54 @@ async function loadMatch(id){
  document.title=`${m.home_team} – ${m.away_team} · Live`;
 }
 
+function normalizeSearch(value){
+ return String(value??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("de").trim();
+}
+function applyTickerFilters(){
+ const query=normalizeSearch(tickerSearch);
+ let visible=0;
+ document.querySelectorAll(".live-match-link").forEach(card=>{
+  const statusOk=statusFilter==="all"||card.dataset.status===statusFilter;
+  const searchOk=!query||normalizeSearch(card.dataset.search||"").includes(query);
+  const show=statusOk&&searchOk;
+  card.hidden=!show;
+  if(show)visible++;
+ });
+ const count=document.getElementById("tickerResultCount");
+ if(count)count.textContent=`${visible} ${visible===1?"Begegnung":"Begegnungen"} gefunden`;
+ const empty=document.getElementById("tickerEmpty");
+ if(empty)empty.hidden=visible!==0;
+}
+function setTickerStatus(value){
+ statusFilter=["live","finished","all"].includes(value)?value:"live";
+ document.querySelectorAll("[data-ticker-status]").forEach(button=>{
+  const active=button.dataset.tickerStatus===statusFilter;
+  button.classList.toggle("primary",active);
+  button.classList.toggle("secondary",!active);
+  button.setAttribute("aria-pressed",String(active));
+ });
+ applyTickerFilters();
+}
+function setTickerSearch(value){
+ tickerSearch=value;
+ applyTickerFilters();
+}
+
 async function load(){
  currentId=currentId||
            new URLSearchParams(location.search).get("match")||
            new URLSearchParams(location.search).get("live");
 
- // Ohne konkrete Begegnung wird die öffentliche Live-/Ergebnisübersicht angezeigt.
+ // Öffentliche Übersicht: ausschließlich laufende und beendete Begegnungen.
  if(!currentId){
-   const {data:list,error}=await sb.from("matches")
-     .select("id,home_team,away_team,match_date,match_time,status")
-     .in("status",["live","finished"])
+   const {data:list,error}=await sb.from("public_live_matches")
+     .select("id,home_team,away_team,home_club_name,away_club_name,match_date,match_time,status")
      .order("match_date",{ascending:false})
      .order("match_time",{ascending:false})
-     .limit(100);
+     .limit(500);
 
    if(error){
-     console.error("Live-Begegnungen konnten nicht geladen werden:",error);
+     console.error("Öffentliche Live-Begegnungen konnten nicht geladen werden:",error);
      document.getElementById("content").innerHTML=
        '<div class="card"><h1>Badminton Live-Ticker</h1>'+
        '<div class="status bad">Die Begegnungen konnten gerade nicht geladen werden. Bitte später erneut versuchen.</div>'+
@@ -208,39 +240,65 @@ async function load(){
    }
 
    const all=(list||[]).filter(m=>["live","finished"].includes(String(m.status||"").toLowerCase()));
-   const live=all.filter(m=>String(m.status).toLowerCase()==="live");
-   const finished=all.filter(m=>String(m.status).toLowerCase()==="finished");
-   const shown=showFinished?finished:live;
-   const dateSort=(a,b)=>String(b.match_date||"").localeCompare(String(a.match_date||"")) || String(b.match_time||"").slice(0,5).localeCompare(String(a.match_time||"").slice(0,5));
-   shown.sort(dateSort);
+   const ids=all.map(m=>m.id);
+   let gamesByMatch=new Map();
+   if(ids.length){
+     const {data:gameRows,error:gamesError}=await sb.from("public_live_match_games")
+       .select("match_id,player1,player2,opponent_player1,opponent_player2")
+       .in("match_id",ids)
+       .limit(3000);
+     if(gamesError){
+       console.warn("Spielernamen für die Ticker-Suche konnten nicht geladen werden:",gamesError);
+     }else{
+       (gameRows||[]).forEach(g=>{
+         if(!gamesByMatch.has(g.match_id))gamesByMatch.set(g.match_id,[]);
+         gamesByMatch.get(g.match_id).push(g);
+       });
+     }
+   }
 
+   const liveCount=all.filter(m=>String(m.status).toLowerCase()==="live").length;
+   const finishedCount=all.filter(m=>String(m.status).toLowerCase()==="finished").length;
    document.getElementById("content").innerHTML=`
     <section class="welcome">
       <div class="welcome-copy">
         <p class="eyebrow">BADMINTON · VEREINSPLATTFORM</p>
         <h1>🏸 Badminton Live-Ticker</h1>
-        <p>Live-Begegnungen und abgeschlossene Spiele.</p>
+        <p>Öffentliche Live-Begegnungen und abgeschlossene Spiele.</p>
       </div>
       <div class="welcome-mark" aria-hidden="true">🏸</div>
     </section>
     <section class="section">
-      <div class="section-head"><div><h2>${showFinished?"Beendete Spiele":"Live-Begegnungen"}</h2><p>${showFinished?finished.length+" abgeschlossene Begegnung(en)":""+live.length+" laufende Begegnung(en)"}</p></div></div>
-      <div class="form-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
-        <button type="button" class="btn ${showFinished?"secondary":"primary"}" aria-pressed="${!showFinished}" onclick="toggleFinished(false)">🔴 Live</button>
-        <button type="button" class="btn ${showFinished?"primary":"secondary"}" aria-pressed="${showFinished}" onclick="toggleFinished(true)">✅ Beendete Spiele</button>
-      </div>
+      <div class="section-head"><div><h2>Begegnungen finden</h2><p>Suche nach Verein, Mannschaft oder Spieler.</p></div></div>
       <div class="news-panel">
-        <div class="detail-grid">
-          ${shown.length ? shown.map(m=>`
-            <button type="button" class="info-card live-match-link" onclick="openMatch('${esc(m.id)}')">
+        <label for="tickerSearch" class="form-label">Suche</label>
+        <input id="tickerSearch" type="search" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid var(--border,#475569);border-radius:10px;background:var(--surface,#111827);color:inherit" autocomplete="off"
+          placeholder="z. B. BSC Wesel, 1. Mannschaft oder Spielername"
+          oninput="setTickerSearch(this.value)" value="${esc(tickerSearch)}">
+        <div class="form-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0">
+          <button type="button" class="btn ${statusFilter==="live"?"primary":"secondary"}" data-ticker-status="live" aria-pressed="${statusFilter==="live"}" onclick="setTickerStatus('live')">🔴 Live (${liveCount})</button>
+          <button type="button" class="btn ${statusFilter==="finished"?"primary":"secondary"}" data-ticker-status="finished" aria-pressed="${statusFilter==="finished"}" onclick="setTickerStatus('finished')">✅ Beendet (${finishedCount})</button>
+          <button type="button" class="btn ${statusFilter==="all"?"primary":"secondary"}" data-ticker-status="all" aria-pressed="${statusFilter==="all"}" onclick="setTickerStatus('all')">Alle (${all.length})</button>
+        </div>
+        <p class="page-note" id="tickerResultCount" aria-live="polite"></p>
+        <div class="detail-grid" id="tickerMatches">
+          ${all.length ? all.map(m=>{
+            const status=String(m.status||"").toLowerCase();
+            const players=(gamesByMatch.get(m.id)||[]).flatMap(g=>[g.player1,g.player2,g.opponent_player1,g.opponent_player2]).filter(Boolean);
+            const searchText=[m.home_team,m.away_team,m.home_club_name,m.away_club_name,...players].join(" ");
+            return `<button type="button" class="info-card live-match-link" data-status="${esc(status)}" data-search="${esc(searchText)}" onclick="openMatch('${esc(m.id)}')">
               <span class="big-icon">🏸</span>
               <span><strong>${esc(m.home_team)} – ${esc(m.away_team)}</strong>
-              <p>${m.match_date?esc(dateDE(m.match_date)):""}${m.match_time?" · "+esc(String(m.match_time).slice(0,5))+" Uhr":""} · ${String(m.status).toLowerCase()==="live"?"🔴 LIVE":"✅ beendet"}</p></span>
-            </button>`).join("") : `<div class="status">${showFinished?"Aktuell gibt es keine beendeten Spiele.":"Aktuell keine Live-Begegnungen."}</div>`}
+              <p>${esc([m.home_club_name,m.away_club_name].filter(Boolean).join(" · "))}</p>
+              <p>${m.match_date?esc(dateDE(m.match_date)):""}${m.match_time?" · "+esc(String(m.match_time).slice(0,5))+" Uhr":""} · ${status==="live"?"🔴 LIVE":"✅ beendet"}</p></span>
+            </button>`;
+          }).join("") : '<div class="status">Aktuell gibt es keine öffentlichen Live- oder beendeten Begegnungen.</div>'}
         </div>
-        <p class="page-note">Die Anzeige aktualisiert sich automatisch.</p>
+        <div class="status" id="tickerEmpty" hidden>Keine Treffer. Prüfe den Suchbegriff oder den gewählten Status.</div>
+        <p class="page-note">Die Anzeige enthält nur öffentliche Live-Begegnungen und beendete Spiele. Sie aktualisiert sich beim erneuten Laden.</p>
       </div>
     </section>`;
+   applyTickerFilters();
    document.title="Badminton Live-Ticker";
    return;
  }
@@ -249,9 +307,7 @@ async function load(){
 }
 
 async function toggleFinished(value){
-  showFinished=!!value;
-  currentId=null;
-  await load();
+ setTickerStatus(value?"finished":"live");
 }
 async function openMatch(id){
  currentId=id;
@@ -318,7 +374,7 @@ async function sendChat(e){
 async function initIdentity(){
  const {data:{session}}=await sb.auth.getSession();currentUser=session?.user||null;
  if(currentUser){const {data:profile}=await sb.from("profiles").select("role").eq("id",currentUser.id).maybeSingle();isAdmin=profile?.role==="admin";ensureChatUi();}
- sb.auth.onAuthStateChange(async(_event,session)=>{currentUser=session?.user||null;isAdmin=false;if(currentUser){const {data:profile}=await sb.from("profiles").select("role").eq("id",currentUser.id).maybeSingle();isAdmin=profile?.role==="admin";ensureChatUi();}else{document.getElementById("chatModal")?.remove();chatMatchId=null;if(chatChannel){sb.removeChannel(chatChannel);chatChannel=null;}isAdmin=false;showFinished=false;}await load();});
+ sb.auth.onAuthStateChange(async(_event,session)=>{currentUser=session?.user||null;isAdmin=false;if(currentUser){const {data:profile}=await sb.from("profiles").select("role").eq("id",currentUser.id).maybeSingle();isAdmin=profile?.role==="admin";ensureChatUi();}else{document.getElementById("chatModal")?.remove();chatMatchId=null;if(chatChannel){sb.removeChannel(chatChannel);chatChannel=null;}isAdmin=false;statusFilter="live";tickerSearch="";}await load();});
 }
 (async()=>{await initIdentity();await load();if(currentId)subscribe()})();
 </script>

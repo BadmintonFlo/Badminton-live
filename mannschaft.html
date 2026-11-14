@@ -82,6 +82,25 @@ html body.team-body #roster .player-account-open {
   box-sizing: border-box !important;
 }
 
+
+/* Checkboxen in Mehrfachauswahlen: Checkbox links, Beschriftung direkt daneben. */
+.multi-select-option{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:12px!important;width:100%!important;min-height:46px!important;padding:10px 12px!important;box-sizing:border-box!important;text-align:left!important;}
+.multi-select-option input[type="checkbox"],.multi-select-option input[type="radio"]{flex:0 0 22px!important;width:22px!important;height:22px!important;margin:0!important;}
+.multi-select-option span{display:block!important;flex:1 1 auto!important;min-width:0!important;text-align:left!important;}
+.team-role-admin-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:12px}
+.team-role-admin-grid label{display:block;font-weight:700;margin-bottom:5px}
+.team-role-admin-grid input,.team-role-admin-grid select{width:100%;min-width:0}
+.team-role-admin-row{padding:12px;border:1px solid var(--line,#34465a);border-radius:12px;background:rgba(8,18,31,.18)}
+.team-role-admin-row button{margin-top:9px;width:100%}
+@media(min-width:640px){.team-role-admin-grid{grid-template-columns:1fr 1fr}}
+
+.player-permission-roles{margin-top:14px;padding:14px;border:1px solid var(--line,#34465a);border-radius:12px;background:rgba(8,18,31,.2)}
+.player-permission-roles h3{margin:0 0 6px}
+.permission-team-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line,#34465a)}
+.permission-team-row:last-child{border-bottom:0}
+.permission-team-row label{display:flex;align-items:center;gap:6px;margin:0;font-weight:650}
+.permission-team-row input{width:18px;height:18px}
+@media(max-width:520px){.permission-team-row{grid-template-columns:1fr 1fr}.permission-team-row strong{grid-column:1/-1}}
 </style><link rel="stylesheet" href="assets/css/auth-popup.css?v=20261102">
 </head><body class="team-body">
 
@@ -104,6 +123,9 @@ html body.team-body #roster .player-account-open {
 <section class="card club-required" id="teamRosterSection" hidden><h2>4. Mannschaften und Kader</h2><p class="small-note">Hier siehst du die angelegten Mannschaften mit ihren zugeordneten Spielern und Kaderrollen. Die Übersicht dient zur Kontrolle der Mannschaftsaufteilung.</p><div id="teamsList" class="muted">Bitte Verein und Saison auswählen.</div></section>
 
 
+
+
+
 <div id="playerEditModalBackdrop" class="team-modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="playerEditModalTitle">
  <div class="team-modal player-edit-modal">
   <div class="team-modal-header">
@@ -114,11 +136,22 @@ html body.team-body #roster .player-account-open {
    <strong id="playerEditName"></strong>
    <span id="playerEditId" class="small-note"></span>
   </div>
-  <label>Kaderrollen · Mehrfachauswahl</label>
-  <p id="playerEditRoleHint" class="small-note">Bitte zuerst in der Übersicht eine Mannschaft zuordnen.</p>
-  <div class="multi-select" id="playerRolesMulti">
-   <button type="button" class="multi-select-trigger" aria-expanded="false">Kaderrollen auswählen <span>⌄</span></button>
-   <div class="multi-select-panel" hidden id="playerEditRoles"></div>
+  <label>Vereinsrolle</label>
+  <div class="multi-select" id="playerClubRoleMulti">
+   <button type="button" class="multi-select-trigger" id="playerClubRoleTrigger" aria-expanded="false">Vereinsrolle auswählen <span>⌄</span></button>
+   <div class="multi-select-panel" hidden id="playerClubRolePanel"></div>
+  </div>
+  <label>Mannschaftsrolle</label>
+  <div class="multi-select" id="playerTeamRolesMulti">
+   <button type="button" class="multi-select-trigger" id="playerTeamRolesTrigger" aria-expanded="false">Mannschaftsrollen auswählen <span>⌄</span></button>
+   <div class="multi-select-panel" hidden id="playerPermissionRolesPanel">
+    <section id="playerPermissionRoles" class="player-permission-roles" hidden>
+     <p class="small-note">Moderator und Mannschaftsführer gelten nur für die jeweils ausgewählten Mannschaften. Ein Nutzer kann mehreren Mannschaften zugeordnet werden.</p>
+     <div id="playerPermissionRoleRows"></div>
+     <button type="button" class="secondary" id="savePlayerPermissionRoles">Mannschaftsrollen speichern</button>
+     <div id="playerPermissionRoleStatus" class="small-note" role="status"></div>
+    </section>
+   </div>
   </div>
   <label>Vereinsämter / Titel · Mehrfachauswahl</label>
   <div class="multi-select" id="playerOfficesMulti">
@@ -145,7 +178,7 @@ html body.team-body #roster .player-account-open {
     <p id="playerAccountModalPlayer" class="small-note"></p>
     <label for="playerAccountCode">Persönlichen BadminOne-Code eingeben</label>
     <input id="playerAccountCode" type="text" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="22" placeholder="BO-XXXX-XXXX-XXXX-XXXX">
-    <p class="small-note">Erfordert einen angenommenen Vereinsbeitritt des Kontoinhabers.</p>
+    <p class="small-note">Der Code verknüpft das Konto mit diesem Spielerprofil und nimmt den Kontoinhaber automatisch als Spieler in diesen Verein auf.</p>
     <div class="team-modal-actions">
       <button type="button" id="confirmPlayerAccountLink">Profil zuordnen</button>
       <span id="playerAccountModalStatus" class="small-note" role="status"></span>
@@ -205,14 +238,11 @@ function closeMenus(except){document.querySelectorAll('.custom-select-menu').for
 function bindCustomMenus(){document.querySelectorAll('.custom-select-trigger').forEach(b=>b.onclick=()=>{const m=b.nextElementSibling;const opening=m.hidden;closeMenus(m);m.hidden=!opening;b.setAttribute('aria-expanded',String(opening))});document.querySelectorAll('.custom-option[data-value]').forEach(b=>b.onclick=async()=>{const wrap=b.closest('.custom-select');const pid=wrap.dataset.playerId;const type=wrap.dataset.type;const value=b.dataset.value;closeMenus();if(type==='team')await setTeam(pid,value);else if(type==='role')await setRole(pid,value);else if(type==='office'){toggleOffice(pid,value);}else if(type==='club'){const sel=$('club');sel.value=value;sel.dispatchEvent(new Event('change',{bubbles:true}));const label=wrap.querySelector('.custom-select-trigger span');const opt=wrap.querySelector(`.custom-option[data-value="${CSS.escape(value)}"]`);if(label)label.textContent=opt?opt.textContent.trim():'Verein auswählen …';wrap.querySelectorAll('.custom-option').forEach(o=>o.setAttribute('aria-selected',String(o.dataset.value===value)));}else if(type==='filter'){const labels={all:'Alle Spieler',men:'Nur Männer',women:'Nur Frauen'};setGenderFilter(value,labels[value]||'Alle Spieler');document.querySelectorAll('#genderFilter .custom-option').forEach(o=>o.setAttribute('aria-selected',String(o.dataset.value===value)));}});document.querySelectorAll('.function-check input').forEach(inp=>inp.onchange=()=>toggleOffice(inp.dataset.player,inp.value,inp.checked));}
 function setClubSectionsVisible(visible){
  document.querySelectorAll('.club-required').forEach(el=>{el.hidden=!visible});
- if(!visible)$('teamModalBackdrop').classList.remove('open');
+ if(!visible){$('teamModalBackdrop').classList.remove('open');$('teamModalBackdrop').hidden=true;}
 }
 let playerEditTargetId = null;
-const playerRoleOptions=[
- {value:'player',label:'Spieler'},
- {value:'captain',label:'Kapitän/in'},
- {value:'deputy_captain',label:'Stellvertretung'}
-];
+const playerRoleOptions=[{value:'player',label:'Spieler'}];
+let selectedClubRole='player';
 function selectedMultiValues(hostId){
  return [...$(hostId).querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);
 }
@@ -237,7 +267,62 @@ function bindPlayerMultiSelect(wrapId, hostId, placeholder, options){
  };
  panel.onchange=()=>updateMultiLabel(wrapId,hostId,placeholder,options);
 }
-function openPlayerEdit(pid){
+
+function bindRolePanel(triggerId,panelId){
+ const trigger=$(triggerId),panel=$(panelId);
+ trigger.onclick=()=>{const opening=panel.hidden;closePlayerMultiMenus(panel);panel.hidden=!opening;trigger.setAttribute('aria-expanded',String(opening));};
+}
+bindRolePanel('playerClubRoleTrigger','playerClubRolePanel');
+bindRolePanel('playerTeamRolesTrigger','playerPermissionRolesPanel');
+async function renderPlayerClubRole(pid){
+ const userId=playerAccountLinks[String(pid)];
+ const panel=$('playerClubRolePanel'),trigger=$('playerClubRoleTrigger');
+ if(!userId){selectedClubRole='player';panel.innerHTML='<p class="small-note">Für Vereinsrollen muss zuerst ein BadminOne-Konto verknüpft sein.</p>';trigger.disabled=true;trigger.innerHTML='Vereinsrolle auswählen <span>⌄</span>';return}
+ trigger.disabled=false;
+ const [{data:club},{data:officer,error}]=await Promise.all([
+  sb.from('clubs').select('created_by').eq('id',clubId()).maybeSingle(),
+  sb.from('club_officers').select('role').eq('club_id',clubId()).eq('user_id',userId).maybeSingle()
+ ]);
+ if(error){panel.innerHTML=`<p class="small-note">Vereinsrolle konnte nicht geladen werden: ${esc(error.message)}</p>`;return}
+ selectedClubRole=club?.created_by===userId?'president':(officer?.role==='board'?'board':'player');
+ const options=[{value:'player',label:'Spieler'},{value:'board',label:'Vorstand'},{value:'president',label:'Erster Vorstand'}];
+ panel.innerHTML=options.map(o=>`<label class="multi-select-option"><input type="radio" name="playerClubRole" value="${o.value}" ${selectedClubRole===o.value?'checked':''} ${o.value==='president'&&selectedClubRole!=='president'?'disabled':''}><span>${o.label}${o.value==='president'?' · automatisch Vereinsersteller':''}</span></label>`).join('');
+ panel.querySelectorAll('input[name="playerClubRole"]').forEach(x=>x.onchange=()=>{selectedClubRole=x.value;trigger.innerHTML=`${options.find(o=>o.value===selectedClubRole).label} <span>⌄</span>`});
+ trigger.innerHTML=`${options.find(o=>o.value===selectedClubRole).label} <span>⌄</span>`;
+}
+async function renderPlayerPermissionRoles(pid){
+ const host=$('playerPermissionRoleRows'),panel=$('playerPermissionRoles');
+ const userId=playerAccountLinks[String(pid)];
+ panel.hidden=!userId;
+ if(!userId){host.innerHTML='';return}
+ const {data,error}=await sb.from('club_team_user_roles').select('team_id,role,status').eq('user_id',userId).eq('status','active').in('team_id',teams.map(t=>t.id));
+ if(error){host.innerHTML=`<p class="small-note">Berechtigungsrollen konnten nicht geladen werden: ${esc(error.message)}</p>`;return}
+ const active=new Set((data||[]).map(x=>`${x.team_id}:${x.role}`));
+ host.innerHTML=teams.map(t=>`<div class="permission-team-row"><strong>${esc(t.name)}</strong><label><input type="checkbox" data-permission-team="${esc(t.id)}" data-permission-role="moderator" ${active.has(`${t.id}:moderator`)?'checked':''}> Moderator</label><label><input type="checkbox" data-permission-team="${esc(t.id)}" data-permission-role="team_manager" ${active.has(`${t.id}:team_manager`)?'checked':''}> Mannschaftsführer</label></div>`).join('')||'<p class="small-note">Für diese Saison sind keine Mannschaften vorhanden.</p>';
+ $('playerPermissionRoleStatus').textContent='';
+ $('playerTeamRolesTrigger').innerHTML='Mannschaftsrollen auswählen <span>⌄</span>';
+}
+$('savePlayerPermissionRoles').onclick=async()=>{
+ const pid=playerEditTargetId,userId=playerAccountLinks[String(pid)];
+ if(!pid||!userId)return;
+ const btn=$('savePlayerPermissionRoles'),out=$('playerPermissionRoleStatus');btn.disabled=true;out.textContent='Speichert …';
+ try{
+  const desired=new Set([...document.querySelectorAll('[data-permission-team]:checked')].map(x=>`${x.dataset.permissionTeam}:${x.dataset.permissionRole}`));
+  const {data:existing,error}=await sb.from('club_team_user_roles').select('team_id,role,status').eq('user_id',userId).eq('status','active').in('team_id',teams.map(t=>t.id));
+  if(error)throw error;
+  const current=new Set((existing||[]).map(x=>`${x.team_id}:${x.role}`));
+  for(const team of teams){
+   for(const role of ['moderator','team_manager']){
+    const key=`${team.id}:${role}`,want=desired.has(key),has=current.has(key);
+    if(want!==has){const {error:e}=await sb.rpc('set_club_team_user_role',{p_team_id:team.id,p_user_id:userId,p_role:role,p_enabled:want});if(e)throw new Error(`${team.name} · ${role==='moderator'?'Moderator':'Mannschaftsführer'}: ${e.message}`)}
+   }
+  }
+  out.textContent='Berechtigungsrollen gespeichert.';
+ }catch(e){out.textContent='Nicht vollständig gespeichert: '+(e.message||String(e));}
+ finally{btn.disabled=false;}
+};
+
+async function openPlayerEdit(pid){
  if(!canManage())return;
  const player=players.find(p=>Number(p.id)===Number(pid));
  if(!player)return;
@@ -245,21 +330,15 @@ function openPlayerEdit(pid){
  const assignment=assignmentFor(pid);
  $('playerEditName').textContent=player.name||'Unbekannt';
  $('playerEditId').textContent=`Spieler-ID: ${player.id}${player.ranking_position?` · Rang: ${player.ranking_position}`:''}`;
- const roles=assignment?.assignment_roles?.length?assignment.assignment_roles:(assignment?.assignment_role?[assignment.assignment_role]:[]);
- renderMultiOptions('playerEditRoles',playerRoleOptions,roles);
- const roleTrigger=$('playerRolesMulti').querySelector('.multi-select-trigger');
- roleTrigger.disabled=!assignment?.team_id;
- $('playerEditRoleHint').textContent=assignment?.team_id?'Mehrere Kaderrollen können gleichzeitig ausgewählt werden.':'Bitte zuerst in der Übersicht eine Mannschaft zuordnen.';
- $('playerEditRoleHint').hidden=!!assignment?.team_id;
  renderMultiOptions('playerEditOffices',offices.map(x=>({value:x,label:x})),officeNames(pid));
- bindPlayerMultiSelect('playerRolesMulti','playerEditRoles','Kaderrollen auswählen',playerRoleOptions);
  bindPlayerMultiSelect('playerOfficesMulti','playerEditOffices','Titel auswählen',offices.map(x=>({value:x,label:x})));
- updateMultiLabel('playerRolesMulti','playerEditRoles','Kaderrollen auswählen',playerRoleOptions);
  updateMultiLabel('playerOfficesMulti','playerEditOffices','Titel auswählen',offices.map(x=>({value:x,label:x})));
  const linked=!!playerAccountLinks[String(pid)];
  $('playerEditAccountState').textContent=linked?'Konto ist bereits verknüpft.':'Noch kein BadminOne-Konto verknüpft.';
  $('playerEditAccountButton').textContent=linked?'Konto verknüpft':'Konto verknüpfen';
  $('playerEditAccountButton').disabled=linked;
+ await renderPlayerClubRole(pid);
+ await renderPlayerPermissionRoles(pid);
  $('playerEditStatus').hidden=true;
  $('playerEditModalBackdrop').hidden=false;
  $('playerEditModalBackdrop').classList.add('open');
@@ -281,15 +360,14 @@ $('playerEditAccountButton').onclick=()=>{
 $('savePlayerEdit').onclick=async()=>{
  if(!canManage()||!playerEditTargetId)return;
  const pid=playerEditTargetId, assignment=assignmentFor(pid);
- const selectedRoles=selectedMultiValues('playerEditRoles');
  const selectedOffices=selectedMultiValues('playerEditOffices');
  const btn=$('savePlayerEdit'), note=$('playerEditStatus');
  btn.disabled=true;note.hidden=false;note.textContent='Speichert Änderungen …';
  try{
-  if(assignment?.team_id){
-   const {error}=await sb.rpc('set_club_team_player_roles',{
-    p_club_id:clubId(),p_team_id:assignment.team_id,p_player_id:Number(pid),p_roles:selectedRoles
-   });
+  const linkedUserId=playerAccountLinks[String(pid)];
+  if(linkedUserId){
+   const roleToSave=selectedClubRole==='board'?'board':'none';
+   const {error}=await sb.rpc('set_club_officer_role',{p_club_id:clubId(),p_user_id:linkedUserId,p_role:roleToSave});
    if(error)throw error;
   }
   officeByPlayer[String(pid)]=selectedOffices;
@@ -340,16 +418,16 @@ async function linkPlayerAccount(){
  if(!code){state.textContent='Bitte den persönlichen BadminOne-Code eingeben.';input.focus();return}
  button.disabled = true;
  button.textContent = 'Wird verknüpft …';
- state.textContent = 'Prüfe Code und Vereinsmitgliedschaft …';
+ state.textContent = 'Prüfe Code und richte Spielerprofil sowie Vereinsmitgliedschaft ein …';
  const {error} = await sb.rpc('manager_link_player_by_code',{p_player_id:pid,p_code:code});
  button.disabled = false;
  button.textContent = 'Profil zuordnen';
  if(error){state.textContent=error.message||'Zuordnung fehlgeschlagen.';return}
- state.textContent='BadminOne-Konto wurde erfolgreich mit diesem Spielerprofil verknüpft.';
+ state.textContent='Konto verknüpft und Vereinsmitgliedschaft erfolgreich eingerichtet.';
  input.value='';
  await loadPlayerAccountLinks();
  renderRoster();
- status('rosterStatus','Spielerprofil erfolgreich mit einem BadminOne-Konto verknüpft.','success');
+ status('rosterStatus','Spielerprofil verknüpft und Vereinsmitgliedschaft automatisch eingerichtet.','success');
  setTimeout(closePlayerAccountLink,900);
 }
 async function loadPlayerAccountLinks(){
@@ -360,7 +438,7 @@ async function loadPlayerAccountLinks(){
  (data||[]).forEach(row=>{playerAccountLinks[String(row.player_id)]=row.user_id});
 }
 async function init(){setClubSectionsVisible(false);const {data:{session}}=await sb.auth.getSession();user=session?.user||null;if(!user){$('authStatus').textContent='Keine aktive Anmeldung gefunden. Melde dich bitte an und öffne dieses Modul anschließend erneut. Lokal geöffnete content://-Dateien teilen die Sitzung normalerweise nicht.';return}
-const [{data:profile},{data:managerRows,error:mErr},{data:clubRows,error:cErr}]=await Promise.all([sb.from('profiles').select('role').eq('id',user.id).maybeSingle(),sb.from('club_managers').select('club_id').eq('user_id',user.id),sb.from('clubs').select('id,name,city,archived_at').is('archived_at',null).order('name')]);admin=profile?.role==='admin';managed=(managerRows||[]).map(x=>x.club_id);if(mErr||cErr){$('authStatus').textContent='Vereine konnten nicht geladen werden. Bitte Berechtigungen prüfen.';return}const available=(clubRows||[]).filter(c=>admin||managed.includes(c.id));$('club').innerHTML='<option value="">Verein auswählen …</option>'+available.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}${c.city?' · '+esc(c.city):''}</option>`).join('');const clubPicker=$('clubPicker');clubPicker.querySelector('.custom-select-menu').innerHTML=[{id:'',label:'Verein auswählen …'},...available.map(c=>({id:c.id,label:c.name+(c.city?' · '+c.city:'')}))].map(c=>`<button type="button" class="custom-option" data-value="${esc(c.id)}" aria-selected="false">${esc(c.label)}</button>`).join('');$('authStatus').textContent=available.length?'Angemeldet. Nur berechtigte Vereine werden angezeigt.':'Für dieses Konto sind keine verwaltbaren Vereine hinterlegt.';if(available.length===1)$('club').value=available[0].id;const selectedClub=available.length===1?available[0]:null;clubPicker.querySelector('.custom-select-trigger span').textContent=selectedClub?(selectedClub.name+(selectedClub.city?' · '+selectedClub.city:'')):'Verein auswählen …';clubPicker.querySelectorAll('.custom-option').forEach(o=>o.setAttribute('aria-selected',String(o.dataset.value===$('club').value)));$('club').onchange=()=>{clubIdNow=clubId();setClubSectionsVisible(!!clubIdNow);const opt=clubPicker.querySelector(`.custom-option[data-value="${CSS.escape(clubIdNow)}"]`);clubPicker.querySelector('.custom-select-trigger span').textContent=opt?opt.textContent.trim():'Verein auswählen …';clubPicker.querySelectorAll('.custom-option').forEach(o=>o.setAttribute('aria-selected',String(o.dataset.value===clubIdNow)));loadLocalOffices();loadAll()};setClubSectionsVisible(!!clubId());bindCustomMenus();$('season').onchange=loadTeams;$('searchPlayers').oninput=renderRoster;loadLocalOffices();await loadAll()}
+const [{data:profile},{data:managerRows,error:mErr},{data:officerRows,error:oErr},{data:clubRows,error:cErr}]=await Promise.all([sb.from('profiles').select('role').eq('id',user.id).maybeSingle(),sb.from('club_managers').select('club_id').eq('user_id',user.id),sb.from('club_officers').select('club_id,role').eq('user_id',user.id),sb.from('clubs').select('id,name,city,archived_at,created_by').is('archived_at',null).order('name')]);admin=profile?.role==='admin';managed=[...new Set([...(managerRows||[]).map(x=>x.club_id),...(officerRows||[]).map(x=>x.club_id),...(clubRows||[]).filter(c=>c.created_by===user.id).map(c=>c.id)])];if(mErr||oErr||cErr){$('authStatus').textContent='Vereine konnten nicht geladen werden. Bitte Berechtigungen prüfen.';return}const available=(clubRows||[]).filter(c=>admin||managed.includes(c.id)||c.created_by===user.id);$('club').innerHTML='<option value="">Verein auswählen …</option>'+available.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}${c.city?' · '+esc(c.city):''}</option>`).join('');const clubPicker=$('clubPicker');clubPicker.querySelector('.custom-select-menu').innerHTML=[{id:'',label:'Verein auswählen …'},...available.map(c=>({id:c.id,label:c.name+(c.city?' · '+c.city:'')}))].map(c=>`<button type="button" class="custom-option" data-value="${esc(c.id)}" aria-selected="false">${esc(c.label)}</button>`).join('');$('authStatus').textContent=available.length?'Angemeldet. Nur berechtigte Vereine werden angezeigt.':'Für dieses Konto sind keine verwaltbaren Vereine hinterlegt.';if(available.length===1)$('club').value=available[0].id;const selectedClub=available.length===1?available[0]:null;clubPicker.querySelector('.custom-select-trigger span').textContent=selectedClub?(selectedClub.name+(selectedClub.city?' · '+selectedClub.city:'')):'Verein auswählen …';clubPicker.querySelectorAll('.custom-option').forEach(o=>o.setAttribute('aria-selected',String(o.dataset.value===$('club').value)));$('club').onchange=()=>{clubIdNow=clubId();setClubSectionsVisible(!!clubIdNow);const opt=clubPicker.querySelector(`.custom-option[data-value="${CSS.escape(clubIdNow)}"]`);clubPicker.querySelector('.custom-select-trigger span').textContent=opt?opt.textContent.trim():'Verein auswählen …';clubPicker.querySelectorAll('.custom-option').forEach(o=>o.setAttribute('aria-selected',String(o.dataset.value===clubIdNow)));loadLocalOffices();loadAll()};setClubSectionsVisible(!!clubId());bindCustomMenus();$('season').onchange=loadTeams;$('searchPlayers').oninput=renderRoster;loadLocalOffices();await loadAll()}
 async function loadAll(){if(!canManage()){players=[];teams=[];assignments=[];partnerships=[];playerReleases=[];playerAccountLinks={};$('roster').innerHTML='<div class="roster-empty">Bitte einen berechtigten Verein auswählen.</div>';$('teamsList').textContent='Bitte Verein und Saison auswählen.';return}clubIdNow=clubId();loadLocalOffices();await Promise.all([loadTeams(),loadPlayers()])}
 async function loadTeams(){if(!canManage())return;const {data,error}=await sb.from('club_teams').select('id,name,season,league,league_level,notes,is_active').eq('club_id',clubId()).eq('season',$('season').value.trim()).order('name');if(error){$('teamsList').textContent='Mannschaften konnten nicht geladen werden: '+error.message;return}teams=(data||[]).filter(t=>t.is_active!==false);await Promise.all([loadAssignments(),loadPartnerships()]);await loadPlayerReleases();renderRoster();renderTeams()}
 async function loadPartnerships(){partnerships=[];if(!canManage())return;const {data:members,error:mErr}=await sb.from('club_partnership_members').select('partnership_id').eq('club_id',clubId()).eq('member_type','partner').eq('approval_status','approved');if(mErr){console.warn('Spielgemeinschaften konnten nicht geladen werden:',mErr.message);return}const ids=[...new Set((members||[]).map(x=>x.partnership_id).filter(Boolean))];if(!ids.length)return;const {data:rows,error}=await sb.from('club_partnerships').select('id,name,season,status,carrier_club_id').in('id',ids).eq('status','active').eq('season',$('season').value.trim()).order('name');if(error){console.warn('Aktive Spielgemeinschaften konnten nicht geladen werden:',error.message);return}const carrierIds=[...new Set((rows||[]).map(x=>x.carrier_club_id).filter(Boolean))];let names=[];if(carrierIds.length){const r=await sb.from('clubs').select('id,name').in('id',carrierIds);if(!r.error)names=r.data||[]}const nameById=Object.fromEntries(names.map(x=>[x.id,x.name]));partnerships=(rows||[]).map(x=>({...x,carrier_name:nameById[x.carrier_club_id]||'Trägerverein'}))}
@@ -380,7 +458,7 @@ function openTeamModal(teamId){
  const listHtml=groups.map(([key,label])=>{const list=members.filter(x=>x.p&&normGender(x.p)===key).sort((x,y)=>String(x.p.name||'').localeCompare(String(y.p.name||''),'de'));if(!list.length)return '';return `<div class="team-modal-group"><h3>${label}<span class="muted small">${list.length}</span></h3><ul>${list.map(({a,p})=>`<li>${esc(p.name||'Unbekannt')} <span class="muted">· ${esc(roleLabel[a.assignment_role]||a.assignment_role||'Spieler')}</span></li>`).join('')}</ul></div>`}).join('')||'<p class="muted">Noch keine Spieler zugeordnet.</p>';
  $('teamModalTitle').textContent=t.name;
  $('teamModalBody').innerHTML=`<div class="grid"><div><label for="modalTeamName">Mannschaftsname</label><input id="modalTeamName" maxlength="120" value="${esc(t.name)}"></div><div><label for="modalTeamLeague">Liga</label><input id="modalTeamLeague" value="${esc(t.league||'')}" placeholder="z. B. Bezirksliga"></div><div><label for="modalTeamLevel">Staffel / Spielklasse</label><input id="modalTeamLevel" value="${esc(t.league_level||'')}" placeholder="Staffelname"></div></div><label class="team-modal-notes-label" for="modalTeamNotes">Notizen</label><textarea id="modalTeamNotes" rows="2">${esc(t.notes||'')}</textarea><div class="team-modal-actions"><button type="button" id="saveTeamModal">Änderungen speichern</button><span id="teamModalStatus" class="small-note" role="status"></span></div><hr class="team-modal-divider"><h3>Kader · ${members.length} Spieler</h3>${listHtml}`;
- $('teamModalBackdrop').classList.add('open');$('saveTeamModal').onclick=()=>saveTeamModal(t.id);
+ $('teamModalBackdrop').hidden=false;$('teamModalBackdrop').classList.add('open');$('saveTeamModal').onclick=()=>saveTeamModal(t.id);
 }
 async function saveTeamModal(id){
  const note=$('teamModalStatus');if(!canManage()){note.textContent='Keine Berechtigung für diesen Verein.';return}
@@ -391,8 +469,12 @@ async function saveTeamModal(id){
  if(error){note.textContent='Speichern fehlgeschlagen: '+error.message;return}
  note.textContent='Mannschaftsdaten gespeichert.';await loadTeams();$('teamModalTitle').textContent=payload.name;
 }
-$('closeTeamModal').onclick=()=>$('teamModalBackdrop').classList.remove('open');
-$('teamModalBackdrop').addEventListener('click',e=>{if(e.target===$('teamModalBackdrop'))$('teamModalBackdrop').classList.remove('open')});
+function closeTeamModal(){
+ $('teamModalBackdrop').classList.remove('open');
+ $('teamModalBackdrop').hidden=true;
+}
+$('closeTeamModal').onclick=closeTeamModal;
+$('teamModalBackdrop').addEventListener('click',e=>{if(e.target===$('teamModalBackdrop'))closeTeamModal()});
 async function loadIncomingPartnershipPlayers(){
  playerOriginNames={};
  const currentClub=clubId();

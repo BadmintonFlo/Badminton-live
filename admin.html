@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="de" data-theme="dark" class="admin-theme-dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BadminOne · Administration</title>
+<meta name="theme-color" content="#101722">
+<link rel="stylesheet" href="assets/css/style.css?v=20261107">
+<link rel="stylesheet" href="assets/css/badminton-header.css?v=20261107">
+<link rel="stylesheet" href="assets/css/auth-popup.css?v=20261107">
+<link rel="stylesheet" href="assets/css/admin_page.css?v=20261107-darkfix">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+<body>
+
+<nav id="platformNav" aria-label="Hauptnavigation">
+  <div class="pn-brandbar">
+    <a class="pn-brand" href="index.html" aria-label="BadminOne – Startseite">
+      <span class="pn-logo">🏸</span>
+      <span class="pn-brandtext"><strong>BadminOne</strong><small>ALL YOUR GAME IN ONE</small></span>
+    </a>
+    <div class="pn-actions">
+      <div class="pn-profile-wrap">
+        <button class="pn-profile-btn" id="profileBtn" type="button" aria-label="Profil und Anmeldung" aria-expanded="false" title="Profil">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>
+        </button>
+        <div class="pn-profile-menu" id="profileMenu" hidden>
+          <button type="button" id="profileLogin" data-auth-open="login">Anmelden</button>
+          <button type="button" id="profileRegister" data-auth-open="register">Konto erstellen</button>
+          <a href="profil.html" id="profileManage" hidden>Profil / Kontoeinstellungen</a>
+          <button type="button" id="logoutBtn" hidden>Abmelden</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pn-tiles" id="navInner" aria-label="Hauptbereiche"></div>
+</nav>
+<main class="page admin-page">
+  <section class="admin-hero">
+    <div>
+      <p class="eyebrow">BADMINTON · VEREINSPLATTFORM</p>
+      <h1>👑 Admin-Verwaltung</h1>
+      <p>Benutzer, Rollen, Mannschaften und Spieler-Konten zentral verwalten.</p>
+    </div>
+    <div class="admin-hero-mark" aria-hidden="true">⚙️</div>
+  </section>
+<section class="card" id="recoveryCard" hidden>
+<h2>🔑 Neues Passwort setzen</h2>
+<p class="small">Du bist über den Passwort-Reset hierher gekommen. Bitte vergib ein neues Passwort.</p>
+<div class="two grid"><div><label>Neues Passwort</label><input id="recoveryPassword" type="password" autocomplete="new-password"></div><div><label>Passwort wiederholen</label><input id="recoveryPassword2" type="password" autocomplete="new-password"></div></div>
+<div class="toolbar toolbar-spaced"><button class="primary" onclick="updateOwnPassword()">Passwort speichern</button></div>
+<div id="recoveryStatus" class="status">–</div>
+</section>
+
+<section class="card" id="loginCard">
+<h2>Anmeldung</h2>
+<div class="two grid"><div><label>E-Mail</label><input id="email" type="email" autocomplete="username"></div><div><label>Passwort</label><input id="password" type="password" autocomplete="current-password"></div></div>
+<div class="toolbar toolbar-spaced"><button class="primary" onclick="login()">Anmelden</button><button class="secondary" onclick="forgotPassword()">🔑 Passwort per E-Mail zurücksetzen</button></div>
+<div id="authStatus" class="status">Nicht angemeldet.</div>
+</section>
+
+<section class="card" id="createCard" hidden>
+<button class="section-toggle" type="button" aria-expanded="false" aria-controls="createUserPanel" onclick="toggleAdminPanel('createUserPanel',this)"><span>➕ Benutzerkonto anlegen</span><span class="toggle-mark">＋</span></button>
+<div id="createUserPanel" class="collapsible-panel" hidden>
+<p class="small">Hier kann ein vorläufiges Konto mit Startpasswort angelegt und direkt einem Spieler zugeordnet werden. Das Startpasswort wird dem Benutzer mitgeteilt und sollte anschließend geändert werden.</p>
+<div class="two grid">
+  <div><label>E-Mail / Login</label><input id="newEmail" type="email" autocomplete="off" placeholder="spieler@verein.de"></div>
+  <div><label>Startpasswort (mind. 8 Zeichen)</label><input id="newPassword" type="password" autocomplete="new-password" placeholder="Startpasswort"></div>
+  <div><label>Anzeigename (optional)</label><input id="newDisplayName" type="text" placeholder="Max Mustermann"></div>
+  <div><label>Rolle</label><select id="newRole"><option value="player">player</option><option value="team_manager">team_manager</option><option value="moderator">moderator</option><option value="admin">admin</option></select></div>
+  <div><label>Spieler (optional)</label><select id="newPlayer"><option value="">– später zuordnen –</option></select></div>
+  <div><label>Mannschaft (optional)</label><select id="newTeam"><option value="">– automatisch / später –</option></select></div>
+</div>
+<div class="toolbar toolbar-spaced"><button class="primary" onclick="createUser()">Benutzerkonto anlegen</button></div>
+<div id="createStatus" class="status">–</div>
+</div>
+</section>
+
+<section class="card" id="appCard" hidden>
+<button class="section-toggle" type="button" aria-expanded="false" aria-controls="usersPanel" onclick="toggleAdminPanel('usersPanel',this)"><span>👤 Benutzer verwalten</span><span class="toggle-mark">＋</span></button>
+<div id="usersPanel" class="collapsible-panel" hidden>
+<p class="small">Hier verwaltest du bestehende Konten direkt. Weise jedem Konto einen Spielernamen zu; mehrere Konten dürfen demselben Spieler zugeordnet werden.</p>
+<div class="toolbar"><button class="secondary" onclick="loadAll()">🔄 Aktualisieren</button></div>
+<div id="usersStatus" class="status">–</div>
+<div id="users"></div></div>
+</section>
+
+<section class="card" id="teamsCard" hidden>
+<button class="section-toggle" type="button" aria-expanded="false" aria-controls="teamsPanel" onclick="toggleAdminPanel('teamsPanel',this)"><span>🏸 Mannschaften verwalten</span><span class="toggle-mark">＋</span></button>
+<div id="teamsPanel" class="collapsible-panel" hidden>
+<p class="small">Hier kannst du pro Mannschaft Staffel-Bezeichnung und Staffelnummer hinterlegen. Der Spielbericht übernimmt diese Angaben automatisch anhand der Heimmannschaft (ersatzweise Gastmannschaft).</p>
+<div id="teams"></div></div>
+</section>
+
+</main>
+
+<script>
+"use strict";
+const SUPABASE_URL="https://apsarswjmsrmffoyxsgr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_yN9CDCZEHrCkCVMb87SkRg_hQjPjNmj";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let user=null,profile=null,profiles=[],memberships=[],players=[],accounts=[],teamSettings=[];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+const msg=e=>e?.message||e?.details||"Unbekannter Fehler";
+function toggleAdminPanel(id,button){const panel=$(id);const open=panel.hidden;panel.hidden=!open;button.setAttribute("aria-expanded",String(open));const mark=button.querySelector(".toggle-mark");if(mark)mark.textContent=open?"−":"＋"}
+function setStatus(id,text,type=""){const e=$(id);e.className="status"+(type?" "+type:"");e.textContent=text}
+
+async function login(){
+  const email=$("email").value.trim(),password=$("password").value;
+  if(!email||!password){setStatus("authStatus","Bitte E-Mail und Passwort eingeben.","bad");return}
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  if(error)setStatus("authStatus","Anmeldung fehlgeschlagen: "+msg(error),"bad");
+}
+async function updateOwnPassword(){
+  const p=$("recoveryPassword").value,p2=$("recoveryPassword2").value;
+  if(!p||p.length<8){setStatus("recoveryStatus","Das Passwort muss mindestens 8 Zeichen haben.","bad");return}
+  if(p!==p2){setStatus("recoveryStatus","Die Passwörter stimmen nicht überein.","bad");return}
+  const {error}=await sb.auth.updateUser({password:p});
+  if(error){setStatus("recoveryStatus","Passwort konnte nicht gespeichert werden: "+msg(error),"bad");return}
+  setStatus("recoveryStatus","Passwort erfolgreich geändert.","ok");
+  $("recoveryPassword").value="";$("recoveryPassword2").value="";
+}
+async function forgotPassword(){
+  const email=$("email").value.trim();
+  if(!email){setStatus("authStatus","Bitte zuerst die E-Mail-Adresse eingeben.","bad");return}
+  const redirectTo=location.origin+location.pathname;
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
+  if(error){setStatus("authStatus","Reset-Mail konnte nicht angefordert werden: "+msg(error),"bad");return}
+  setStatus("authStatus","Wenn für diese E-Mail ein Konto existiert, wurde eine E-Mail zum Zurücksetzen des Passworts angefordert.","ok");
+}
+async function logout(){await sb.auth.signOut();location.reload()}
+
+async function init(){
+  const r=await sb.auth.getSession(); user=r.data.session?.user||null;
+  if(location.hash.includes("type=recovery")||location.search.includes("type=recovery")) $("recoveryCard").hidden=false;
+  if(user) await afterLogin();
+  sb.auth.onAuthStateChange(async(event,s)=>{
+    user=s?.user||null;
+    if(event==="PASSWORD_RECOVERY") $("recoveryCard").hidden=false;
+    if(user) await afterLogin();
+  });
+}
+async function afterLogin(){
+  const {data:p,error}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();
+  if(error){setStatus("authStatus","Profil konnte nicht geladen werden: "+msg(error),"bad");return}
+  profile=p;
+  if(!profile||profile.role!=="admin"){
+    setStatus("authStatus","Zugriff verweigert. Diese Seite ist nur für Admins.","bad");
+    return;
+  }
+  setStatus("authStatus","Als Admin angemeldet.","ok");
+  $("loginCard").hidden=true;$("appCard").hidden=false;$("teamsCard").hidden=false;$("createCard").hidden=false;
+  await loadAll();
+}
+
+async function loadAll(){
+  setStatus("usersStatus","Lade Benutzer …");
+  const [pr,mr,pl,ar,tr]=await Promise.all([
+    sb.from("profiles").select("*").order("display_name",{ascending:true}),
+    sb.from("team_memberships").select("*").order("team",{ascending:true}),
+    sb.from("players").select("id,team,name,ranking_position,gender,active,user_id").eq("active",true).order("team",{ascending:true}).order("gender",{ascending:true}).order("ranking_position",{ascending:true}),
+    sb.from("player_accounts").select("id,player_id,user_id,is_primary,active,created_at").order("player_id",{ascending:true}),
+    sb.from("team_competition_settings").select("team,staffel,staffel_nr,updated_at").order("team",{ascending:true})
+  ]);
+  if(pr.error){setStatus("usersStatus","Benutzer konnten nicht geladen werden: "+msg(pr.error),"bad");return}
+  if(mr.error){setStatus("usersStatus","Team-Zuordnungen konnten nicht geladen werden: "+msg(mr.error),"bad");return}
+  if(pl.error){setStatus("usersStatus","Spieler konnten nicht geladen werden: "+msg(pl.error),"bad");return}
+  if(ar.error){setStatus("usersStatus","Spielerkonten konnten nicht geladen werden. Wurde player_accounts.sql ausgeführt? "+msg(ar.error),"bad");accounts=[]}else accounts=ar.data||[];
+  if(tr.error){teamSettings=[];setStatus("usersStatus","Staffel-Einstellungen konnten nicht geladen werden. Bitte team_competition_settings.sql ausführen. "+msg(tr.error),"bad")}else teamSettings=tr.data||[];
+  // E-Mail-Adressen werden sicher über die Admin-user Edge Function geladen,
+  // da profiles die Auth-E-Mail nicht zwingend enthält.
+  let authUsers=[];
+  try{
+    const session=(await sb.auth.getSession()).data.session;
+    if(session){
+      const response=await fetch(SUPABASE_URL+"/functions/v1/Admin-user",{
+        method:"POST",
+        headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},
+        body:JSON.stringify({action:"list_users"})
+      });
+      const result=await response.json();
+      if(response.ok&&!result.error)authUsers=result.users||[];
+      else console.warn("E-Mail-Adressen konnten nicht über Admin-user geladen werden:",result.error||response.statusText);
+    }
+  }catch(err){console.warn("Auth-Benutzerliste konnte nicht geladen werden:",err)}
+  const authById=new Map(authUsers.map(a=>[a.id,a]));
+  profiles=(pr.data||[]).map(p=>({...p,email:authById.get(p.id)?.email||p.email||"",display_name:p.display_name||authById.get(p.id)?.display_name||""}));
+  // Die erste Zeile des importierten Google-Sheets enthält Überschriften statt Daten.
+  // Diese Zeile darf nicht als Spieler oder Mannschaft in der Admin-Oberfläche erscheinen.
+  const isSheetHeader = value => String(value ?? "").trim().toLocaleLowerCase("de") === "mannschaft";
+  memberships=(mr.data||[]).filter(m=>!isSheetHeader(m.team));
+  players=(pl.data||[]).filter(p=>!isSheetHeader(p.team) && !isSheetHeader(p.name));
+  renderUsers();renderTeams();fillCreateLists();
+  setStatus("usersStatus",profiles.length+" Benutzer geladen.","ok");
+}
+function displayName(p){return p?.display_name||p?.full_name||p?.name||p?.email||p?.id||"Unbekannt"}
+function emailOf(p){return p?.email||p?.username||p?.id||""}
+function memberRows(uid){return memberships.filter(m=>m.user_id===uid)}
+function accountRows(pid){return accounts.filter(a=>String(a.player_id)===String(pid))}
+function allTeams(){
+  const isSheetHeader = value => String(value ?? "").trim().toLocaleLowerCase("de") === "mannschaft";
+  const s=new Set();
+  memberships.forEach(m=>{if(m.team && !isSheetHeader(m.team))s.add(m.team)});
+  players.forEach(p=>{if(p.team && !isSheetHeader(p.team))s.add(p.team)});
+  profiles.forEach(p=>{if(p.team && !isSheetHeader(p.team))s.add(p.team)});
+  return [...s].sort((a,b)=>a.localeCompare(b,"de",{numeric:true}));
+}
+function roleOptions(current){return ["player","team_manager","moderator","admin"].map(r=>`<option value="${r}" ${r===current?"selected":""}>${r}</option>`).join("")}
+function playerOptions(selected="",onlyUnlinked=false){
+  return players.filter(p=>!onlyUnlinked||accountRows(p.id).length===0).map(p=>`<option value="${p.id}" ${String(p.id)===String(selected)?"selected":""}>${esc(p.team)} · ${esc(p.name)}${p.ranking_position?" · Rang "+esc(p.ranking_position):""}</option>`).join("")
+}
+function fillCreateLists(){
+  $("newPlayer").innerHTML='<option value="">– später zuordnen –</option>'+playerOptions();
+  $("newTeam").innerHTML='<option value="">– automatisch / später –</option>'+allTeams().map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("");
+}
+function renderUsers(){
+  $("users").innerHTML=profiles.map(p=>{
+    const ms=memberRows(p.id);
+    const linked=accounts.find(a=>a.user_id===p.id && a.active!==false);
+    const linkedPlayer=linked ? players.find(x=>String(x.id)===String(linked.player_id)) : null;
+    const label=esc(displayName(p)),identifier=esc(emailOf(p));
+    return `<div class="user-row">
+      <div class="user-head"><div><div class="name">${label}</div><div class="muted">${identifier}</div></div>
+      <select id="role_${p.id}" onchange="saveRole('${p.id}',this.value)" class="role-select">${roleOptions(p.role||"player")}</select></div>
+      <div class="assignment">
+        <div><label>Spieler zuordnen</label>
+          <select id="playerFor_${p.id}" onchange="savePlayerAssignment('${p.id}',this.value)">
+            <option value="">– kein Spieler zugeordnet –</option>${playerOptions(linkedPlayer?.id||"")}
+          </select>
+        </div>
+        <div class="small">${linkedPlayer?`Zugeordnet: ${esc(linkedPlayer.name)} · ${esc(linkedPlayer.team)}`:"Noch keinem Spieler zugeordnet"}</div>
+      </div>
+      <div class="members">${ms.map(m=>`<span class="chip">${esc(m.team)} · ${esc(m.role)}</span>`).join("")||'<span class="muted">Keine Mannschaft zugeordnet</span>'}</div>
+      <div class="assignment">
+        <div><label>Mannschaft hinzufügen</label><select id="team_${p.id}"><option value="">– auswählen –</option>${allTeams().map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("")}</select></div>
+        <button class="primary" onclick="addMembership('${p.id}')">+ Zuordnen</button>
+      </div>
+      ${ms.length?`<div class="toolbar toolbar-spaced-sm">${ms.map(m=>`<button class="secondary" onclick="removeMembership('${m.id}')">✕ ${esc(m.team)} (${esc(m.role)})</button>`).join("")}</div>`:""}
+      <div class="toolbar toolbar-spaced-sm">
+        <button class="secondary" onclick="resetForEmail('${esc(emailOf(p))}')">🔑 Passwort-Reset per E-Mail</button>
+        <button class="danger" onclick="deleteUser('${p.id}','${esc(emailOf(p))}')">🗑️ Benutzerkonto löschen</button>
+      </div>
+    </div>`;
+  }).join("")||'<div class="small">Keine Benutzerprofile gefunden.</div>';
+}
+async function savePlayerAssignment(uid,playerId){
+  const existing=accounts.find(a=>a.user_id===uid);
+  if(!playerId){
+    if(!existing)return;
+    if(!confirm("Spieler-Zuordnung entfernen? Das Benutzerkonto bleibt bestehen.")){await loadAll();return}
+    const {error}=await sb.from("player_accounts").delete().eq("user_id",uid);
+    if(error){alert("Zuordnung konnte nicht entfernt werden: "+msg(error));await loadAll();return}
+    await loadAll();return;
+  }
+  const {error}=await sb.from("player_accounts").upsert({
+    player_id:playerId,user_id:uid,is_primary:!accounts.some(a=>String(a.player_id)===String(playerId)&&a.is_primary),active:true
+  },{onConflict:"user_id"});
+  if(error){alert("Spieler konnte nicht zugeordnet werden: "+msg(error));await loadAll();return}
+  await loadAll();
+}
+async function deleteUser(uid,email){
+  if(uid===user?.id){alert("Das aktuell angemeldete Admin-Konto kann hier nicht gelöscht werden.");return}
+  if(!confirm(`Benutzerkonto ${email||uid} wirklich vollständig löschen?\\n\\nDies entfernt den Auth-Login und kann nicht rückgängig gemacht werden.`))return;
+  const session=(await sb.auth.getSession()).data.session;
+  if(!session){alert("Admin-Sitzung ist abgelaufen.");return}
+  const res=await fetch(SUPABASE_URL+"/functions/v1/Admin-user",{
+    method:"POST",
+    headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},
+    body:JSON.stringify({action:"delete",user_id:uid})
+  });
+  let data={};try{data=await res.json()}catch{}
+  if(!res.ok||data.error){alert("Benutzerkonto konnte nicht gelöscht werden: "+(data.error||res.statusText)+"\\nBitte prüfen, ob die Admin-user Edge Function die Aktion 'delete' unterstützt.");return}
+  alert("Benutzerkonto wurde gelöscht.");
+  await loadAll();
+}
+async function saveRole(uid,role){
+  const {error}=await sb.from("profiles").update({role}).eq("id",uid);
+  if(error){alert("Rolle konnte nicht gespeichert werden: "+msg(error));await loadAll();return}
+  const p=profiles.find(x=>x.id===uid);if(p)p.role=role;setStatus("usersStatus","Rolle gespeichert.","ok");
+}
+async function addMembership(uid){
+  const team=$("team_"+uid)?.value;if(!team){alert("Bitte eine Mannschaft auswählen.");return}
+  const role=profiles.find(p=>p.id===uid)?.role==="moderator"?"moderator":profiles.find(p=>p.id===uid)?.role==="team_manager"?"team_manager":"player";
+  const {error}=await sb.from("team_memberships").upsert({user_id:uid,team,role},{onConflict:"user_id,team"});
+  if(error){alert("Zuordnung konnte nicht gespeichert werden: "+msg(error));return}await loadAll();
+}
+async function removeMembership(id){if(!confirm("Diese Mannschafts-Zuordnung wirklich entfernen?"))return;const {error}=await sb.from("team_memberships").delete().eq("id",id);if(error){alert("Zuordnung konnte nicht gelöscht werden: "+msg(error));return}await loadAll()}
+
+async function createUser(){
+  const email=$("newEmail").value.trim().toLowerCase(),password=$("newPassword").value,display_name=$("newDisplayName").value.trim(),role=$("newRole").value,player_id=$("newPlayer").value,team=$("newTeam").value;
+  if(!email||!password){setStatus("createStatus","E-Mail und Startpasswort sind erforderlich.","bad");return}
+  if(password.length<8){setStatus("createStatus","Das Startpasswort muss mindestens 8 Zeichen haben.","bad");return}
+  setStatus("createStatus","Lege Benutzerkonto an …");
+  const session=(await sb.auth.getSession()).data.session;
+  if(!session){setStatus("createStatus","Admin-Sitzung ist abgelaufen.","bad");return}
+  const res=await fetch(SUPABASE_URL+"/functions/v1/Admin-user",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({action:"create",email,password,display_name,role,player_id:player_id||null,team:team||"",primary:true})});
+  let data={};try{data=await res.json()}catch{}
+  if(!res.ok||data.error){setStatus("createStatus","Benutzer konnte nicht angelegt werden: "+(data.error||res.statusText),"bad");return}
+  setStatus("createStatus","Benutzerkonto wurde angelegt.","ok");
+  $("newEmail").value="";$("newPassword").value="";$("newDisplayName").value="";$("newPlayer").value="";$("newTeam").value="";
+  await loadAll();
+}
+async function resetForEmail(email){
+  if(!email)return;
+  if(!confirm("Eine Passwort-Reset-Mail an "+email+" anfordern?"))return;
+  const redirectTo=location.origin+location.pathname;
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
+  if(error){alert("Reset-Mail konnte nicht angefordert werden: "+msg(error));return}
+  alert("Die Passwort-Reset-Mail wurde angefordert.");
+}
+async function saveTeamSetting(team){
+  const staffel=$("staffel_"+encodeURIComponent(team)).value.trim();
+  const staffelNr=$("staffelnr_"+encodeURIComponent(team)).value.trim();
+  const {error}=await sb.from("team_competition_settings").upsert({team,staffel:staffel||null,staffel_nr:staffelNr||null,updated_at:new Date().toISOString()},{onConflict:"team"});
+  if(error){alert("Staffel-Daten konnten nicht gespeichert werden: "+msg(error));return}
+  await loadAll();alert("Staffel-Daten für "+team+" gespeichert.");
+}
+function renderTeams(){
+  const teams=allTeams();
+  $("teams").innerHTML=teams.map(team=>{const ms=memberships.filter(m=>m.team===team),ps=players.filter(p=>p.team===team),cfg=teamSettings.find(t=>t.team===team)||{},key=encodeURIComponent(team);return `<div class="user-row"><div class="name">${esc(team)}</div><div class="small">${ps.length} aktive Spieler · ${ms.length} Benutzer-Zuordnungen</div><div class="two grid team-setting-grid"><div><label>Staffel-Bezeichnung</label><input id="staffel_${key}" value="${esc(cfg.staffel||"")}" placeholder="z. B. Bezirksklasse Nord"></div><div><label>Staffelnummer</label><input id="staffelnr_${key}" value="${esc(cfg.staffel_nr||"")}" placeholder="z. B. 123"></div></div><div class="toolbar toolbar-spaced-sm"><button class="primary" onclick="saveTeamSetting('${esc(team).replace(/'/g,"&#039;")}')">Staffel-Daten speichern</button></div><div class="members">${ms.map(m=>{const p=profiles.find(x=>x.id===m.user_id);return `<span class="chip">${esc(displayName(p||{id:m.user_id}))} · ${esc(m.role)}</span>`}).join("")||'<span class="muted">Keine Benutzer zugeordnet</span>'}</div></div>`}).join("")||'<div class="small">Noch keine Mannschaften gefunden.</div>';
+}
+init();
+</script>
+
+
+
+<script src="assets/js/auth-popup.js?v=20261107"></script>
+<script src="assets/js/shared-nav.js?v=20261107-adminnav4"></script>
+<script>
+document.addEventListener("click", function(event) {
+  document.querySelectorAll("#platformNav details.pn-more[open]").forEach(function(menu) {
+    if (!menu.contains(event.target)) menu.removeAttribute("open");
+  });
+});
+document.addEventListener("keydown", function(event) {
+  if (event.key === "Escape") {
+    document.querySelectorAll("#platformNav details.pn-more[open]").forEach(function(menu) {
+      menu.removeAttribute("open");
+    });
+  }
+});
+</script>
+
+</body>
+</html>
