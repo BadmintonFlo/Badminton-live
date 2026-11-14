@@ -1,0 +1,81 @@
+/* Moderator – Vereins-/Mannschafts- und Statusfilter */
+.moderator-filters{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));
+  gap:12px;
+  margin:18px 0 20px;
+}
+.moderator-filter{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  color:var(--text,#edf3fb);
+  font-weight:700;
+  font-size:.95rem;
+}
+.moderator-filter select{
+  width:100%;
+  min-height:48px;
+  padding:11px 13px;
+  border:1px solid var(--border,#344b63);
+  border-radius:12px;
+  background:var(--card,#1b2b40);
+  color:var(--text,#edf3fb);
+  font:inherit;
+}
+
+/* BadminOne Select-Menüs: einheitlich dunkelblau, auch auf Android */
+.moderator-filter{position:relative}
+.moderator-filter select.badmin-native-select{
+  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;
+  margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;border:0!important;opacity:0!important;pointer-events:none!important
+}
+.badmin-select{position:relative;width:100%;min-width:0;z-index:20}
+.badmin-select-trigger{
+  width:100%;min-height:48px;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:11px 13px;border:1px solid #45627f!important;border-radius:13px!important;
+  background:#101722!important;color:#edf4fc!important;font:inherit;font-weight:700;
+  text-align:left;box-shadow:inset 0 1px 0 #ffffff0a;cursor:pointer
+}
+.badmin-select-trigger:focus-visible{outline:2px solid #78bdf0;outline-offset:3px}
+.badmin-select-trigger[aria-expanded="true"]{border-color:#78bdf0!important}
+.badmin-select-value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badmin-select-chevron{flex:0 0 auto;color:#b9c9d9;font-size:20px;transition:transform .15s}
+.badmin-select-trigger[aria-expanded="true"] .badmin-select-chevron{transform:rotate(180deg)}
+.badmin-select-menu{
+  position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:1000;
+  max-height:min(48vh,320px);overflow-y:auto;padding:6px;
+  border:1px solid #526b82;border-radius:13px;background:#172a3e;color:#edf4fb;
+  box-shadow:0 16px 36px #000b;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch
+}
+.badmin-select-menu[hidden]{display:none!important}
+.badmin-select-option{
+  width:100%;min-height:46px;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:10px 12px;border:0!important;border-bottom:1px solid #ffffff12!important;
+  border-radius:8px!important;background:transparent!important;color:#eaf2fb!important;
+  font:inherit;font-size:14px;font-weight:650;text-align:left;cursor:pointer
+}
+.badmin-select-option:last-child{border-bottom:0!important}
+.badmin-select-option:hover,.badmin-select-option:focus-visible{background:#244763!important;outline:none}
+.badmin-select-option[aria-selected="true"]{background:#1e4968!important;color:#fff!important}
+.badmin-select-check{flex:0 0 auto;color:#72d8c7;font-size:18px;font-weight:900}
+@media(max-width:600px){
+  .badmin-select-menu{max-height:min(45vh,290px)}
+  .badmin-select-option{min-height:50px;font-size:15px}
+}
+
+
+/* Korrektur: native Felder aus dem Layout nehmen und offene Menüs sauber stapeln. */
+.moderator-filter{position:relative;z-index:0}
+.moderator-filter select.badmin-native-select{
+  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;
+  margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;
+  clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important;
+  opacity:0!important;pointer-events:none!important
+}
+.badmin-select{position:relative;z-index:1;width:100%;min-width:0}
+.badmin-select.is-open{z-index:1000}
+.moderator-filter:has(.badmin-select.is-open){z-index:1000}
+.badmin-select-menu{z-index:2000}

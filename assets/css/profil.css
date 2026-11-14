@@ -1,0 +1,26 @@
+:root{color-scheme:dark}
+.profile-page{width:min(100% - 28px,900px);margin:28px auto 60px}
+.profile-hero{padding:24px;border:1px solid var(--border,#34465a);border-radius:20px;background:linear-gradient(135deg,#1a2b3e,#142131)}
+.profile-hero .eyebrow{color:#8ecbff;font-size:12px;font-weight:800;letter-spacing:.12em}
+.profile-hero h1{margin:8px 0;font-size:clamp(26px,5vw,38px)}
+.profile-hero p{color:#bdcbd9;line-height:1.55;margin:0}
+.profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}
+.profile-card{min-width:0;padding:20px;border:1px solid var(--border,#34465a);border-radius:17px;background:rgba(20,32,47,.82)}
+.profile-card h2{font-size:18px;margin:0 0 14px}
+.profile-field-spacer{height:14px}
+.profile-code-note{margin-top:13px}
+.profile-label{display:block;color:#aebed0;font-size:12px;font-weight:750;margin-bottom:6px}
+.profile-value{overflow-wrap:anywhere;font-size:15px;font-weight:650}
+.profile-code{font-size:clamp(19px,4vw,25px);letter-spacing:.07em;font-weight:900;color:#9bd2ff;overflow-wrap:anywhere;margin:12px 0}
+.profile-muted{color:#aebed0;font-size:13px;line-height:1.5}
+.profile-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.profile-btn{border:1px solid #53677e;border-radius:11px;padding:11px 15px;background:#263d54;color:#fff;font:inherit;font-weight:750;cursor:pointer}
+.profile-btn.primary{background:#2878b9;border-color:#2878b9}
+.profile-btn:disabled{opacity:.55;cursor:wait}
+.profile-message{padding:12px 14px;border-radius:12px;margin-top:14px;background:#482729;color:#ffd4d4;line-height:1.45}
+.profile-message.ok{background:#153d32;color:#c9f4df}
+.profile-message[hidden]{display:none}
+.profile-status{display:inline-flex;align-items:center;gap:7px;color:#bfe9d0;font-size:13px;font-weight:750}
+.profile-status:before{content:"";width:8px;height:8px;border-radius:50%;background:#54cf8b}
+.profile-list{padding-left:18px;color:#d8e2ec;line-height:1.7}
+@media(max-width:650px){.profile-grid{grid-template-columns:1fr}.profile-hero{padding:20px}.profile-card{padding:17px}}

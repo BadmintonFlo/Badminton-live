@@ -1,0 +1,392 @@
+/* BadminOne – Moderatorbereich
+   Nutzt die zentralen Farbvariablen aus assets/css/style.css. */
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--page);
+  color: var(--text);
+}
+
+.wrap {
+  width: min(100% - 24px, 820px);
+  margin: 0 auto;
+  padding: 18px 0 32px;
+}
+
+.card {
+  margin: 0 0 16px;
+  padding: clamp(16px, 3vw, 22px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 10px 28px #0002;
+}
+
+h1, h2, h3 {
+  color: var(--text);
+  line-height: 1.2;
+}
+
+h1 { margin: 0 0 7px; font-size: clamp(22px, 4vw, 27px); }
+h2 { margin: 0 0 12px; font-size: 20px; }
+h3 { margin: 0; font-size: 18px; }
+
+.sub, .small, .note, .user, .match-meta, .game-state {
+  color: var(--muted);
+}
+.sub {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.user { font-size: 14px; }
+
+label {
+  display: block;
+  margin: 13px 0 6px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+input, select, textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 13px;
+  border: 1px solid var(--border-strong);
+  border-radius: 13px;
+  background: var(--deep);
+  color: var(--text);
+  font: inherit;
+}
+input::placeholder { color: var(--subtle); opacity: 1; }
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+button {
+  min-height: 43px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--raised);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 750;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+button:disabled { opacity: .45; cursor: not-allowed; }
+button.primary {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #fff;
+}
+button.secondary {
+  border-color: var(--border-strong);
+  background: var(--raised);
+  color: var(--text);
+}
+button.danger {
+  border-color: #8b4549;
+  background: #482729;
+  color: #ffd1d1;
+}
+button:focus-visible {
+  outline: 2px solid #8dccff;
+  outline-offset: 3px;
+}
+.full { width: 100%; }
+.login-submit { margin-top: 16px; }
+
+.status {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 13px;
+  background: var(--blue-soft);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.status.ok {
+  border-color: #286e58;
+  background: #153d32;
+  color: #b9f4d8;
+}
+.status.bad {
+  border-color: #8b4549;
+  background: #482729;
+  color: #ffd1d1;
+}
+.status.warn {
+  border-color: #85643c;
+  background: #443321;
+  color: #ffe0b3;
+}
+.hidden { display: none !important; }
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.top > div { min-width: 0; }
+.top button { flex: 0 0 auto; }
+
+.match-list { display: grid; gap: 10px; }
+.match {
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--raised);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease;
+}
+.match:active { transform: scale(.995); }
+.match:hover { border-color: var(--border-strong); }
+.match.selected {
+  border: 2px solid var(--blue);
+  background: var(--blue-soft);
+}
+.match-title { color: var(--text); font-size: 17px; font-weight: 800; }
+.match-meta { margin-top: 5px; font-size: 13px; }
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 13px;
+}
+.toolbar button { flex: 1 1 180px; }
+
+.match-head {
+  margin-bottom: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--raised);
+  color: var(--text);
+}
+.match-head-title { color: var(--text); font-size: 21px; font-weight: 850; }
+.match-score {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  text-align: center;
+}
+.match-score .team { color: var(--muted); font-weight: 750; line-height: 1.25; }
+.match-score strong { color: var(--text); font-size: 28px; }
+.progress {
+  height: 9px;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--deep);
+}
+.progress > div {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--blue);
+  transition: width .2s ease;
+}
+.progress-caption { margin-top: 7px; }
+
+.game {
+  margin-top: 12px;
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  background: var(--surface);
+  color: var(--text);
+}
+.game.finished { border-color: #286e58; background: #17352f; }
+.game.live { border-color: #85643c; background: #332d27; }
+.game.excluded { border-color: var(--border); background: var(--raised); }
+.game.forfeit { border-color: #85643c; background: #332d27; }
+.game-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.game-title { color: var(--text); font-size: 17px; font-weight: 850; }
+.players { margin-top: 5px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.players b { color: var(--text); }
+.game-result { color: var(--text); font-weight: 850; white-space: nowrap; }
+.game-state { margin-top: 6px; font-size: 12px; }
+.special-game {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.special-game strong { display: block; margin-bottom: 4px; }
+.special-game.excluded { background: var(--deep); color: var(--muted); }
+.special-game.forfeit { border-color: #85643c; background: #443321; color: #ffe0b3; }
+
+.set-row {
+  display: grid;
+  grid-template-columns: minmax(105px, 1fr) 1fr 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.set-label { color: var(--muted); font-size: 13px; font-weight: 750; }
+.set-action { grid-column: 1 / -1; display: flex; margin-top: 2px; }
+.set-action button { width: 100%; }
+.set-action-spaced { margin-top: 10px; }
+.set-disabled { opacity: .72; }
+.score-box {
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--deep);
+  text-align: center;
+}
+.score-team {
+  overflow: hidden;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.score-number { margin: 3px 0 8px; color: var(--text); font-size: 27px; font-weight: 850; line-height: 1; }
+.stepper { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.stepper button { padding: 9px 0; font-size: 20px; line-height: 1; }
+.stepper .minus { background: var(--raised); }
+.stepper .plus { border-color: #347b9d; background: #1b4964; color: #eaf7ff; }
+.save-row { display: flex; gap: 8px; margin-top: 13px; }
+.save-row button { flex: 1; }
+.note { margin-top: 10px; font-size: 12px; line-height: 1.45; }
+
+@media (max-width: 560px) {
+  .wrap { width: min(100% - 20px, 820px); padding-top: 12px; }
+  .card { padding: 15px; border-radius: 18px; }
+  .top { align-items: flex-start; }
+  .top button { padding-inline: 10px; }
+  .set-row { grid-template-columns: 1fr 1fr; }
+  .set-label { grid-column: 1 / -1; }
+  .game-head { display: block; }
+  .game-result { margin-top: 7px; }
+  .match-score strong { font-size: 25px; }
+}
+
+
+/* Kontrast-Fix: Moderator-Komponenten erhalten feste BadminOne-Farben.
+   Diese Selektoren sind bewusst stärker als allgemeine Plattformregeln. */
+body { background:#172433 !important; color:#e8eef7 !important; }
+body .wrap { color:#e8eef7 !important; }
+body .wrap .card,
+body #app .card,
+body #loginCard.card {
+  background:#182635 !important;
+  color:#e8eef7 !important;
+  border:1px solid #344b61 !important;
+  box-shadow:0 10px 28px #0003 !important;
+}
+body .wrap .card h1,
+body .wrap .card h2,
+body .wrap .card h3,
+body #app .card h1,
+body #app .card h2,
+body #app .card h3,
+body #loginCard h1 {
+  color:#edf4fc !important;
+}
+body .wrap .card p,
+body .wrap .card .sub,
+body .wrap .card .user,
+body .wrap .card .small,
+body .wrap .card .match-meta,
+body .wrap .card .game-state,
+body .wrap .card .note,
+body #app .card .sub,
+body #app .card .user {
+  color:#b8c7d8 !important;
+}
+body #app .match,
+body .wrap .match {
+  background:#1d334a !important;
+  color:#edf4fc !important;
+  border:1px solid #3a5874 !important;
+}
+body #app .match .match-title,
+body .wrap .match .match-title {
+  color:#f1f6fd !important;
+}
+body #app .match.selected,
+body .wrap .match.selected {
+  background:#173d5c !important;
+  border:2px solid #3288c8 !important;
+}
+body #app .match-head {
+  background:#1d334a !important;
+  color:#edf4fc !important;
+  border:1px solid #3a5874 !important;
+}
+body #app .match-head-title,
+body #app .game-title,
+body #app .game-result,
+body #app .players b,
+body #app .score-number {
+  color:#f1f6fd !important;
+}
+body #app .game,
+body #app .score-box {
+  background:#182635 !important;
+  color:#e8eef7 !important;
+  border:1px solid #344b61 !important;
+}
+body #app .game.finished { background:#17352f !important; border-color:#286e58 !important; }
+body #app .game.live,
+body #app .game.forfeit { background:#332d27 !important; border-color:#85643c !important; }
+body #app .game.excluded { background:#1d334a !important; }
+body .wrap button,
+body .wrap input,
+body .wrap select,
+body .wrap textarea {
+  color:#edf4fc !important;
+}
+body .wrap button {
+  background:#24394f;
+  border-color:#45627f;
+}
+body .wrap button.primary {
+  background:#3288c8 !important;
+  border-color:#3288c8 !important;
+  color:#fff !important;
+}
+body .wrap button.secondary {
+  background:#24394f !important;
+  border-color:#45627f !important;
+}
+body .wrap input,
+body .wrap select,
+body .wrap textarea {
+  background:#101722 !important;
+  border-color:#45627f !important;
+}
+body .wrap input::placeholder { color:#91a2b7 !important; }
+body .wrap .status {
+  background:#173d5c !important;
+  border-color:#45627f !important;
+  color:#edf4fc !important;
+}
+body .wrap .status.ok { background:#153d32 !important; border-color:#286e58 !important; color:#b9f4d8 !important; }
+body .wrap .status.bad { background:#482729 !important; border-color:#8b4549 !important; color:#ffd1d1 !important; }
+body .wrap .status.warn { background:#443321 !important; border-color:#85643c !important; color:#ffe0b3 !important; }

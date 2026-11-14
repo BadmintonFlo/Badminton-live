@@ -1,0 +1,90 @@
+/* BadminOne – spezielle Aufstellungsdialoge und WhatsApp-Vorschau */
+.modal{display:none;position:fixed;inset:0;z-index:1000;align-items:flex-start;justify-content:center;overflow:hidden;padding:10px;background:#050b12bd}
+.modal-box{display:flex;flex-direction:column;width:100%;max-width:720px;height:min(94dvh,900px);max-height:calc(100dvh - 20px);overflow:hidden;padding:17px;border:1px solid var(--border-strong);border-radius:18px;background:var(--surface);color:var(--text);box-shadow:0 18px 55px #0008}
+.modal-box h2{flex:0 0 auto;margin-bottom:5px}.modal-box>p,.modal-box>.small{flex:0 0 auto}
+.modal-box #opponentFields{flex:1;min-height:0;overflow:auto;padding:2px 2px 10px;-webkit-overflow-scrolling:touch}
+.modal-box .modal-actions{flex:0 0 auto;padding-top:10px;border-top:1px solid var(--border);background:var(--surface)}
+.opp-row{margin-top:9px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--raised)}
+.opp-row h3{margin:0 0 9px;color:var(--text);font-size:14px}.opp-match{display:block}.opp-side{padding:0}
+.opp-side-title{margin-bottom:6px;color:var(--muted);font-size:11px;font-weight:850}.opp-side.own .opp-side-title{color:#8ecbff}
+.opp-players,.opp-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.opp-player{min-width:0;padding:10px 8px;border:1px solid #3a5876;border-radius:9px;background:#203b55;color:var(--text);font-size:13px;font-weight:750;text-align:center;overflow-wrap:anywhere}
+.opp-side input{width:100%;margin-top:0}.opp-side.opponent-side{margin-top:11px}.opp-side.opponent-side .opp-side-title{margin-bottom:6px}
+.opp-players-single,.opp-inputs-single{grid-template-columns:1fr}
+.opp-none-label{display:flex;align-items:center;gap:8px;margin-top:9px;color:var(--muted);font-size:12px;font-weight:750;line-height:1.25}.opp-none-label input{width:18px;height:18px;min-height:18px;flex:0 0 auto;margin:0;accent-color:var(--blue)}
+.opp-divider{display:none}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.whatsapp-preview{flex:1;min-height:0;resize:none;box-sizing:border-box;font-family:inherit;line-height:1.5;white-space:pre-wrap}
+@media(max-width:650px){.modal-box{padding:14px}}
+
+
+/* Kontrast-Fix: Aufstellung folgt dem zentralen BadminOne-Dark-Theme. */
+html[data-theme="dark"] body.lineup-page{background:var(--page)!important;color:var(--text)!important}
+html[data-theme="dark"] .lineup-page-header{background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
+html[data-theme="dark"] .lineup-page-header h1,
+html[data-theme="dark"] .lineup-page .card h2,
+html[data-theme="dark"] .lineup-page .card h3{color:var(--text)!important}
+html[data-theme="dark"] .lineup-page .card{background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
+html[data-theme="dark"] .lineup-page label{color:var(--muted)!important}
+html[data-theme="dark"] .lineup-page .small,
+html[data-theme="dark"] .lineup-page-header p{color:var(--muted)!important}
+
+/* Verein- und Mannschaftsfilter */
+.lineup-page .filter-grid{margin-bottom:4px}
+.lineup-page .filter-grid select{min-width:0}
+
+/* Dropdown-Menüs: klar abgesetzte, vollständig deckende Popover */
+.lineup-filter-field{position:relative;min-width:0;z-index:1}
+.lineup-filter-field:has(.lineup-select-trigger[aria-expanded="true"]){z-index:80}
+.lineup-select{position:relative;width:100%;z-index:1}
+.lineup-select:has(.lineup-select-trigger[aria-expanded="true"]){z-index:90}
+.lineup-select-trigger{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;min-height:54px;padding:13px 16px;
+  border:1px solid #526b84;border-radius:14px;
+  background:#101a27;color:#edf4fc;font:inherit;font-size:16px;
+  font-weight:700;text-align:left;
+  box-shadow:inset 0 1px 0 #ffffff0d,0 2px 8px #0003
+}
+.lineup-select-trigger[aria-expanded="true"]{
+  border-color:#58a9e8;
+  box-shadow:0 0 0 2px #348dcc44,0 4px 14px #0006
+}
+.lineup-select-chevron{flex:0 0 auto;color:#b9c9d9;font-size:22px;line-height:1}
+.lineup-select-menu{
+  position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:200;
+  max-height:min(52vh,360px);overflow-y:auto;
+  padding:7px;border:1px solid #66839f;border-radius:16px;
+  background-color:#20364c!important;
+  background-image:linear-gradient(180deg,#243d55 0%,#1b3045 100%)!important;
+  color:#f1f6fc!important;opacity:1!important;
+  box-shadow:0 18px 42px #000c,0 0 0 1px #0b1724;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  -webkit-overflow-scrolling:touch
+}
+.lineup-select-menu[hidden]{display:none!important}
+.lineup-select-option{
+  display:block;width:100%;padding:14px 13px;border:1px solid transparent;
+  border-radius:10px;background:transparent!important;
+  color:#edf4fc!important;font:inherit;font-size:16px;
+  font-weight:650;text-align:left;white-space:normal
+}
+.lineup-select-option+.lineup-select-option{margin-top:4px;border-top:1px solid #ffffff1a}
+.lineup-select-option[aria-selected="true"]{
+  background:#285579!important;border-color:#4b8fbd;color:#fff!important
+}
+.lineup-select-option:active{background:#326b96!important}
+
+/* Unsichtbare native Selects bleiben nur als Daten-/JS-Steuerelemente bestehen.
+   Sichtbar sind ausschließlich die eigenen BadminOne-Dropdowns. */
+.lineup-filter-field > select.lineup-native-select,
+.lineup-native-select {
+  display: none !important;
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  border: 0 !important;
+}

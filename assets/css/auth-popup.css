@@ -1,0 +1,47 @@
+/* Gemeinsames Login-Popup für alle BadminOne-Seiten */
+.auth-popup-dialog {
+  position: relative;
+  width: min(480px, calc(100vw - 28px));
+  max-width: 480px;
+  max-height: min(88vh, 760px);
+  padding: 42px 0 0;
+  border: 1px solid #415a72;
+  border-radius: 22px;
+  background: #142338;
+  color: #edf3fb;
+  box-shadow: 0 22px 70px #0008;
+  overflow: hidden;
+}
+.auth-popup-dialog::backdrop { background: #07111dcc; }
+.auth-popup-close {
+  position: absolute;
+  z-index: 2;
+  top: 5px;
+  right: 10px;
+  width: 34px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #edf3fb;
+  font: 30px/1 sans-serif;
+  cursor: pointer;
+}
+.auth-popup-close:hover,
+.auth-popup-close:focus-visible { background: #ffffff1c; }
+.auth-popup-frame {
+  display: block;
+  width: 100%;
+  height: min(678px, calc(86vh - 42px));
+  border: 0;
+  background: #142338;
+}
+@media (max-width: 520px) {
+  .auth-popup-dialog {
+    width: calc(100vw - 20px);
+    max-height: 90vh;
+    border-radius: 18px;
+  }
+  .auth-popup-frame { height: calc(88vh - 42px); }
+}

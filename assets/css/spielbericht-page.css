@@ -1,0 +1,11 @@
+/* Spielbericht – seitenbezogene Komponenten auf Basis der zentralen style.css */
+body{background:var(--page,#172433);color:var(--text,#e8eef7)}
+@media(max-width:600px){
+ .wrap{width:calc(100% - 24px);padding:14px 0 28px}.card{padding:16px;border-radius:17px}
+ .grid,.signature-grid,.report-head{grid-template-columns:1fr}.big{font-size:26px}
+ .toolbar button{flex-basis:100%}.modal-panel{padding:13px}.sig-large{height:48vh}
+}
+
+.signature-hint{margin-top:8px}
+
+.signature-hint{margin-top:8px}

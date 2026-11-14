@@ -1,0 +1,418 @@
+/* ICS-Import: kontrastreicher Dialog mit getrenntem Scrollbereich und fester Aktionsleiste */
+.ics-file-input{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.ics-file-button{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;min-height:44px}
+
+#icsModal.ics-modal-overlay{
+  position:fixed!important;
+  inset:0!important;
+  z-index:2000!important;
+  display:none;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:12px!important;
+  overflow:hidden!important;
+  background:rgba(3,8,15,.82)!important;
+}
+#icsModal .ics-modalbox{
+  display:flex!important;
+  flex-direction:column!important;
+  width:min(760px,100%)!important;
+  max-width:760px!important;
+  height:min(900px,92dvh)!important;
+  max-height:92dvh!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  padding:0!important;
+  border:1px solid #344c63!important;
+  border-radius:20px!important;
+  background:#142437!important;
+  color:#edf4fb!important;
+  box-shadow:0 22px 70px rgba(0,0,0,.55)!important;
+}
+#icsModal .ics-modal-header{
+  position:relative;
+  flex:0 0 auto;
+  padding:18px 20px 12px;
+  border-bottom:1px solid #344c63;
+  background:#142437;
+  color:#edf4fb;
+}
+#icsModal .ics-modal-header h2{
+  margin:0 112px 6px 0;
+  color:#f3f7fc!important;
+  font-size:1.35rem;
+  line-height:1.25;
+}
+#icsModal .ics-modal-header p{
+  margin:0;
+  color:#bdcada!important;
+  line-height:1.45;
+}
+#icsModal .ics-modal-header .close{
+  position:absolute;
+  top:14px;
+  right:16px;
+  min-height:38px;
+  padding:7px 12px;
+  background:#263d53!important;
+  border:1px solid #486078!important;
+  color:#f3f7fc!important;
+}
+#icsModal .ics-modal-content{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:14px 20px 18px;
+  background:#142437;
+  color:#edf4fb;
+}
+#icsModal .ics-import-settings{
+  display:grid;
+  grid-template-columns:minmax(0,1.5fr) minmax(130px,.8fr);
+  gap:12px;
+}
+#icsModal .ics-import-settings label,
+#icsModal .ics-match-card label{
+  display:grid;
+  gap:6px;
+  color:#dce7f2!important;
+  font-weight:600;
+}
+#icsModal .ics-import-settings select,
+#icsModal .ics-import-settings input,
+#icsModal .ics-match-card input:not([type=checkbox]):not([type=hidden]){
+  width:100%;
+  min-width:0;
+  min-height:44px;
+  box-sizing:border-box;
+  padding:9px 11px;
+  border:1px solid #526b82!important;
+  border-radius:10px;
+  background:#0e1a28!important;
+  color:#f2f6fb!important;
+  color-scheme:dark;
+}
+#icsModal .ics-import-summary{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  margin:14px 0;
+  padding:12px 14px;
+  border:1px solid #405a72;
+  border-radius:13px;
+  background:#1b3045!important;
+  color:#f0f5fb!important;
+}
+#icsModal .ics-import-summary strong{color:#fff!important}
+#icsModal .ics-import-summary span,
+#icsModal .ics-card-note{color:#c2d0de!important;font-size:.92rem;line-height:1.4}
+#icsModal .ics-match-list{display:grid;gap:12px;margin:0}
+#icsModal .ics-match-card{
+  display:grid;
+  gap:11px;
+  padding:14px;
+  border:1px solid #405a72;
+  border-radius:14px;
+  background:#1b3045!important;
+  color:#edf4fb!important;
+}
+#icsModal .ics-match-card.is-duplicate{border-color:#526477;opacity:.86}
+#icsModal .ics-match-card.needs-review{border-color:#c58d3c}
+#icsModal .ics-card-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#icsModal .ics-select{display:flex;align-items:center;gap:9px;color:#f2f6fb!important;font-weight:700}
+#icsModal .ics-select input{width:20px;height:20px;accent-color:#58a6dc;flex:0 0 auto}
+#icsModal .ics-remove{min-height:38px;padding:7px 12px}
+#icsModal .ics-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#icsModal .ics-card-note{margin:0}
+#icsModal .ics-import-actions{
+  position:static!important;
+  flex:0 0 auto;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(120px,.45fr);
+  gap:10px;
+  margin:0!important;
+  padding:12px 20px calc(12px + env(safe-area-inset-bottom))!important;
+  border-top:1px solid #344c63;
+  background:#101e2e!important;
+}
+#icsModal .ics-import-actions button{
+  width:100%;
+  min-height:48px;
+  margin:0!important;
+  white-space:normal;
+}
+#icsModal .ics-import-actions button:disabled{opacity:.48;cursor:not-allowed}
+
+@media(max-width:600px){
+  #icsModal.ics-modal-overlay{align-items:stretch!important;padding:8px!important}
+  #icsModal .ics-modalbox{
+    width:100%!important;
+    height:100%!important;
+    max-height:100%!important;
+    border-radius:16px!important;
+  }
+  #icsModal .ics-modal-header{padding:15px 14px 11px}
+  #icsModal .ics-modal-header h2{font-size:1.18rem;margin-right:94px}
+  #icsModal .ics-modal-header .close{top:11px;right:12px}
+  #icsModal .ics-modal-content{padding:12px 13px 16px}
+  #icsModal .ics-import-settings{grid-template-columns:1fr;gap:10px}
+  #icsModal .ics-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #icsModal .ics-card-grid label:first-child{grid-column:1/-1}
+  #icsModal .ics-match-card{padding:12px;gap:10px}
+  #icsModal .ics-import-actions{
+    grid-template-columns:1fr;
+    padding:10px 13px calc(10px + env(safe-area-inset-bottom))!important;
+  }
+}
+
+/* Compact list and expand-on-demand editing */
+/* Kompakte ICS-Begegnungsübersicht für Smartphone und Desktop */
+#icsModal .ics-modal-header{display:grid;grid-template-columns:1fr auto;align-items:start;gap:6px 12px}
+#icsModal .ics-modal-header h2{grid-column:1;grid-row:1;margin:0;color:#f3f7fc!important}
+#icsModal .ics-modal-header p{grid-column:1/-1;grid-row:2}
+#icsModal .ics-modal-header .close{grid-column:2;grid-row:1;position:static!important;width:auto!important;min-width:92px;min-height:40px;padding:7px 12px}
+#icsModal .ics-bulk-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;color:#dce7f2}
+#icsModal .ics-bulk-actions label{display:flex;align-items:center;gap:8px;font-weight:700}
+#icsModal .ics-bulk-actions input{width:19px;height:19px;accent-color:#58a6dc}
+#icsModal #icsListHint{font-size:.82rem;color:#bdcada;text-align:right}
+#icsModal .ics-summary-counts{display:flex;flex-wrap:wrap;gap:8px 18px}
+#icsModal .ics-summary-counts span{color:#d1deeb;font-size:.9rem}
+#icsModal .ics-summary-counts b{color:#fff;font-size:1.05rem}
+#icsModal .ics-compact-card{gap:9px;padding:12px}
+#icsModal .ics-compact-top{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:start;gap:10px}
+#icsModal .ics-match-main{display:grid;gap:5px;min-width:0}
+#icsModal .ics-match-date{font-weight:750;color:#fff;font-size:.96rem}
+#icsModal .ics-match-date span{font-weight:500;color:#c4d2df}
+#icsModal .ics-match-teams{display:flex;flex-wrap:wrap;align-items:center;gap:5px;color:#f2f6fb;line-height:1.35}
+#icsModal .ics-match-teams strong{font-weight:700}
+#icsModal .ics-vs{color:#9eb2c5;padding:0 2px}
+#icsModal .ics-match-venue{font-size:.86rem;color:#bdcada}
+#icsModal .ics-state{display:inline-flex;align-items:center;white-space:nowrap;border-radius:999px;padding:5px 8px;font-size:.72rem;font-weight:700}
+#icsModal .ics-state.selected{background:#174d3c;color:#b9f0d4}
+#icsModal .ics-state.duplicate{background:#3b4653;color:#d5dee7}
+#icsModal .ics-state.review{background:#5b421f;color:#ffe0a6}
+#icsModal .ics-state.unselected{background:#34475b;color:#d3e1ef}
+#icsModal .ics-edit-details{border-top:1px solid #405a72;padding-top:8px}
+#icsModal .ics-edit-details summary{cursor:pointer;color:#9fd0f4;font-weight:700;padding:4px 0}
+#icsModal .ics-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+#icsModal .ics-edit-grid label{display:grid;gap:5px;color:#dce7f2;font-size:.88rem;font-weight:600}
+#icsModal .ics-edit-grid input{width:100%;min-width:0;box-sizing:border-box;min-height:42px;padding:8px 10px;border:1px solid #526b82;border-radius:9px;background:#0e1a28;color:#f2f6fb;color-scheme:dark}
+#icsModal .ics-edit-wide{grid-column:1/-1}
+#icsModal .ics-remove{justify-self:end;border:0;background:transparent;color:#ffb4b4;font-weight:700;padding:4px 0;cursor:pointer}
+#icsModal .ics-import-actions{grid-template-columns:1fr!important}
+#icsModal .ics-import-actions button:last-child{background:#263b50!important;color:#e7eff7!important}
+@media(max-width:600px){
+ #icsModal .ics-modal-header{grid-template-columns:minmax(0,1fr) auto;padding:14px}
+ #icsModal .ics-modal-header h2{font-size:1.12rem}
+ #icsModal .ics-modal-header .close{min-width:84px;padding:6px 9px}
+ #icsModal .ics-modal-content{padding:10px 12px}
+ #icsModal .ics-bulk-actions{align-items:flex-start;flex-direction:column;gap:5px}
+ #icsModal #icsListHint{text-align:left}
+ #icsModal .ics-compact-top{grid-template-columns:22px minmax(0,1fr);gap:8px}
+ #icsModal .ics-state{grid-column:2;justify-self:start}
+ #icsModal .ics-match-teams{font-size:.94rem}
+ #icsModal .ics-edit-grid{grid-template-columns:1fr 1fr}
+}
+
+
+/* Fix: native file input must stay hidden; only the styled label is visible */
+.ics-file-input{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+.ics-file-button{
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  min-height:44px;
+}
+
+/* Branded in-dialog team selector; avoids Android's native white select sheet */
+#icsModal .ics-team-native{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+#icsModal .ics-team-picker{position:relative;margin-top:6px}
+#icsModal .ics-team-picker>summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:48px;
+  box-sizing:border-box;
+  padding:10px 14px;
+  border:1px solid #526b82;
+  border-radius:11px;
+  background:#0e1a28;
+  color:#f2f6fb;
+  font-weight:600;
+  cursor:pointer;
+  list-style:none;
+}
+#icsModal .ics-team-picker>summary::-webkit-details-marker{display:none}
+#icsModal .ics-team-picker>summary:after{content:"⌄";font-size:1.3rem;color:#c8d7e5}
+#icsModal .ics-team-picker[open]>summary{border-color:#72b9e8;border-bottom-left-radius:0;border-bottom-right-radius:0}
+#icsModal .ics-team-picker-menu{
+  position:absolute;
+  top:calc(100% - 1px);
+  left:0;
+  right:0;
+  z-index:20;
+  max-height:min(42vh,320px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  border:1px solid #526b82;
+  border-top:0;
+  border-radius:0 0 12px 12px;
+  background:#142437;
+  box-shadow:0 14px 30px rgba(0,0,0,.45);
+}
+#icsModal .ics-team-option{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  width:100%;
+  min-height:54px;
+  padding:12px 14px;
+  border:0;
+  border-bottom:1px solid #344c63;
+  background:#1b3045;
+  color:#edf4fb;
+  text-align:left;
+  font:inherit;
+  cursor:pointer;
+}
+#icsModal .ics-team-option:last-child{border-bottom:0}
+#icsModal .ics-team-option:active,
+#icsModal .ics-team-option.is-current{background:#294761}
+#icsModal .ics-team-check{color:#8ed0ff;font-size:1.2rem;font-weight:800}
+
+/* DBV Turnier Playdata – dunkler, mobiler Dialog im BadminOne-Design */
+#turnierPlaydataModal.turnier-playdata-modal{
+  position:fixed!important;inset:0!important;z-index:2100!important;display:none;
+  align-items:center!important;justify-content:center!important;padding:10px!important;
+  overflow:hidden!important;background:rgba(2,8,15,.84)!important;backdrop-filter:blur(5px);
+}
+#turnierPlaydataModal .turnier-playdata-box{
+  display:flex!important;flex-direction:column!important;width:min(680px,100%)!important;
+  max-width:680px!important;height:min(92dvh,760px)!important;max-height:calc(var(--turnier-vh, 1vh)*100 - 20px)!important;min-height:0!important;
+  overflow:hidden!important;padding:0!important;border:1px solid #304a62!important;border-radius:22px!important;
+  background:#102033!important;color:#edf4fb!important;box-shadow:0 24px 80px rgba(0,0,0,.62)!important;
+}
+.turnier-playdata-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 22px 18px;border-bottom:1px solid #2c4359;background:linear-gradient(135deg,#172d43,#102033);color:#f3f7fc}
+.turnier-playdata-heading{min-width:0}.turnier-playdata-kicker{display:block;margin-bottom:7px;color:#75bdf0;font-size:.7rem;font-weight:800;letter-spacing:.13em}
+.turnier-playdata-header h2{margin:0 0 7px!important;color:#f4f8fc!important;font-size:1.35rem!important;line-height:1.25}
+.turnier-playdata-header p{margin:0;color:#b7c8d8!important;font-size:.92rem;line-height:1.45}
+#turnierPlaydataClose{flex:0 0 40px!important;width:40px!important;min-width:40px!important;height:40px!important;min-height:40px!important;padding:0!important;border-radius:12px!important;background:#263e55!important;border:1px solid #48627b!important;color:#f5f8fc!important;font-size:1.1rem!important}
+.turnier-playdata-content{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:20px 22px 22px;background:#102033;color:#edf4fb}
+.turnier-playdata-step{display:flex;align-items:center;gap:11px;margin:2px 0 12px;color:#edf4fb}
+.turnier-playdata-step>span{display:grid;place-items:center;flex:0 0 29px;width:29px;height:29px;border-radius:9px;background:#1d659a;color:white;font-weight:800}
+.turnier-playdata-step>div{display:grid;gap:2px}.turnier-playdata-step strong{font-size:.96rem}.turnier-playdata-step small{color:#9fb2c5;font-size:.8rem}
+#turnierPlaydataModal .field{display:grid;gap:7px;margin:0 0 20px!important}
+#turnierPlaydataModal .field label{color:#dce8f3!important;font-size:.9rem;font-weight:700}
+#turnierPlaydataModal input:not([type=checkbox]),#turnierPlaydataModal select{box-sizing:border-box;width:100%;min-width:0;min-height:52px;padding:12px 14px;border:1px solid #405b73!important;border-radius:13px!important;background:#0a1725!important;color:#f3f7fc!important;color-scheme:dark;font-size:1rem}
+#turnierPlaydataModal input::placeholder{color:#8195a9!important;opacity:1}
+.turnier-playdata-primary-action{display:flex;justify-content:flex-start;margin-top:2px}
+.turnier-playdata-primary-action .primary{min-width:190px;min-height:50px;padding:12px 20px!important;border-radius:12px!important;background:#1976b9!important;color:#fff!important;font-weight:800}
+.turnier-playdata-primary-action .primary span{margin-left:12px;font-size:1.15rem}
+#turnierPlaydataStatus{margin-top:14px;color:#dce8f3}
+.turnier-playdata-results{margin-top:18px;padding-top:15px;border-top:1px solid #2c4359}
+.turnier-playdata-row{display:flex;align-items:flex-start;gap:11px;padding:12px;margin:8px 0;border:1px solid #344e66;border-radius:13px;background:#172c40;color:#edf4fb}
+.turnier-playdata-row>input{width:auto;min-width:18px;margin-top:3px}.turnier-playdata-row>span{display:grid;gap:4px;min-width:0}.turnier-playdata-row small{color:#a9bdcf}.turnier-playdata-row em{font-size:.82rem;color:#f0bd70;font-style:normal}.turnier-playdata-row.is-duplicate{opacity:.62}
+.turnier-playdata-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 22px;border-top:1px solid #2c4359;background:#0d1b2a;color:#9fb2c5;font-size:.78rem}
+.turnier-playdata-footer>span{display:flex;align-items:center;gap:8px}.turnier-playdata-dot{width:8px;height:8px;border-radius:50%;background:#48b78a;box-shadow:0 0 0 4px rgba(72,183,138,.13)}
+.turnier-playdata-footer button{min-height:38px;padding:7px 14px!important;border:1px solid #40566d!important;border-radius:10px!important;background:#1b3044!important;color:#e8f0f8!important}
+@media(max-width:600px){#turnierPlaydataModal.turnier-playdata-modal{align-items:center!important;padding:8px!important}#turnierPlaydataModal .turnier-playdata-box{width:100%!important;height:min(92dvh,760px)!important;max-height:calc(var(--turnier-vh, 1vh)*100 - 16px)!important;border-radius:19px!important}.turnier-playdata-header{padding:18px 16px 15px}.turnier-playdata-header h2{font-size:1.18rem!important}.turnier-playdata-content{padding:17px 16px 19px}.turnier-playdata-footer{padding:11px 16px}.turnier-playdata-primary-action .primary{width:100%}}
+
+/* Turnier Playdata: Zielteam muss bereits vor dem Öffnen gewählt sein. */
+
+/* Android-Tastatur: Dialoghöhe folgt dem tatsächlich sichtbaren Viewport. */
+#turnierPlaydataModal .turnier-playdata-box{min-height:0!important}
+#turnierPlaydataModal .turnier-playdata-content{overscroll-behavior:contain;scroll-padding:18px}
+#turnierPlaydataModal input:focus{scroll-margin:18px}
+
+
+/* BadminOne-Bestätigungsdialog für Turnier Playdata */
+.turnier-confirm-overlay[hidden]{display:none!important}
+.turnier-confirm-overlay{position:fixed;inset:0;z-index:2600;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,8,15,.78);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+.turnier-confirm-box{width:min(440px,100%);padding:24px;border:1px solid #3b536b;border-radius:20px;background:linear-gradient(160deg,#172d43,#102033 65%);color:#edf4fb;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+.turnier-confirm-kicker{display:block;margin-bottom:9px;color:#83bde9;font-size:.76rem;font-weight:800;letter-spacing:.12em}
+.turnier-confirm-box h3{margin:0 0 12px;color:#f4f8fc;font-size:1.35rem;line-height:1.25}
+.turnier-confirm-box p{margin:0;color:#c5d2df;font-size:1rem;line-height:1.5}
+.turnier-confirm-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+.turnier-confirm-actions button{min-height:48px;padding:10px 18px;border-radius:12px;font-weight:700}
+.turnier-confirm-actions .secondary{background:#20374d!important;border:1px solid #486078!important;color:#edf4fb!important}
+.turnier-confirm-actions .primary{background:#1976b9!important;border:1px solid #2588ca!important;color:#fff!important}
+@media(max-width:480px){.turnier-confirm-box{padding:21px}.turnier-confirm-actions button{flex:1}}
+
+/* BadminOne dark styling for the regular match edit and player-status dialogs */
+#editModal.modal,
+#availabilityModal.modal{
+  position:fixed!important;inset:0!important;z-index:2100!important;
+  display:none;align-items:center!important;justify-content:center!important;
+  padding:12px!important;overflow:hidden!important;
+  background:rgba(3,8,15,.84)!important;backdrop-filter:blur(5px);
+}
+#editModal .modalbox,
+#availabilityModal .modalbox{
+  box-sizing:border-box;width:min(760px,100%)!important;max-width:760px!important;
+  max-height:92dvh!important;min-height:0!important;overflow-y:auto!important;
+  overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  padding:22px!important;border:1px solid #344c63!important;border-radius:20px!important;
+  background:#142437!important;color:#edf4fb!important;
+  box-shadow:0 22px 70px rgba(0,0,0,.55)!important;
+}
+#editModal .modalbox h2,
+#availabilityModal .modalbox h2{color:#f3f7fc!important;margin:0 0 16px!important;font-size:1.3rem!important;line-height:1.3}
+#editModal .modalbox label,
+#availabilityModal .modalbox label{color:#dce7f2!important}
+#editModal .modalbox input:not([type=checkbox]),
+#editModal .modalbox select,
+#availabilityModal .modalbox input:not([type=checkbox]),
+#availabilityModal .modalbox select{
+  box-sizing:border-box;width:100%;min-width:0;min-height:44px;padding:10px 12px;
+  border:1px solid #526b82!important;border-radius:11px!important;
+  background:#0e1a28!important;color:#f2f6fb!important;color-scheme:dark;
+}
+#editModal .modalbox .small,
+#availabilityModal .modalbox .small{color:#bdcada!important}
+#editModal .modalbox .close,
+#availabilityModal .modalbox .close{
+  min-height:42px;padding:8px 14px;border:1px solid #486078!important;
+  border-radius:11px!important;background:#263d53!important;color:#f3f7fc!important;
+}
+#editModal .modalbox .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+#editModal .modalbox .toolbar button{flex:1 1 180px;min-height:48px}
+#availabilityModal .teamblock{margin:12px 0;padding:14px;border:1px solid #405a72;border-radius:14px;background:#1b3045!important;color:#edf4fb!important}
+#availabilityModal .teamtitle{color:#f3f7fc!important;font-weight:700;margin-bottom:10px}
+#availabilityModal .playerrow,
+#availabilityModal .subrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 0;border-top:1px solid #344c63}
+#availabilityModal .playerrow .playername{min-width:0}
+#availabilityModal .playername strong,
+#availabilityModal .subrow strong{color:#f3f7fc!important}
+#availabilityModal .subbox{margin-top:14px;padding:12px;border:1px solid #526b82;border-radius:12px;background:#102033!important}
+#availabilityModal .status{color:#dce7f2!important;background:#1b3045!important;border-color:#405a72!important}
+@media(max-width:600px){
+  #editModal.modal,#availabilityModal.modal{align-items:stretch!important;padding:8px!important}
+  #editModal .modalbox,#availabilityModal .modalbox{width:100%!important;max-height:100%!important;padding:16px!important;border-radius:16px!important}
+  #editModal .modalbox .three.grid{grid-template-columns:1fr!important}
+  #availabilityModal .playerrow,#availabilityModal .subrow{grid-template-columns:minmax(0,1fr);gap:7px}
+}
